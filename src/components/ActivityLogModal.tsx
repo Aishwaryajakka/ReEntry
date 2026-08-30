@@ -38,12 +38,19 @@ interface ActivityLogModalProps {
   visible: boolean;
   onClose: () => void;
   log?: ActivityLog;
+  prefill?: {
+    activityCategory: ActivityCategory;
+    customLabel: string;
+    durationMinutes: number;
+    toleranceRating: ActivityLog['toleranceRating'];
+  };
 }
 
 export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
   visible,
   onClose,
   log,
+  prefill,
 }) => {
   const {
     addActivityLog,
@@ -93,17 +100,17 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
 
   useEffect(() => {
     if (visible) {
-      setCategory(log?.activityCategory ?? null);
-      setCustomLabel(log?.customLabel ?? '');
-      setDuration(log?.durationMinutes ?? 30);
-      setTolerance(log?.toleranceRating ?? 2);
+      setCategory(log?.activityCategory ?? prefill?.activityCategory ?? null);
+      setCustomLabel(log?.customLabel ?? prefill?.customLabel ?? '');
+      setDuration(log?.durationMinutes ?? prefill?.durationMinutes ?? 30);
+      setTolerance(log?.toleranceRating ?? prefill?.toleranceRating ?? 2);
       setNote(log?.notes ?? '');
       setSelectedTagIds(new Set(log?.challengeTagIds ?? []));
       setError(null);
     } else {
       reset();
     }
-  }, [visible, log, reset]);
+  }, [visible, log, prefill, reset]);
 
   const isValid = !!category && customLabel.trim().length > 0;
 
