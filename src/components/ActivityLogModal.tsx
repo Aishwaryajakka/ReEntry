@@ -206,7 +206,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
               This MUST remain a View, not a Pressable, because the sheet
               contains interactive buttons. */}
           <View
-            className="bg-card rounded-t-3xl max-h-[92%]"
+            className="bg-card w-full max-w-[680px] self-center rounded-t-3xl max-h-[92%]"
             style={
               {
                 borderCurve: 'continuous',

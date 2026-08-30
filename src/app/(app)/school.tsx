@@ -5,6 +5,7 @@ import { Users } from 'lucide-react-native';
 
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
+import { ReEntryWordmark } from '@/components/ReEntryWordmark';
 import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
 import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
 import { useSession } from '@/ctx';
@@ -109,11 +110,12 @@ export default function SchoolWorkspaceScreen() {
             onRefresh={loadStudents}
             ListHeaderComponent={(
               <View className="pb-4">
-              <EditorialLabel className="mb-3">SCHOOL WORKSPACE</EditorialLabel>
-              <HeadingText className="mb-1">Students shared with you</HeadingText>
-              <MicroText className="text-muted-foreground mb-5">
-                School staff see recorded supports needed for school, not the student's private recovery records.
-              </MicroText>
+                <ReEntryWordmark className="mb-5" />
+                <EditorialLabel className="mb-3">SCHOOL WORKSPACE</EditorialLabel>
+                <HeadingText className="mb-1">Students shared with you</HeadingText>
+                <MicroText className="text-muted-foreground mb-5">
+                  School staff see recorded supports needed for school, not the student's private recovery records.
+                </MicroText>
 
               {students.length === 0 || showConnect ? <SectionCard className="mb-5">
                 <View className="flex-row items-center gap-2 mb-2">

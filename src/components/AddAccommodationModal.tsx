@@ -122,7 +122,7 @@ export function AddAccommodationModal({ visible, onClose, studentId, onSaved, ac
       <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
         <ScrollView
           className="flex-1"
-          contentContainerClassName="px-6 pt-6 pb-24"
+          contentContainerClassName="w-full max-w-[720px] self-center px-6 pt-6 pb-24"
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
           contentInsetAdjustmentBehavior="automatic"

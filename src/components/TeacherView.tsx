@@ -56,7 +56,7 @@ export function TeacherView({ visible, onClose }: TeacherViewProps) {
       <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
         <ScrollView
           className="flex-1"
-          contentContainerClassName="px-6 pb-16 pt-5"
+          contentContainerClassName="w-full max-w-[720px] self-center px-6 pb-16 pt-5"
           showsVerticalScrollIndicator={false}
           contentInsetAdjustmentBehavior="automatic"
         >

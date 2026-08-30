@@ -14,6 +14,7 @@ import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
 import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
 import { ActivityLogModal } from '@/components/ActivityLogModal';
 import { ActivityCard } from '@/components/ActivityCard';
+import { ReEntryWordmark } from '@/components/ReEntryWordmark';
 import { HeroBotanical } from '@/components/Icons';
 import { useAppContext } from '@/context/AppContext';
 import { TOLERANCE_LABELS } from '@/data/activityCatalog';
@@ -138,9 +139,8 @@ export default function TodayScreen() {
 
   return (
     <ScreenShell>
-      {/* Header: REENTRY / AUG 28 */}
-      <View className="flex-row items-center justify-between mb-4">
-        <EditorialLabel>ReEntry</EditorialLabel>
+      <ReEntryWordmark className="mb-3" />
+      <View className="mb-4 flex-row justify-end">
         <EditorialLabel>{formatTodayHeader()}</EditorialLabel>
       </View>
 

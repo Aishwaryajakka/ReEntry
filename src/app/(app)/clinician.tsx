@@ -6,6 +6,7 @@ import { Users, Activity } from 'lucide-react-native';
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
 import { AddAccommodationModal } from '@/components/AddAccommodationModal';
+import { ReEntryWordmark } from '@/components/ReEntryWordmark';
 import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
 import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
 import { useSession } from '@/ctx';
@@ -278,6 +279,7 @@ export default function ClinicianWorkspaceScreen() {
             onRefresh={loadData}
             ListHeaderComponent={(
               <View className="pb-4">
+                <ReEntryWordmark className="mb-5" />
                 <EditorialLabel className="mb-3">CLINICIAN WORKSPACE</EditorialLabel>
                 <HeadingText className="mb-1">Students shared with you</HeadingText>
                 <MicroText className="text-muted-foreground mb-5">
@@ -392,7 +394,7 @@ export default function ClinicianWorkspaceScreen() {
                     </View>
                   </View>
 
-                  <SubheadingText className="text-sm mb-2">Functional evidence</SubheadingText>
+                  <SubheadingText className="text-sm mb-2">1 · Recorded evidence</SubheadingText>
                   <MicroText className="mb-3 leading-5 text-muted-foreground">
                     Recent self-reported activity records. These observations do not determine medical readiness.
                   </MicroText>
@@ -452,7 +454,7 @@ export default function ClinicianWorkspaceScreen() {
                   )}
 
                   <View className="mb-4 border-t border-border pt-4">
-                    <SubheadingText className="mb-2 text-sm">AI-assisted observations</SubheadingText>
+                    <SubheadingText className="mb-2 text-sm">2 · AI-assisted observations</SubheadingText>
                     <MicroText className="mb-3 leading-5 text-muted-foreground">
                       Personalized analysis of this student's recorded activities. These associations support review and do not diagnose, predict recovery, or recommend accommodations.
                     </MicroText>
@@ -475,7 +477,7 @@ export default function ClinicianWorkspaceScreen() {
                   </View>
 
                   <View className="flex-row items-center justify-between mb-2">
-                    <SubheadingText className="text-sm">Current school supports</SubheadingText>
+                    <SubheadingText className="text-sm">3 · Current school supports</SubheadingText>
                   </View>
                   {activeStudentAccs.length === 0 ? (
                     <MicroText className="text-muted-foreground">No recorded accommodations.</MicroText>
@@ -520,6 +522,7 @@ export default function ClinicianWorkspaceScreen() {
                   )}
 
                   <View className="mt-4 border-t border-border pt-4">
+                    <SubheadingText className="mb-2 text-sm">4 · Clinician decision</SubheadingText>
                     <MicroText className="mb-3 leading-5 text-muted-foreground">
                       Review the student's recorded experiences and document supports you decide are appropriate.
                     </MicroText>

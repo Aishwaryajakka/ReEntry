@@ -67,7 +67,7 @@ export default function SignInScreen() {
         >
           <View className="gap-6">
             <View className="items-center gap-4">
-              <ReEntryWordmark tagline="Return to school. Return to friends. Return to life." appearance="light" />
+              <ReEntryWordmark appearance="light" />
               <BodyText className="text-center">Sign in to continue your ReEntry journey.</BodyText>
             </View>
 

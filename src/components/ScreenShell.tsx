@@ -27,7 +27,7 @@ export const ScreenShell: React.FC<ScreenShellProps> = ({ children, noScroll, cl
   if (noScroll) {
     return (
       <SafeAreaView className={cn('flex-1', bg, dark && 'dark', light && 'light')} edges={['top', 'left', 'right']}>
-        <View className={cn('flex-1', className)}>{children}</View>
+        <View className={cn('flex-1 w-full max-w-[960px] self-center', className)}>{children}</View>
       </SafeAreaView>
     );
   }
@@ -36,7 +36,7 @@ export const ScreenShell: React.FC<ScreenShellProps> = ({ children, noScroll, cl
     <SafeAreaView className={cn('flex-1', bg, dark && 'dark', light && 'light')} edges={['top', 'left', 'right']}>
       <ScrollView
         className="flex-1"
-        contentContainerClassName={cn('px-5 pt-6 pb-24', className)}
+        contentContainerClassName={cn('w-full max-w-[960px] self-center px-5 pt-6 pb-24', className)}
         showsVerticalScrollIndicator={false}
         contentInsetAdjustmentBehavior="automatic"
       >

@@ -99,7 +99,7 @@ function TrendBadge({ trend }: { trend: TrendLabel }) {
         className="text-xs font-medium text-center"
         numberOfLines={2}
         style={{
-          color: isNegative ? COLORS.rust : isPositive ? COLORS.moss : theme.foreground,
+          color: isNegative ? theme.foreground : isPositive ? theme.moss : theme.foreground,
         }}
       >
         {trend}
