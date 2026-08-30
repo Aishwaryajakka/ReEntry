@@ -270,12 +270,12 @@ export function RecoveryStory({ activityLogs, dailyCheckIns }: RecoveryStoryProp
   if (totalRecords < 2) {
     return (
       <SectionCard className="mb-5 border-l-4 border-l-accent">
-        <HeadingText className="text-xl mb-2">Recovery Story</HeadingText>
+        <HeadingText className="text-xl mb-2">Patterns in your records</HeadingText>
         <LabelText className="leading-5 mb-2">
           Patterns will appear as you log more activities and daily check-ins.
         </LabelText>
         <MicroText className="text-muted-foreground">
-          Recovery Story is built only from your own records. ReEntry does not diagnose or predict recovery.
+          Patterns are built only from your own records. ReEntry does not diagnose or predict recovery.
         </MicroText>
       </SectionCard>
     );
@@ -284,7 +284,7 @@ export function RecoveryStory({ activityLogs, dailyCheckIns }: RecoveryStoryProp
   return (
     <SectionCard className="mb-5 border-l-4 border-l-accent">
       <View className="flex-row items-center justify-between mb-2">
-        <HeadingText className="text-xl">Recovery Story</HeadingText>
+        <HeadingText className="text-xl">Patterns in your records</HeadingText>
         <MicroText className="text-muted-foreground">{patterns.length} pattern{patterns.length !== 1 ? 's' : ''}</MicroText>
       </View>
       <MicroText className="text-muted-foreground mb-4">

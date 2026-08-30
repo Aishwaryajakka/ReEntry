@@ -2,15 +2,16 @@ import { useRef, useState } from 'react';
 import { useRouter } from 'expo-router';
 import type { RelativePathString } from 'expo-router';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { Check } from 'lucide-react-native';
 
 import { PrimaryButton, GhostButton } from '@/components/Buttons';
 import { ReEntryWordmark } from '@/components/ReEntryWordmark';
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
-import { Checkbox } from '@/components/ui/checkbox';
 import { BodyText, LabelText, MicroText } from '@/components/Typography';
 import { supabase } from '@/client/supabase';
 import { cn } from '@/lib/utils';
+import { COLORS, useThemeColors } from '@/lib/theme';
 
 const ROLES = [
   { key: 'student', label: 'Student' },
@@ -22,6 +23,7 @@ type RoleKey = (typeof ROLES)[number]['key'];
 
 export default function SignUpScreen() {
   const router = useRouter();
+  const theme = useThemeColors();
   const passwordRef = useRef<TextInput>(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -109,7 +111,7 @@ export default function SignUpScreen() {
         >
           <View className="gap-6">
             <View className="items-center gap-4">
-              <ReEntryWordmark tagline="Return to school. Return to friends. Return to life." appearance="light" />
+              <ReEntryWordmark appearance="light" />
               <BodyText className="text-center">Create your account to get started.</BodyText>
             </View>
 
@@ -209,25 +211,36 @@ export default function SignUpScreen() {
                 ))}
               </View>
 
-              <View className="flex-row items-start gap-3">
-                <Checkbox
-                  checked={agreed}
-                  onCheckedChange={(checked) => {
-                    setAgreed(Boolean(checked));
-                    if (touched.agreed && checked) {
-                      setError(null);
-                    }
+              <Pressable
+                onPress={() => {
+                  setAgreed((current) => {
+                    const next = !current;
+                    if (touched.agreed && next) setError(null);
+                    return next;
+                  });
+                  setTouched((current) => ({ ...current, agreed: true }));
+                }}
+                className="flex-row items-start gap-3 rounded-xl border border-border bg-background p-3 active:opacity-80"
+                accessibilityRole="checkbox"
+                accessibilityLabel="I agree to the User Agreement and Privacy Policy"
+                accessibilityState={{ checked: agreed }}
+              >
+                <View
+                  className="h-6 w-6 shrink-0 items-center justify-center rounded-md border-2"
+                  style={{
+                    backgroundColor: agreed ? COLORS.forest : theme.background,
+                    borderColor: agreed ? COLORS.forest : theme.foreground,
                   }}
-                  onBlur={() => setTouched((t) => ({ ...t, agreed: true }))}
-                  className="mt-0.5"
-                />
+                >
+                  {agreed ? <Check size={17} strokeWidth={3.5} color={COLORS.warmWhite} /> : null}
+                </View>
                 <View className="flex-1">
                   <BodyText className="text-sm leading-snug">
                     I agree to the User Agreement and Privacy Policy.
                   </BodyText>
                   <MicroText className="text-xs">Recovery support only — not a diagnosis.</MicroText>
                 </View>
-              </View>
+              </Pressable>
               {touched.agreed && !agreed && (
                 <MicroText className="text-destructive">Please accept the User Agreement and Privacy Policy</MicroText>
               )}

@@ -22,14 +22,15 @@ import { SectionCard } from '@/components/SectionCard';
 import { PrimaryButton } from '@/components/Buttons';
 import {
   HeadingText,
+  SubheadingText,
   LabelText,
   MicroText,
-  EditorialLabel,
 } from '@/components/Typography';
 import { DataBadgeList } from '@/components/DataBadge';
 import { CategoryIcon } from '@/components/Icons';
 import { ActivityLogModal } from '@/components/ActivityLogModal';
 import { RecoveryStory } from '@/components/RecoveryStory';
+import { ReEntryWordmark } from '@/components/ReEntryWordmark';
 import { useAppContext } from '@/context/AppContext';
 import { useReducedExperience } from '@/lib/accessibility';
 import { TOLERANCE_LABELS } from '@/data/activityCatalog';
@@ -243,6 +244,12 @@ export default function JourneyScreen() {
     activityLogs.map((log) => log.date),
   ).size;
 
+  const observationWindow = useMemo(() => {
+    if (activityLogs.length === 0) return null;
+    const dates = activityLogs.map((log) => log.date).sort();
+    return `${formatShort(dates[0])}–${formatShort(dates[dates.length - 1])}`;
+  }, [activityLogs]);
+
   const openEdit = useCallback((log: ActivityLog) => {
     setEditingLog(log);
     setModalOpen(true);
@@ -255,16 +262,16 @@ export default function JourneyScreen() {
 
   return (
     <ScreenShell>
-      <EditorialLabel className="mb-3">
-        Journey
-      </EditorialLabel>
+      <ReEntryWordmark className="mb-5" />
 
       <HeadingText className="mb-2 leading-tight text-foreground">
-        Your activity{"\n"}timeline
+        Recovery Journey
       </HeadingText>
 
       <LabelText className="mb-5 leading-5 text-muted-foreground">
-        Dates, activities, and self-reported manageability from your records.
+        {observationWindow
+          ? `Observation window: ${observationWindow} · ${uniqueDates} recorded date${uniqueDates === 1 ? '' : 's'}`
+          : 'Your observation window will appear after you record an activity.'}
       </LabelText>
 
       <RecoveryStory
@@ -295,19 +302,10 @@ export default function JourneyScreen() {
         </SectionCard>
       ) : (
         <>
-          <SectionCard className="mb-5 border-l-4 border-l-accent">
-            <MicroText className="mb-1 text-muted-foreground">
-              Your records show
-            </MicroText>
-
-            <LabelText className="leading-5">
-              You reported {totalCount}{' '}
-              activit{totalCount !== 1 ? 'ies' : 'y'} across{' '}
-              {uniqueDates}{' '}
-              date{uniqueDates !== 1 ? 's' : ''}. Tap any activity to see
-              details.
-            </LabelText>
-          </SectionCard>
+          <SubheadingText className="mb-2">Activity timeline</SubheadingText>
+          <MicroText className="mb-3 text-muted-foreground">
+            {totalCount} activit{totalCount === 1 ? 'y' : 'ies'}, newest first. Tap an activity to see details.
+          </MicroText>
 
           <SectionList
             sections={sections}
