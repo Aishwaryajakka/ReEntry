@@ -206,7 +206,6 @@ export default function JourneyScreen() {
   const {
     activityLogs,
     challengeTags,
-    dailyCheckIns,
     today,
     lowStimulationMode,
   } = useAppContext();
@@ -276,7 +275,6 @@ export default function JourneyScreen() {
 
       <RecoveryStory
         activityLogs={activityLogs}
-        dailyCheckIns={dailyCheckIns}
       />
 
       {totalCount === 0 ? (
