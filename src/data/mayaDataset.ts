@@ -1,291 +1,84 @@
-/**
- * Maya 14-day demo fixture retained for a future deterministic Supabase seed.
- *
- * All values are self-reported functional observations, not clinical scores.
- * This module is demo-only and is not loaded into authenticated runtime state.
- */
-
-import type {
-  AccommodationRecord,
-  ActivityLog,
-  DailyCheckIn,
-  DemoUser,
-  InsightEvidence,
-} from './types';
+/** Stable, observational Maya demo fixture. */
+import type { AccommodationRecord, ActivityLog, DailyCheckIn, DemoUser } from './types';
 export { CHALLENGE_TAGS, TOLERANCE_LABELS } from './activityCatalog';
 
-// Demo date anchor: day 1 = 14 days before today
-const anchor = new Date();
-anchor.setHours(0, 0, 0, 0);
-const d = (offsetFromDay1: number): string => {
-  const date = new Date(anchor);
-  date.setDate(date.getDate() - 13 + offsetFromDay1); // day 1 = 13 days ago
-  return date.toISOString().split('T')[0];
-};
+export const DEMO_USER: DemoUser = { id: 'user-maya', firstName: 'Maya', age: 16 };
+export const MAYA_DEMO_START_DATE = '2026-08-16';
+export const MAYA_DEMO_END_DATE = '2026-08-29';
+export const TODAY = MAYA_DEMO_END_DATE;
 
-/** Today's date string */
-export const TODAY = d(14);
+const demoDate = (originalDay: string): string =>
+  `2026-08-${String(Number(originalDay) + 13).padStart(2, '0')}`;
 
-// ─────────────────────────────────────────────────────────────
-// Demo user
-// ─────────────────────────────────────────────────────────────
-export const DEMO_USER: DemoUser = {
-  id: 'user-maya',
-  firstName: 'Maya',
-  age: 16,
-};
+const checkIn = (day: string, overallFeeling: DailyCheckIn['overallFeeling'], freeNote: string, index: number): DailyCheckIn =>
+  ({ id: `ci-${String(index).padStart(2, '0')}`, date: demoDate(day), overallFeeling, freeNote });
 
-// ─────────────────────────────────────────────────────────────
-// Daily check-ins  (14 days, non-linear recovery)
-// ─────────────────────────────────────────────────────────────
 export const DAILY_CHECKINS: DailyCheckIn[] = [
-  // Day 1 — very rough start
-  {
-    id: 'ci-01', date: d(1),
-    overallFeeling: 1, energyLevel: 1,
-    headachePresent: true, headacheIntensity: 5,
-    activeChallengeTagIds: ['ct-headache', 'ct-light', 'ct-noise', 'ct-fatigue', 'ct-dizziness'],
-    freeNote: 'Could not get out of bed until noon. Room had to be dark.',
-  },
-  // Day 2
-  {
-    id: 'ci-02', date: d(2),
-    overallFeeling: 1, energyLevel: 1,
-    headachePresent: true, headacheIntensity: 4,
-    activeChallengeTagIds: ['ct-headache', 'ct-light', 'ct-noise', 'ct-fatigue'],
-    freeNote: 'Still very hard. Tried reading for 5 minutes — gave up.',
-  },
-  // Day 3
-  {
-    id: 'ci-03', date: d(3),
-    overallFeeling: 2, energyLevel: 2,
-    headachePresent: true, headacheIntensity: 3,
-    activeChallengeTagIds: ['ct-headache', 'ct-screen', 'ct-conc', 'ct-fatigue'],
-    freeNote: 'Managed a short walk. Phone still feels too bright.',
-  },
-  // Day 4
-  {
-    id: 'ci-04', date: d(4),
-    overallFeeling: 2, energyLevel: 2,
-    headachePresent: true, headacheIntensity: 3,
-    activeChallengeTagIds: ['ct-headache', 'ct-noise', 'ct-conc'],
-    freeNote: 'Noise from next room was too much. Reading still difficult.',
-  },
-  // Day 5 — slight lift
-  {
-    id: 'ci-05', date: d(5),
-    overallFeeling: 3, energyLevel: 3,
-    headachePresent: false, headacheIntensity: null,
-    activeChallengeTagIds: ['ct-screen', 'ct-conc', 'ct-fatigue'],
-    freeNote: 'First headache-free day. Reading easier for about 15 min.',
-  },
-  // Day 6
-  {
-    id: 'ci-06', date: d(6),
-    overallFeeling: 3, energyLevel: 3,
-    headachePresent: false, headacheIntensity: null,
-    activeChallengeTagIds: ['ct-noise', 'ct-conc', 'ct-screen'],
-    freeNote: 'Managed half a school day. Crowded hallway was overwhelming.',
-  },
-  // Day 7 — improving
-  {
-    id: 'ci-07', date: d(7),
-    overallFeeling: 3, energyLevel: 3,
-    headachePresent: false, headacheIntensity: null,
-    activeChallengeTagIds: ['ct-conc', 'ct-noise'],
-    freeNote: 'Full morning at school. Cafeteria still too loud.',
-  },
-  // Day 8 — better
-  {
-    id: 'ci-08', date: d(8),
-    overallFeeling: 4, energyLevel: 4,
-    headachePresent: false, headacheIntensity: null,
-    activeChallengeTagIds: ['ct-noise', 'ct-screen'],
-    freeNote: 'Reading felt mostly okay today. Screens still variable.',
-  },
-  // Day 9 — REGRESSION
-  {
-    id: 'ci-09', date: d(9),
-    overallFeeling: 2, energyLevel: 2,
-    headachePresent: true, headacheIntensity: 3,
-    activeChallengeTagIds: ['ct-headache', 'ct-fatigue', 'ct-conc', 'ct-noise', 'ct-emotional'],
-    freeNote: 'Overdid it yesterday. Back to rest. Headache returned.',
-  },
-  // Day 10 — recovering from regression
-  {
-    id: 'ci-10', date: d(10),
-    overallFeeling: 3, energyLevel: 2,
-    headachePresent: true, headacheIntensity: 2,
-    activeChallengeTagIds: ['ct-headache', 'ct-fatigue', 'ct-noise'],
-    freeNote: 'Taking it slow. Short reading session was okay.',
-  },
-  // Day 11 — back on track
-  {
-    id: 'ci-11', date: d(11),
-    overallFeeling: 4, energyLevel: 3,
-    headachePresent: false, headacheIntensity: null,
-    activeChallengeTagIds: ['ct-noise', 'ct-screen'],
-    freeNote: 'Two classes. Managed well. Noise still a factor.',
-  },
-  // Day 12 — second regression (mild)
-  {
-    id: 'ci-12', date: d(12),
-    overallFeeling: 2, energyLevel: 2,
-    headachePresent: true, headacheIntensity: 2,
-    activeChallengeTagIds: ['ct-headache', 'ct-conc', 'ct-screen', 'ct-fatigue'],
-    freeNote: 'Lots of screen use last night — paying for it today.',
-  },
-  // Day 13
-  {
-    id: 'ci-13', date: d(13),
-    overallFeeling: 4, energyLevel: 4,
-    headachePresent: false, headacheIntensity: null,
-    activeChallengeTagIds: ['ct-noise'],
-    freeNote: 'Really good day. Full school day felt manageable.',
-  },
-  // Day 14 — today
-  {
-    id: 'ci-14', date: d(14),
-    overallFeeling: 4, energyLevel: 4,
-    headachePresent: false, headacheIntensity: null,
-    activeChallengeTagIds: ['ct-noise', 'ct-screen'],
-    freeNote: 'Screens still variable but reading feels much better.',
-  },
+  checkIn('03', 2, 'Reading and bright rooms felt difficult today.', 1),
+  checkIn('04', 2, 'Needed a quieter place after screen work.', 2),
+  checkIn('05', 3, 'A short walk and brief reading session felt manageable.', 3),
+  checkIn('06', 2, 'Noise felt harder to manage by the end of class.', 4),
+  checkIn('07', 3, 'Quiet classwork felt easier than hallway transitions.', 5),
+  checkIn('08', 3, 'Short activities felt manageable with breaks between them.', 6),
+  checkIn('09', 4, 'Reading felt more manageable than earlier this week.', 7),
+  checkIn('10', 3, 'The cafeteria was difficult, while quiet class time felt manageable.', 8),
+  checkIn('11', 2, 'Screen work and a busy hallway felt difficult today.', 9),
+  checkIn('12', 3, 'A shorter school day felt more manageable.', 10),
+  checkIn('13', 4, 'Printed homework and quiet reading both felt manageable.', 11),
+  checkIn('14', 3, 'Bus noise was difficult, but later classwork felt manageable.', 12),
+  checkIn('15', 4, 'Screen work felt more manageable than earlier this week.', 13),
+  checkIn('16', 3, 'A busy social setting was difficult; quiet homework felt manageable.', 14),
 ];
 
-// Activity logs (distributed across 14 days)
-// ─────────────────────────────────────────────────────────────
+type ActivityValues = Omit<ActivityLog, 'id' | 'date'>;
+const activity = (day: string, values: ActivityValues, index: number): ActivityLog =>
+  ({ id: `al-${String(index).padStart(2, '0')}`, date: demoDate(day), ...values });
+const a = (activityCategory: ActivityLog['activityCategory'], customLabel: string, durationMinutes: number, toleranceRating: ActivityLog['toleranceRating'], notes: string, challengeTagIds: string[]): ActivityValues =>
+  ({ activityCategory, customLabel, durationMinutes, toleranceRating, notes, challengeTagIds });
+
 export const ACTIVITY_LOGS: ActivityLog[] = [
-  // Day 2
-  { id: 'al-01', date: d(2),  activityCategory: 'Reading',          durationMinutes: 5,  toleranceRating: 1, notes: 'Stopped immediately — too much strain.', challengeTagIds: ['ct-headache', 'ct-conc'] },
-  // Day 3
-  { id: 'al-02', date: d(3),  activityCategory: 'Physical activity',  customLabel: 'Short walk', durationMinutes: 10, toleranceRating: 2, notes: 'Outdoors helped a little.', challengeTagIds: ['ct-fatigue', 'ct-dizziness'] },
-  // Day 4
-  { id: 'al-03', date: d(4),  activityCategory: 'Reading',          durationMinutes: 10, toleranceRating: 2, notes: 'Managed a little more than before.', challengeTagIds: ['ct-headache', 'ct-conc'] },
-  { id: 'al-04', date: d(4),  activityCategory: 'Screens',          customLabel: 'Phone', durationMinutes: 15, toleranceRating: 1, notes: 'Had to stop — glare too much.', challengeTagIds: ['ct-screen', 'ct-headache'] },
-  // Day 5
-  { id: 'al-05', date: d(5),  activityCategory: 'Reading',          durationMinutes: 15, toleranceRating: 3, notes: 'First time it felt somewhat okay.', challengeTagIds: ['ct-conc'] },
-  { id: 'al-06', date: d(5),  activityCategory: 'Screens',          customLabel: 'Laptop', durationMinutes: 20, toleranceRating: 2, notes: 'Brightness lowered — still difficult.', challengeTagIds: ['ct-screen', 'ct-fatigue'] },
-  // Day 6
-  { id: 'al-07', date: d(6),  activityCategory: 'Class',            customLabel: 'School — partial', durationMinutes: 120, toleranceRating: 3, notes: 'Quiet classroom was manageable. Hallway hard.', challengeTagIds: ['ct-noise', 'ct-crowded', 'ct-conc'] },
-  { id: 'al-08', date: d(6),  activityCategory: 'Reading',          durationMinutes: 20, toleranceRating: 3, notes: 'Concentration better in quiet setting.', challengeTagIds: ['ct-conc'] },
-  // Day 7
-  { id: 'al-09', date: d(7),  activityCategory: 'Class',            customLabel: 'School — morning', durationMinutes: 180, toleranceRating: 3, notes: 'Two classes felt okay. Noise in halls still hard.', challengeTagIds: ['ct-noise'] },
-  { id: 'al-10', date: d(7),  activityCategory: 'Screens',          customLabel: 'Laptop', durationMinutes: 30, toleranceRating: 3, notes: 'Managed notes for class.', challengeTagIds: ['ct-screen'] },
-  // Day 8
-  { id: 'al-11', date: d(8),  activityCategory: 'Reading',          durationMinutes: 30, toleranceRating: 3, notes: 'Felt mostly manageable.', challengeTagIds: [] },
-  { id: 'al-12', date: d(8),  activityCategory: 'Class',            customLabel: 'School — full day', durationMinutes: 360, toleranceRating: 3, notes: 'First full day — tired by end.', challengeTagIds: ['ct-fatigue', 'ct-noise'] },
-  { id: 'al-13', date: d(8),  activityCategory: 'Screens',          customLabel: 'Phone', durationMinutes: 40, toleranceRating: 2, notes: 'Variable — bright environments worse.', challengeTagIds: ['ct-screen'] },
-  // Day 9 — regression
-  { id: 'al-14', date: d(9),  activityCategory: 'Physical activity',  customLabel: 'Rest', durationMinutes: 480, toleranceRating: 1, notes: 'Full rest day. Headache back after overdoing it.', challengeTagIds: ['ct-headache', 'ct-fatigue'] },
-  // Day 10
-  { id: 'al-15', date: d(10), activityCategory: 'Reading',          durationMinutes: 15, toleranceRating: 3, notes: 'Short session — okay.', challengeTagIds: ['ct-conc'] },
-  // Day 11
-  { id: 'al-16', date: d(11), activityCategory: 'Class',            customLabel: 'School — partial', durationMinutes: 240, toleranceRating: 3, notes: 'Two classes. Concentration better than last week.', challengeTagIds: ['ct-noise'] },
-  { id: 'al-17', date: d(11), activityCategory: 'Reading',          durationMinutes: 25, toleranceRating: 3, notes: 'Chapters felt manageable.', challengeTagIds: [] },
-  // Day 12 — regression
-  { id: 'al-18', date: d(12), activityCategory: 'Screens',          customLabel: 'Phone', durationMinutes: 90, toleranceRating: 1, notes: 'Too much screen last night — headache returned.', challengeTagIds: ['ct-screen', 'ct-headache'] },
-  { id: 'al-19', date: d(12), activityCategory: 'Physical activity',  customLabel: 'Rest', durationMinutes: 300, toleranceRating: 2, notes: 'Resting most of day.', challengeTagIds: ['ct-fatigue'] },
-  // Day 13
-  { id: 'al-20', date: d(13), activityCategory: 'Class',            customLabel: 'School — full day', durationMinutes: 360, toleranceRating: 3, notes: 'Really good day overall.', challengeTagIds: ['ct-noise'] },
-  { id: 'al-21', date: d(13), activityCategory: 'Reading',          durationMinutes: 40, toleranceRating: 3, notes: 'Managed quite a bit.', challengeTagIds: [] },
-  // Day 14 — today
-  { id: 'al-22', date: d(14), activityCategory: 'Reading',          durationMinutes: 35, toleranceRating: 3, notes: 'Much better than two weeks ago.', challengeTagIds: [] },
-  { id: 'al-23', date: d(14), activityCategory: 'Screens',          customLabel: 'Laptop', durationMinutes: 45, toleranceRating: 2, notes: 'Still variable depending on brightness.', challengeTagIds: ['ct-screen'] },
+  activity('03', a('Reading', 'English reading', 10, 1, 'The text felt difficult to follow after several minutes.', ['ct-headache', 'ct-conc']), 1),
+  activity('03', a('Screens', 'School portal', 12, 1, 'The bright screen felt difficult to manage.', ['ct-screen', 'ct-light']), 2),
+  activity('04', a('Transportation', 'Car ride', 20, 2, 'Traffic movement felt uncomfortable at times.', ['ct-dizziness']), 3),
+  activity('04', a('Screens', 'Phone messages', 15, 2, 'Lower brightness helped, though the screen still felt tiring.', ['ct-screen', 'ct-fatigue']), 4),
+  activity('05', a('Physical activity', 'Short walk', 15, 3, 'The easy walk felt manageable.', []), 5),
+  activity('05', a('Reading', 'Printed worksheet', 15, 2, 'Needed to reread a few sections.', ['ct-conc']), 6),
+  activity('06', a('Class', 'Math class', 35, 2, 'Following the board work became harder near the end.', ['ct-conc', 'ct-light']), 7),
+  activity('06', a('Noise/busy environment', 'School hallway', 10, 1, 'Noise felt harder to manage in the crowded hallway.', ['ct-noise', 'ct-crowded']), 8),
+  activity('06', a('Homework', 'Math practice', 20, 2, 'A quiet workspace helped, with one short pause.', ['ct-conc', 'ct-fatigue']), 9),
+  activity('07', a('Class', 'English class', 45, 3, 'Printed materials and a quiet seat felt manageable.', []), 10),
+  activity('07', a('Social activity', 'Lunch with friends', 25, 2, 'Conversation was manageable until the room became busier.', ['ct-noise', 'ct-crowded']), 11),
+  activity('08', a('Reading', 'Novel', 25, 3, 'Reading in a quiet room felt manageable.', []), 12),
+  activity('08', a('Screens', 'Laptop assignment', 25, 2, 'Screen glare became noticeable near the end.', ['ct-screen', 'ct-fatigue']), 13),
+  activity('09', a('Physical activity', 'Easy walk', 25, 3, 'The pace and duration felt manageable.', []), 14),
+  activity('09', a('Social activity', 'Family dinner', 40, 3, 'A small group conversation felt manageable.', []), 15),
+  activity('10', a('Class', 'Science class', 50, 3, 'Classwork felt manageable with a short break.', ['ct-fatigue']), 16),
+  activity('10', a('Noise/busy environment', 'Cafeteria', 20, 1, 'The room became difficult to manage as it filled up.', ['ct-noise', 'ct-crowded', 'ct-headache']), 17),
+  activity('10', a('Transportation', 'School bus', 30, 2, 'Engine and conversation noise felt tiring.', ['ct-noise', 'ct-fatigue']), 18),
+  activity('11', a('Screens', 'Online quiz', 35, 1, 'Sustained screen focus felt difficult today.', ['ct-screen', 'ct-conc', 'ct-headache']), 19),
+  activity('11', a('Noise/busy environment', 'Passing period', 8, 1, 'Crowding and overlapping voices felt difficult.', ['ct-noise', 'ct-crowded']), 20),
+  activity('11', a('Other', 'Quiet break', 20, 3, 'A quiet space felt manageable afterward.', []), 21),
+  activity('12', a('Class', 'History class', 40, 2, 'Listening was manageable, while note-taking took extra focus.', ['ct-conc', 'ct-fatigue']), 22),
+  activity('12', a('Reading', 'History chapter', 20, 3, 'A short printed chapter felt manageable.', []), 23),
+  activity('12', a('Homework', 'Printed assignment', 30, 3, 'The printed assignment felt manageable with one pause.', ['ct-fatigue']), 24),
+  activity('13', a('Class', 'School morning', 150, 3, 'Three quieter classes felt manageable overall.', ['ct-fatigue']), 25),
+  activity('13', a('Homework', 'English response', 35, 3, 'Writing from printed notes felt manageable.', []), 26),
+  activity('14', a('Transportation', 'School bus', 35, 1, 'The louder bus ride felt difficult this morning.', ['ct-noise', 'ct-headache']), 27),
+  activity('14', a('Class', 'Art class', 50, 3, 'The quieter class setting felt manageable.', []), 28),
+  activity('14', a('Screens', 'Research task', 30, 2, 'Screen work was manageable in shorter sections.', ['ct-screen', 'ct-conc']), 29),
+  activity('15', a('Reading', 'Novel', 40, 3, 'Reading felt more manageable than earlier in the fixture period.', []), 30),
+  activity('15', a('Screens', 'Video call', 35, 3, 'The call felt manageable with reduced brightness.', ['ct-screen']), 31),
+  activity('15', a('Physical activity', 'Easy walk', 30, 3, 'The easy pace felt manageable.', []), 32),
+  activity('16', a('Social activity', 'Busy family gathering', 45, 1, 'Several conversations at once felt difficult to follow.', ['ct-noise', 'ct-crowded', 'ct-conc']), 33),
+  activity('16', a('Homework', 'Math review', 30, 3, 'Quiet homework felt manageable after a break.', []), 34),
+  activity('16', a('Other', 'Organizing school materials', 20, 2, 'Remembering the order of tasks took extra effort.', ['ct-memory', 'ct-fatigue']), 35),
 ];
 
-// Additional examples retained as future seed material.
-export const TODAY_SEED_EXAMPLES: ActivityLog[] = [
-  { id: 'al-seed-01', date: TODAY, activityCategory: 'Class',     customLabel: 'Chemistry', durationMinutes: 45, toleranceRating: 2, notes: 'Board work bright.', challengeTagIds: ['ct-light', 'ct-conc'] },
-  { id: 'al-seed-02', date: TODAY, activityCategory: 'Social activity', customLabel: 'Cafeteria', durationMinutes: 30, toleranceRating: 1, notes: 'Could not finish lunch.', challengeTagIds: ['ct-noise'] },
-  { id: 'al-seed-03', date: TODAY, activityCategory: 'Transportation',  customLabel: 'Bus ride', durationMinutes: 35, toleranceRating: 3, notes: 'Sat in quiet seat.', challengeTagIds: ['ct-noise'] },
-  { id: 'al-seed-04', date: TODAY, activityCategory: 'Homework',   customLabel: 'Homework', durationMinutes: 25, toleranceRating: 2, notes: 'Screen strain.', challengeTagIds: ['ct-screen', 'ct-conc'] },
-];
-
-// ─────────────────────────────────────────────────────────────
-// Accommodation records
-// ─────────────────────────────────────────────────────────────
 export const ACCOMMODATION_RECORDS: AccommodationRecord[] = [
-  {
-    id: 'acc-01',
-    dateIssued: d(3),
-    accommodationType: 'Quiet testing environment',
-    issuedBy: 'Healthcare provider',
-    activeUntil: d(28),
-    visibleToSchool: true,
-    status: 'active',
-    sourceName: 'Healthcare provider',
-  },
-  {
-    id: 'acc-02',
-    dateIssued: d(3),
-    accommodationType: 'Reduced screen exposure',
-    issuedBy: 'Healthcare provider',
-    activeUntil: d(28),
-    visibleToSchool: true,
-    status: 'active',
-    sourceName: 'Healthcare provider',
-  },
-  {
-    id: 'acc-03',
-    dateIssued: d(6),
-    accommodationType: 'Additional assignment time',
-    issuedBy: 'School counselor',
-    activeUntil: d(28),
-    visibleToSchool: true,
-    status: 'active',
-    sourceName: 'School counselor',
-  },
-  {
-    id: 'acc-04',
-    dateIssued: d(6),
-    accommodationType: 'Rest breaks during class',
-    issuedBy: 'Healthcare provider',
-    activeUntil: d(28),
-    visibleToSchool: true,
-    status: 'active',
-    sourceName: 'Healthcare provider',
-  },
+  { id: 'acc-01', dateIssued: '2026-08-18', accommodationType: 'Reduced screen brightness / printed materials when available', issuedBy: 'Healthcare provider', activeUntil: '2027-01-13', visibleToSchool: true, status: 'active', sourceName: 'Healthcare provider' },
+  { id: 'acc-02', dateIssued: '2026-08-18', accommodationType: 'Quiet testing or work location', issuedBy: 'Healthcare provider', activeUntil: '2027-01-13', visibleToSchool: true, status: 'active', sourceName: 'Healthcare provider' },
+  { id: 'acc-03', dateIssued: '2026-08-18', accommodationType: 'Short rest breaks during longer classes', issuedBy: 'Healthcare provider', activeUntil: '2027-01-13', visibleToSchool: true, status: 'active', sourceName: 'Healthcare provider' },
 ];
 
-// ─────────────────────────────────────────────────────────────
-// Insight evidence (observational, no causality claims)
-// ─────────────────────────────────────────────────────────────
-export const INSIGHT_EVIDENCE: InsightEvidence[] = [
-  {
-    id: 'ie-01',
-    insightId: 'insight-reading',
-    insightText:
-      "Your records show reading tolerance has shifted from very difficult (days 1–2) toward mostly manageable in recent entries, with some difficult sessions following higher-screen days.",
-    supportingActivityLogIds: ['al-01', 'al-03', 'al-05', 'al-08', 'al-11', 'al-17', 'al-21', 'al-22'],
-    supportingCheckInIds: ['ci-01', 'ci-02', 'ci-05', 'ci-08', 'ci-11', 'ci-13', 'ci-14'],
-    generatedOn: d(14),
-  },
-  {
-    id: 'ie-02',
-    insightId: 'insight-noise',
-    insightText:
-      "Noise sensitivity appeared in your records on most days across the 14-day period. Your records show it remained a consistent challenge even on days when other difficulties eased.",
-    supportingActivityLogIds: ['al-07', 'al-09', 'al-12', 'al-16', 'al-20'],
-    supportingCheckInIds: ['ci-04', 'ci-06', 'ci-07', 'ci-08', 'ci-11', 'ci-13', 'ci-14'],
-    generatedOn: d(14),
-  },
-  {
-    id: 'ie-03',
-    insightId: 'insight-screen',
-    insightText:
-      "Screen tolerance appeared in your records as variable — entries following extended screen use on days 4, 12 were rated more difficult. Consider discussing screen management strategies with your care team.",
-    supportingActivityLogIds: ['al-04', 'al-06', 'al-10', 'al-13', 'al-18', 'al-23'],
-    supportingCheckInIds: ['ci-03', 'ci-05', 'ci-08', 'ci-12', 'ci-14'],
-    generatedOn: d(14),
-  },
-  {
-    id: 'ie-04',
-    insightId: 'insight-school',
-    insightText:
-      "Your records show school participation increasing from partial days in week one to full-day entries in week two, with rest days following harder periods.",
-    supportingActivityLogIds: ['al-07', 'al-09', 'al-12', 'al-16', 'al-20'],
-    supportingCheckInIds: ['ci-06', 'ci-07', 'ci-08', 'ci-09', 'ci-11', 'ci-13'],
-    generatedOn: d(14),
-  },
-];
+export const TODAY_SEED_EXAMPLES = ACTIVITY_LOGS.filter((entry) => entry.date === TODAY);
+export const INSIGHT_EVIDENCE = [];
