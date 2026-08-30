@@ -43,26 +43,26 @@ export interface ChallengeTag {
 
 /**
  * overallFeeling: 1=Very difficult day … 5=Manageable day
- * energyLevel: 1=Very low … 5=High
- * headacheIntensity (if present): 1=Very mild … 5=Very strong
+ * Optional fields are retained for demo-seed material but are unavailable in
+ * the current Supabase daily_checkins table.
  */
 export interface DailyCheckIn {
   id: string;
   date: string;
   overallFeeling: 1 | 2 | 3 | 4 | 5;
-  energyLevel: 1 | 2 | 3 | 4 | 5;
-  headachePresent: boolean;
-  headacheIntensity: 1 | 2 | 3 | 4 | 5 | null;
-  activeChallengeTagIds: string[];
+  energyLevel?: 1 | 2 | 3 | 4 | 5;
+  headachePresent?: boolean;
+  headacheIntensity?: 1 | 2 | 3 | 4 | 5 | null;
+  activeChallengeTagIds?: string[];
   freeNote: string;
 }
 
 export interface AccommodationRecord {
   id: string;
-  dateIssued: string;
+  dateIssued: string | null;
   accommodationType: string;
   issuedBy: string; // role label only
-  activeUntil: string;
+  activeUntil: string | null;
   visibleToSchool: boolean;
   status?: 'active' | 'inactive';
   sourceName?: string;

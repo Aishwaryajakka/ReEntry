@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, TextInput, Pressable, FlatList, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, FlatList, KeyboardAvoidingView } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { Users } from 'lucide-react-native';
 

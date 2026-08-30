@@ -16,7 +16,7 @@ import { ActivityLogModal } from '@/components/ActivityLogModal';
 import { ActivityCard } from '@/components/ActivityCard';
 import { HeroBotanical } from '@/components/Icons';
 import { useAppContext } from '@/context/AppContext';
-import { TOLERANCE_LABELS } from '@/data/mayaDataset';
+import { TOLERANCE_LABELS } from '@/data/activityCatalog';
 import { COLORS, useThemeColors } from '@/lib/theme';
 import type { ActivityLog } from '@/data/types';
 

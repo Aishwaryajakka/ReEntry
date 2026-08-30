@@ -7,14 +7,14 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
-import { View, Text, Switch, Pressable } from 'react-native';
-import { User, Eye, EyeOff, Info, Lock, Copy, Check, Users } from 'lucide-react-native';
+import { View, Text, Switch } from 'react-native';
+import { Eye, EyeOff, Info, Lock, Copy, Check, Users } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
 import { SecondaryButton, DestructiveButton } from '@/components/Buttons';
-import { HeadingText, SubheadingText, BodyText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
-import { TOLERANCE_LABELS } from '@/data/mayaDataset';
+import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
+import { TOLERANCE_LABELS } from '@/data/activityCatalog';
 import { DividerLine } from '@/components/DividerLine';
 import { useAppContext } from '@/context/AppContext';
 import { useTheme } from '@/context/ThemeContext';

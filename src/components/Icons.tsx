@@ -69,7 +69,7 @@ const IconWrapper: React.FC<IconWrapperProps> = ({ size = 24, color = COLORS.for
 };
 
 /** Reading = open book */
-export const ReadingIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = COLORS.forest }) => (
+export const ReadingIcon: React.FC<SvgProps> = ({ width = 24, color = COLORS.forest }) => (
   <IconWrapper size={Number(width)} color={color as string}>
     <Path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
     <Path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
@@ -77,7 +77,7 @@ export const ReadingIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color
 );
 
 /** Screens = laptop/display */
-export const ScreensIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = COLORS.forest }) => (
+export const ScreensIcon: React.FC<SvgProps> = ({ width = 24, color = COLORS.forest }) => (
   <IconWrapper size={Number(width)} color={color as string}>
     <Rect x="2" y="3" width="20" height="14" rx="2" />
     <Path d="M8 21h8" />
@@ -86,7 +86,7 @@ export const ScreensIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color
 );
 
 /** School = building with flag */
-export const SchoolIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = COLORS.forest }) => (
+export const SchoolIcon: React.FC<SvgProps> = ({ width = 24, color = COLORS.forest }) => (
   <IconWrapper size={Number(width)} color={color as string}>
     <Path d="M4 21V9l8-5 8 5v12" />
     <Path d="M9 21v-6h6v6" />
@@ -95,7 +95,7 @@ export const SchoolIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color 
 );
 
 /** Noise = speaker with sound waves */
-export const NoiseIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = COLORS.forest }) => (
+export const NoiseIcon: React.FC<SvgProps> = ({ width = 24, color = COLORS.forest }) => (
   <IconWrapper size={Number(width)} color={color as string}>
     <Path d="M11 5 6 9H2v6h4l5 4V5z" />
     <Path d="M15.54 8.46a5 5 0 0 1 0 7.07" />
@@ -104,7 +104,7 @@ export const NoiseIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color =
 );
 
 /** Concentration = target with focus rings */
-export const ConcentrationIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = COLORS.forest }) => (
+export const ConcentrationIcon: React.FC<SvgProps> = ({ width = 24, color = COLORS.forest }) => (
   <IconWrapper size={Number(width)} color={color as string}>
     <Circle cx="12" cy="12" r="10" />
     <Circle cx="12" cy="12" r="6" />
@@ -113,7 +113,7 @@ export const ConcentrationIcon: React.FC<SvgProps> = ({ width = 24, height = 24,
 );
 
 /** Physical activity = walking figure */
-export const PhysicalActivityIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = COLORS.forest }) => (
+export const PhysicalActivityIcon: React.FC<SvgProps> = ({ width = 24, color = COLORS.forest }) => (
   <IconWrapper size={Number(width)} color={color as string}>
     <Circle cx="12" cy="5" r="2" />
     <Path d="M13 8l3 4" />
@@ -124,7 +124,7 @@ export const PhysicalActivityIcon: React.FC<SvgProps> = ({ width = 24, height = 
 );
 
 /** Chemistry = flask */
-export const FlaskIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = COLORS.forest }) => (
+export const FlaskIcon: React.FC<SvgProps> = ({ width = 24, color = COLORS.forest }) => (
   <IconWrapper size={Number(width)} color={color as string}>
     <Path d="M10 2h4" />
     <Path d="M11 2v7.5L6 20h12l-5-10.5V2" />
@@ -133,7 +133,7 @@ export const FlaskIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color =
 );
 
 /** People = cafeteria/social */
-export const PeopleIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = COLORS.forest }) => (
+export const PeopleIcon: React.FC<SvgProps> = ({ width = 24, color = COLORS.forest }) => (
   <IconWrapper size={Number(width)} color={color as string}>
     <Path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
     <Circle cx="9" cy="7" r="4" />
@@ -143,7 +143,7 @@ export const PeopleIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color 
 );
 
 /** Transit = bus */
-export const BusIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = COLORS.forest }) => (
+export const BusIcon: React.FC<SvgProps> = ({ width = 24, color = COLORS.forest }) => (
   <IconWrapper size={Number(width)} color={color as string}>
     <Rect x="3" y="5" width="18" height="13" rx="2" />
     <Path d="M6 5v-2" />
@@ -155,7 +155,7 @@ export const BusIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = C
 );
 
 /** Homework = pencil on document */
-export const HomeworkIcon: React.FC<SvgProps> = ({ width = 24, height = 24, color = COLORS.forest }) => (
+export const HomeworkIcon: React.FC<SvgProps> = ({ width = 24, color = COLORS.forest }) => (
   <IconWrapper size={Number(width)} color={color as string}>
     <Path d="M13.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L13.5 2z" />
     <Path d="M13 2v6h6" />

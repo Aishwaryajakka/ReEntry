@@ -26,9 +26,7 @@ import {
 } from '@/db/api';
 import {
   CHALLENGE_TAGS,
-  DEMO_USER,
-  TODAY,
-} from '../data/mayaDataset';
+} from '../data/activityCatalog';
 import type {
   AccommodationRecord,
   ActivityLog,
@@ -43,16 +41,7 @@ import type {
   ChallengeTagRow,
   DailyCheckInRow,
 } from '../types/types';
-
-interface NewActivityInput {
-  date: string;
-  activityCategory: ActivityLog['activityCategory'];
-  customLabel?: string;
-  durationMinutes: number;
-  toleranceRating: ActivityLog['toleranceRating'];
-  notes: string;
-  challengeTagIds: string[];
-}
+import type { NewActivityInput } from '@/db/api';
 
 interface AppState {
   user: DemoUser;
@@ -82,7 +71,7 @@ function toActivityLog(row: ActivityLogRow, dbTags: ChallengeTagRow[]): Activity
 
   return {
     id: row.id,
-    date: row.occurred_at ? row.occurred_at.slice(0, 10) : TODAY,
+    date: row.occurred_at.slice(0, 10),
     activityCategory: row.activity_category as ActivityLog['activityCategory'],
     customLabel,
     durationMinutes: row.duration_minutes,
@@ -97,23 +86,18 @@ function toDailyCheckIn(row: DailyCheckInRow): DailyCheckIn {
     id: row.id,
     date: row.checkin_date,
     overallFeeling: row.overall_manageability as DailyCheckIn['overallFeeling'],
-    energyLevel: 3 as DailyCheckIn['energyLevel'],
-    headachePresent: false,
-    headacheIntensity: null,
-    activeChallengeTagIds: [],
     freeNote: row.note ?? '',
   };
 }
 
 function toAccommodationRecord(row: AccommodationRecordRow): AccommodationRecord {
   const status = row.status === 'active' ? 'active' : 'inactive';
-  const fallbackDate = row.updated_at ? row.updated_at.slice(0, 10) : TODAY;
   return {
     id: row.id,
-    dateIssued: row.issued_date ?? fallbackDate,
+    dateIssued: row.issued_date,
     accommodationType: row.title,
     issuedBy: row.source_name || row.source_type,
-    activeUntil: row.valid_until ?? fallbackDate,
+    activeUntil: row.valid_until,
     visibleToSchool: status === 'active',
     status,
     sourceName: row.source_name ?? undefined,
@@ -121,7 +105,9 @@ function toAccommodationRecord(row: AccommodationRecordRow): AccommodationRecord
 }
 
 function deriveUser(sessionUser: { id: string; email?: string } | undefined): DemoUser {
-  if (!sessionUser) return DEMO_USER;
+  if (!sessionUser) {
+    return { id: '', firstName: 'Student', age: 16 };
+  }
   const email = sessionUser.email ?? '';
   const firstName = email.split('@')[0] || 'Student';
   return {

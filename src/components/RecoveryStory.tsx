@@ -6,29 +6,28 @@
  */
 
 import { useMemo, useState } from 'react';
-import { View, Text, Pressable } from 'react-native';
-import { ChevronDown, ChevronUp } from 'lucide-react-native';
+import { View, Text } from 'react-native';
 import { SectionCard } from '@/components/SectionCard';
 import { SecondaryButton } from '@/components/Buttons';
-import { HeadingText, SubheadingText, LabelText, MicroText } from '@/components/Typography';
-import { useThemeColors } from '@/lib/theme';
-import { CHALLENGE_TAGS, TOLERANCE_LABELS } from '@/data/mayaDataset';
-import type { ActivityLog, DailyCheckIn } from '@/data/types';
+import { HeadingText, LabelText, MicroText } from '@/components/Typography';
+import { CHALLENGE_TAGS, TOLERANCE_LABELS } from '@/data/activityCatalog';
+import type { ActivityLog, ChallengeTag, DailyCheckIn } from '@/data/types';
+import {
+  average,
+  compareEarlierAndRecent,
+  countChallengeTags,
+  groupActivityLogsByCategory,
+} from '@/lib/activityAnalysis';
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function average(nums: number[]): number {
-  if (nums.length === 0) return 0;
-  return nums.reduce((a, b) => a + b, 0) / nums.length;
-}
-
-function strengthLabel(count: number): { text: string; threshold: number } {
-  if (count >= 4) return { text: 'Evidence strength: Recurring pattern', threshold: 4 };
-  if (count >= 2) return { text: 'Evidence strength: Limited', threshold: 2 };
-  return { text: 'Evidence strength: Not enough records', threshold: 0 };
+function strengthLabel(count: number): string {
+  if (count >= 4) return 'Evidence strength: Recurring pattern';
+  if (count >= 2) return 'Evidence strength: Limited';
+  return 'Evidence strength: Not enough records';
 }
 
 interface EvidenceItem {
@@ -45,9 +44,7 @@ interface Pattern {
   evidence: EvidenceItem[];
 }
 
-type TagMaster = { id: string; label: string; category?: 'environmental' | 'cognitive' | 'social' | 'physical' };
-
-function getTagMaster(tagId: string): TagMaster | undefined {
+function getTagMaster(tagId: string): ChallengeTag | undefined {
   return CHALLENGE_TAGS.find((t) => t.id === tagId);
 }
 
@@ -59,12 +56,7 @@ function buildPatterns(
   const sortedLogs = [...activityLogs].sort((a, b) => a.date.localeCompare(b.date));
 
   // 1. Recurring activity-category difficulty
-  const byCategory = new Map<string, ActivityLog[]>();
-  for (const log of sortedLogs) {
-    const list = byCategory.get(log.activityCategory) ?? [];
-    list.push(log);
-    byCategory.set(log.activityCategory, list);
-  }
+  const byCategory = groupActivityLogsByCategory(sortedLogs);
 
   for (const [category, logs] of byCategory.entries()) {
     if (logs.length < 2) continue;
@@ -81,7 +73,7 @@ function buildPatterns(
     patterns.push({
       id: `cat-${category}`,
       title: `Your records show ${category} is usually ${label.toLowerCase()}`,
-      strength: strengthLabel(logs.length).text,
+      strength: strengthLabel(logs.length),
       evidence,
     });
 
@@ -90,10 +82,9 @@ function buildPatterns(
       const mid = Math.floor(logs.length / 2);
       const earlier = logs.slice(0, mid);
       const recent = logs.slice(mid);
-      const earlierAvg = average(earlier.map((l) => l.toleranceRating));
-      const recentAvg = average(recent.map((l) => l.toleranceRating));
-      if (Math.abs(recentAvg - earlierAvg) > 0.25) {
-        const direction = recentAvg > earlierAvg ? 'Improving' : 'More difficult';
+      const trend = compareEarlierAndRecent(ratings);
+      if (trend !== 'mixed') {
+        const direction = trend === 'improving' ? 'Improving' : 'More difficult';
         const evidenceItems = [...earlier, ...recent].map((l) => ({
           date: l.date,
           label: l.customLabel || l.activityCategory,
@@ -103,7 +94,7 @@ function buildPatterns(
         patterns.push({
           id: `cat-trend-${category}`,
           title: `Compared with earlier entries, ${category} is ${direction.toLowerCase()} in recent records`,
-          strength: strengthLabel(logs.length).text,
+          strength: strengthLabel(logs.length),
           evidence: evidenceItems,
         });
       }
@@ -111,24 +102,16 @@ function buildPatterns(
   }
 
   // 2. Recurring challenge tags
-  const tagCounts = new Map<string, { label: string; count: number; logs: ActivityLog[] }>();
-  for (const log of sortedLogs) {
-    for (const tagId of log.challengeTagIds) {
-      const master = getTagMaster(tagId);
-      if (!master) continue;
-      const existing = tagCounts.get(master.id) ?? { label: master.label, count: 0, logs: [] };
-      existing.count += 1;
-      existing.logs.push(log);
-      tagCounts.set(master.id, existing);
-    }
-  }
+  const tagCounts = countChallengeTags(sortedLogs);
 
-  for (const [tagId, { label, count, logs }] of tagCounts.entries()) {
+  for (const [tagId, { count, logs }] of tagCounts.entries()) {
+    const label = getTagMaster(tagId)?.label;
+    if (!label) continue;
     if (count < 2) continue;
     patterns.push({
       id: `tag-${tagId}`,
       title: `This pattern appeared: ${label} reported across ${count} activities`,
-      strength: strengthLabel(count).text,
+      strength: strengthLabel(count),
       evidence: logs.map((l) => ({
         date: l.date,
         label: l.customLabel || l.activityCategory,
@@ -152,7 +135,7 @@ function buildPatterns(
     patterns.push({
       id: 'sensory',
       title: `Your records show environmental factors (${Array.from(tagLabelSet).slice(0, 3).join(', ')}) appearing in your activity logs`,
-      strength: strengthLabel(sensoryLogs.length).text,
+      strength: strengthLabel(sensoryLogs.length),
       evidence: sensoryLogs.map((l) => ({
         date: l.date,
         label: l.customLabel || l.activityCategory,
@@ -180,7 +163,7 @@ function buildPatterns(
     patterns.push({
       id: 'cognitive',
       title: `Your records show cognitive challenges (${Array.from(tagLabelSet).slice(0, 3).join(', ')}) appearing in your activity logs`,
-      strength: strengthLabel(cognitiveLogs.length).text,
+      strength: strengthLabel(cognitiveLogs.length),
       evidence: cognitiveLogs.map((l) => ({
         date: l.date,
         label: l.customLabel || l.activityCategory,
@@ -196,18 +179,14 @@ function buildPatterns(
 
   // 5. Overall earlier-vs-recent trend when enough records exist
   if (sortedLogs.length >= 4) {
-    const mid = Math.floor(sortedLogs.length / 2);
-    const earlier = sortedLogs.slice(0, mid);
-    const recent = sortedLogs.slice(mid);
-    const earlierAvg = average(earlier.map((l) => l.toleranceRating));
-    const recentAvg = average(recent.map((l) => l.toleranceRating));
-    if (Math.abs(recentAvg - earlierAvg) > 0.25) {
-      const direction = recentAvg > earlierAvg ? 'Improving' : 'More difficult';
+    const trend = compareEarlierAndRecent(sortedLogs.map((log) => log.toleranceRating));
+    if (trend !== 'mixed') {
+      const direction = trend === 'improving' ? 'Improving' : 'More difficult';
       patterns.push({
         id: 'overall-trend',
         title: `Compared with earlier entries, your recent activity reports are ${direction.toLowerCase()}`,
-        strength: strengthLabel(sortedLogs.length).text,
-        evidence: [...earlier, ...recent].map((l) => ({
+        strength: strengthLabel(sortedLogs.length),
+        evidence: sortedLogs.map((l) => ({
           date: l.date,
           label: l.customLabel || l.activityCategory,
           value: `${TOLERANCE_LABELS[l.toleranceRating]}${l.durationMinutes > 0 ? ` · ${l.durationMinutes} min` : ''}`,
@@ -220,17 +199,13 @@ function buildPatterns(
   // 6. Daily check-in overall-feeling pattern (optional, uses only real check-ins)
   if (dailyCheckIns.length >= 4) {
     const sortedCheckins = [...dailyCheckIns].sort((a, b) => a.date.localeCompare(b.date));
-    const mid = Math.floor(sortedCheckins.length / 2);
-    const earlier = sortedCheckins.slice(0, mid);
-    const recent = sortedCheckins.slice(mid);
-    const earlierAvg = average(earlier.map((c) => c.overallFeeling));
-    const recentAvg = average(recent.map((c) => c.overallFeeling));
-    if (Math.abs(recentAvg - earlierAvg) > 0.25) {
-      const direction = recentAvg > earlierAvg ? 'Improving' : 'More difficult';
+    const trend = compareEarlierAndRecent(sortedCheckins.map((checkin) => checkin.overallFeeling));
+    if (trend !== 'mixed') {
+      const direction = trend === 'improving' ? 'Improving' : 'More difficult';
       patterns.push({
         id: 'checkin-trend',
         title: `Compared with earlier entries, your daily check-ins are ${direction.toLowerCase()}`,
-        strength: strengthLabel(sortedCheckins.length).text,
+        strength: strengthLabel(sortedCheckins.length),
         evidence: sortedCheckins.map((c) => ({
           date: c.date,
           label: 'Daily check-in',
@@ -243,10 +218,8 @@ function buildPatterns(
   return patterns;
 }
 
-function PatternCard({ pattern, lowStimulationMode }: { pattern: Pattern; lowStimulationMode: boolean }) {
-  const theme = useThemeColors();
+function PatternCard({ pattern }: { pattern: Pattern }) {
   const [expanded, setExpanded] = useState(false);
-  const reduced = lowStimulationMode;
 
   return (
     <View className="bg-muted rounded-2xl p-4 mb-3">
@@ -288,10 +261,9 @@ function PatternCard({ pattern, lowStimulationMode }: { pattern: Pattern; lowSti
 interface RecoveryStoryProps {
   activityLogs: ActivityLog[];
   dailyCheckIns: DailyCheckIn[];
-  lowStimulationMode: boolean;
 }
 
-export function RecoveryStory({ activityLogs, dailyCheckIns, lowStimulationMode }: RecoveryStoryProps) {
+export function RecoveryStory({ activityLogs, dailyCheckIns }: RecoveryStoryProps) {
   const patterns = useMemo(() => buildPatterns(activityLogs, dailyCheckIns), [activityLogs, dailyCheckIns]);
   const totalRecords = activityLogs.length + dailyCheckIns.length;
 
@@ -319,7 +291,7 @@ export function RecoveryStory({ activityLogs, dailyCheckIns, lowStimulationMode 
         Observational patterns from your own records. ReEntry does not diagnose or predict recovery.
       </MicroText>
       {patterns.map((pattern) => (
-        <PatternCard key={pattern.id} pattern={pattern} lowStimulationMode={lowStimulationMode} />
+        <PatternCard key={pattern.id} pattern={pattern} />
       ))}
     </SectionCard>
   );

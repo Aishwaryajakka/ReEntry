@@ -32,7 +32,7 @@ import { ActivityLogModal } from '@/components/ActivityLogModal';
 import { RecoveryStory } from '@/components/RecoveryStory';
 import { useAppContext } from '@/context/AppContext';
 import { useReducedExperience } from '@/lib/accessibility';
-import { TOLERANCE_LABELS } from '@/data/mayaDataset';
+import { TOLERANCE_LABELS } from '@/data/activityCatalog';
 import type { ActivityLog, ChallengeTag } from '@/data/types';
 import { useThemeColors } from '@/lib/theme';
 
@@ -270,7 +270,6 @@ export default function JourneyScreen() {
       <RecoveryStory
         activityLogs={activityLogs}
         dailyCheckIns={dailyCheckIns}
-        lowStimulationMode={lowStimulationMode}
       />
 
       {totalCount === 0 ? (

@@ -9,7 +9,7 @@ import { CategoryIcon } from '@/components/Icons';
 import { ToleranceMeter } from '@/components/ToleranceMeter';
 import { LabelText, MicroText } from '@/components/Typography';
 import { useAppContext } from '@/context/AppContext';
-import { TOLERANCE_LABELS } from '@/data/mayaDataset';
+import { TOLERANCE_LABELS } from '@/data/activityCatalog';
 import type { ActivityLog } from '@/data/types';
 import { useThemeColors } from '@/lib/theme';
 

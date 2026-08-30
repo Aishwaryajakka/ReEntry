@@ -21,7 +21,7 @@ import { DividerLine } from './DividerLine';
 import { LabelText, MicroText, SubheadingText } from './Typography';
 import { useReducedExperience } from '@/lib/accessibility';
 import { useAppContext } from '@/context/AppContext';
-import { CHALLENGE_TAGS, TOLERANCE_LABELS } from '@/data/mayaDataset';
+import { CHALLENGE_TAGS, TOLERANCE_LABELS } from '@/data/activityCatalog';
 import {
   ACTIVITY_CATEGORIES,
   type ActivityCategory,

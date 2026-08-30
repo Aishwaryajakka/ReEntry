@@ -18,7 +18,8 @@ import { HeroBotanical } from '@/components/Icons';
 import { useAppContext } from '@/context/AppContext';
 import { COLORS, useThemeColors } from '@/lib/theme';
 
-function formatDate(dateStr: string): string {
+function formatDate(dateStr: string | null, fallback = 'Not recorded'): string {
+  if (!dateStr) return fallback;
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
@@ -29,7 +30,7 @@ export default function PassScreen() {
   const [teacherViewVisible, setTeacherViewVisible] = useState(false);
 
   const activeRecords = accommodationRecords.filter(
-    (r) => r.visibleToSchool && r.activeUntil >= today,
+    (r) => r.visibleToSchool && (!r.activeUntil || r.activeUntil >= today),
   );
 
   return (
@@ -72,7 +73,7 @@ export default function PassScreen() {
               Active accommodation{activeRecords.length !== 1 ? 's' : ''}
             </Text>
             <Text className="text-sm text-forest/80">
-              Valid through {activeRecords[0] ? formatDate(activeRecords[0].activeUntil) : '—'}
+              Valid through {activeRecords[0] ? formatDate(activeRecords[0].activeUntil, 'No end date recorded') : '—'}
             </Text>
           </View>
           {!lowStimulationMode && (
@@ -99,7 +100,7 @@ export default function PassScreen() {
       <SubheadingText className="mb-3">Recorded accommodations</SubheadingText>
       <View className="gap-3 mb-4">
         {accommodationRecords.map((rec) => {
-          const isActive = rec.activeUntil >= today;
+          const isActive = !rec.activeUntil || rec.activeUntil >= today;
           return (
             <SectionCard key={rec.id} className={isActive ? '' : 'opacity-60'}>
               <View className="flex-row items-start justify-between mb-1">

@@ -16,10 +16,15 @@ import { PrimaryButton } from '@/components/Buttons';
 import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
 import { CategoryIcon } from '@/components/Icons';
 import { useAppContext } from '@/context/AppContext';
-import { TOLERANCE_LABELS } from '@/data/mayaDataset';
+import { TOLERANCE_LABELS } from '@/data/activityCatalog';
 import { ACTIVITY_CATEGORIES } from '@/data/types';
 import type { ActivityLog } from '@/data/types';
 import { COLORS, useThemeColors } from '@/lib/theme';
+import {
+  average,
+  compareEarlierAndRecent,
+  groupActivityLogsByCategory,
+} from '@/lib/activityAnalysis';
 
 const CATEGORY_CONFIG: Record<string, { color: string }> = {
   Reading: { color: COLORS.moss },
@@ -49,15 +54,9 @@ interface CategorySummary {
 function deriveTrend(ratings: number[]): TrendLabel {
   if (ratings.length < 4) return 'Not enough records yet';
 
-  const sortedByDate = [...ratings]; // already passed in chronological order
-  const mid = Math.floor(sortedByDate.length / 2);
-  const earlier = sortedByDate.slice(0, mid);
-  const recent = sortedByDate.slice(mid);
-  const earlierAvg = earlier.reduce((s, v) => s + v, 0) / earlier.length;
-  const recentAvg = recent.reduce((s, v) => s + v, 0) / recent.length;
-
-  if (recentAvg - earlierAvg > 0.25) return 'Improving in records';
-  if (earlierAvg - recentAvg > 0.25) return 'More difficult in recent records';
+  const trend = compareEarlierAndRecent(ratings);
+  if (trend === 'improving') return 'Improving in records';
+  if (trend === 'more-difficult') return 'More difficult in recent records';
   return 'Mixed in records';
 }
 
@@ -66,7 +65,7 @@ function summarizeCategory(category: string, logs: ActivityLog[]): CategorySumma
   const manageable = ratings.filter((r) => r === 3).length;
   const someDifficulty = ratings.filter((r) => r === 2).length;
   const veryDifficult = ratings.filter((r) => r === 1).length;
-  const avg = ratings.length > 0 ? ratings.reduce((s, v) => s + v, 0) / ratings.length : null;
+  const avg = ratings.length > 0 ? average(ratings) : null;
   const trend = deriveTrend(ratings);
 
   return {
@@ -161,35 +160,29 @@ function CategoryCard({ summary }: { summary: CategorySummary }) {
 }
 
 export default function ToleranceScreen() {
-  const { activityLogs, lowStimulationMode } = useAppContext();
+  const { activityLogs } = useAppContext();
   const router = useRouter();
 
   const categorySummaries = useMemo<CategorySummary[]>(() => {
-    const byCategory = new Map<string, typeof activityLogs>();
+    const sortedLogs = activityLogs
+      .slice()
+      .sort((a, b) => a.date.localeCompare(b.date));
+    const byCategory = groupActivityLogsByCategory(sortedLogs);
     for (const category of ACTIVITY_CATEGORIES) {
-      byCategory.set(category, []);
-    }
-    for (const log of activityLogs) {
-      const list = byCategory.get(log.activityCategory) ?? [];
-      list.push(log);
-      byCategory.set(log.activityCategory, list);
+      if (!byCategory.has(category)) byCategory.set(category, []);
     }
 
     return Array.from(byCategory.entries())
-      .map(([category, logs]) => summarizeCategory(category, logs.sort((a, b) => a.date.localeCompare(b.date))))
+      .map(([category, logs]) => summarizeCategory(category, logs))
       .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
   }, [activityLogs]);
 
   const overallPattern = useMemo(() => {
     const all = activityLogs.slice().sort((a, b) => a.date.localeCompare(b.date));
     if (all.length < 4) return 'Not enough records yet';
-    const mid = Math.floor(all.length / 2);
-    const earlier = all.slice(0, mid).map((l) => l.toleranceRating);
-    const recent = all.slice(mid).map((l) => l.toleranceRating);
-    const earlierAvg = earlier.reduce((s, v) => s + v, 0) / earlier.length;
-    const recentAvg = recent.reduce((s, v) => s + v, 0) / recent.length;
-    if (recentAvg - earlierAvg > 0.25) return 'Improving in records';
-    if (earlierAvg - recentAvg > 0.25) return 'More difficult in recent records';
+    const trend = compareEarlierAndRecent(all.map((log) => log.toleranceRating));
+    if (trend === 'improving') return 'Improving in records';
+    if (trend === 'more-difficult') return 'More difficult in recent records';
     return 'Mixed in records';
   }, [activityLogs]);
 

@@ -21,6 +21,7 @@ function Accordion({
   return (
     <LayoutAnimationConfig skipEntering>
       <AccordionPrimitive.Root
+        ref={ref}
         {...(props as AccordionPrimitive.RootProps)}
         asChild={Platform.OS !== 'web'}>
         <Animated.View layout={LinearTransition.duration(200)}>{children}</Animated.View>

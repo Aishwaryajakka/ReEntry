@@ -1,19 +1,18 @@
 /**
- * ReEntry — Maya 14-day demo dataset
+ * Maya 14-day demo fixture retained for a future deterministic Supabase seed.
  *
  * All values are self-reported functional observations, not clinical scores.
- * Non-linear recovery: improvement with regression on days 9 and 12.
- * Single source of truth — every screen derives from this module.
+ * This module is demo-only and is not loaded into authenticated runtime state.
  */
 
 import type {
   AccommodationRecord,
   ActivityLog,
-  ChallengeTag,
   DailyCheckIn,
   DemoUser,
   InsightEvidence,
 } from './types';
+export { CHALLENGE_TAGS, TOLERANCE_LABELS } from './activityCatalog';
 
 // Demo date anchor: day 1 = 14 days before today
 const anchor = new Date();
@@ -35,22 +34,6 @@ export const DEMO_USER: DemoUser = {
   firstName: 'Maya',
   age: 16,
 };
-
-// ─────────────────────────────────────────────────────────────
-// Challenge tags
-// ─────────────────────────────────────────────────────────────
-export const CHALLENGE_TAGS: ChallengeTag[] = [
-  { id: 'ct-headache',    label: 'Headache',           category: 'physical'      },
-  { id: 'ct-light',       label: 'Light',              category: 'environmental' },
-  { id: 'ct-noise',       label: 'Noise',              category: 'environmental' },
-  { id: 'ct-screen',      label: 'Screen glare',       category: 'environmental' },
-  { id: 'ct-fatigue',     label: 'Fatigue',            category: 'physical'      },
-  { id: 'ct-conc',        label: 'Concentration',      category: 'cognitive'     },
-  { id: 'ct-memory',      label: 'Memory',             category: 'cognitive'     },
-  { id: 'ct-dizziness',   label: 'Dizziness',          category: 'physical'      },
-  { id: 'ct-emotional',   label: 'Emotional stress',   category: 'social'        },
-  { id: 'ct-crowded',     label: 'Crowded environment', category: 'environmental' },
-];
 
 // ─────────────────────────────────────────────────────────────
 // Daily check-ins  (14 days, non-linear recovery)
@@ -170,14 +153,6 @@ export const DAILY_CHECKINS: DailyCheckIn[] = [
   },
 ];
 
-// ─────────────────────────────────────────────────────────────
-// Tolerance labels used for the 1-3 activity log scale
-export const TOLERANCE_LABELS: Record<ActivityLog['toleranceRating'], string> = {
-  1: 'Very difficult',
-  2: 'Some difficulty',
-  3: 'Manageable',
-};
-
 // Activity logs (distributed across 14 days)
 // ─────────────────────────────────────────────────────────────
 export const ACTIVITY_LOGS: ActivityLog[] = [
@@ -219,7 +194,7 @@ export const ACTIVITY_LOGS: ActivityLog[] = [
   { id: 'al-23', date: d(14), activityCategory: 'Screens',          customLabel: 'Laptop', durationMinutes: 45, toleranceRating: 2, notes: 'Still variable depending on brightness.', challengeTagIds: ['ct-screen'] },
 ];
 
-// Seed today's visible examples in the UI
+// Additional examples retained as future seed material.
 export const TODAY_SEED_EXAMPLES: ActivityLog[] = [
   { id: 'al-seed-01', date: TODAY, activityCategory: 'Class',     customLabel: 'Chemistry', durationMinutes: 45, toleranceRating: 2, notes: 'Board work bright.', challengeTagIds: ['ct-light', 'ct-conc'] },
   { id: 'al-seed-02', date: TODAY, activityCategory: 'Social activity', customLabel: 'Cafeteria', durationMinutes: 30, toleranceRating: 1, notes: 'Could not finish lunch.', challengeTagIds: ['ct-noise'] },
@@ -314,19 +289,3 @@ export const INSIGHT_EVIDENCE: InsightEvidence[] = [
     generatedOn: d(14),
   },
 ];
-
-// ─────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────
-export const getTagById = (id: string): ChallengeTag | undefined =>
-  CHALLENGE_TAGS.find((t) => t.id === id);
-
-export const getCheckInByDate = (date: string): DailyCheckIn | undefined =>
-  DAILY_CHECKINS.find((ci) => ci.date === date);
-
-export const getActivityLogsByDate = (date: string): ActivityLog[] =>
-  ACTIVITY_LOGS.filter((al) => al.date === date);
-
-/** Generate a simple ID for new activity logs */
-export const generateActivityLogId = (): string =>
-  `al-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;

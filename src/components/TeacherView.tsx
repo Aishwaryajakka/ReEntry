@@ -3,7 +3,7 @@
  *
  * Shows only current active school-visible accommodations.
  * Does NOT show activity history, Journey insights, symptoms, private notes, or medical data.
- * Uses existing AccommodationRecord demo data from AppContext.
+ * Uses the authenticated student's accommodation records from AppContext.
  */
 
 import { useMemo } from 'react';
@@ -29,7 +29,8 @@ interface TeacherViewProps {
   onClose: () => void;
 }
 
-function formatDate(dateStr: string): string {
+function formatDate(dateStr: string | null, fallback = 'Not recorded'): string {
+  if (!dateStr) return fallback;
   const d = new Date(dateStr + 'T00:00:00');
   return d.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 }
@@ -55,8 +56,8 @@ export function TeacherView({ visible, onClose }: TeacherViewProps) {
   const activeSchoolRecords = useMemo(
     () =>
       accommodationRecords
-        .filter((r) => r.visibleToSchool && r.activeUntil >= today)
-        .sort((a, b) => a.dateIssued.localeCompare(b.dateIssued)),
+        .filter((r) => r.visibleToSchool && (!r.activeUntil || r.activeUntil >= today))
+        .sort((a, b) => (a.dateIssued ?? '').localeCompare(b.dateIssued ?? '')),
     [accommodationRecords, today],
   );
 
@@ -149,7 +150,7 @@ export function TeacherView({ visible, onClose }: TeacherViewProps) {
                   <View className="gap-1">
                     <View className="flex-row items-center gap-2">
                       <Calendar size={14} color={theme.foregroundMuted} />
-                      <LabelText>Valid through: {formatDate(rec.activeUntil)}</LabelText>
+                      <LabelText>Valid through: {formatDate(rec.activeUntil, 'No end date recorded')}</LabelText>
                     </View>
                     <View className="flex-row items-center gap-2">
                       <Shield size={14} color={theme.foregroundMuted} />

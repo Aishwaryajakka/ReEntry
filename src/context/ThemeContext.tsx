@@ -68,7 +68,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
     try {
       await updateAppearance(userId, value);
-    } catch (e) {
+    } catch {
       // Revert only on confirmed failure so the UI matches the persisted state.
       setUserTheme(previous);
       throw new Error('Failed to save appearance. Please try again.');

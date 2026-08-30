@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+.pnpm-store/
 
 # Environment variables / secrets
 .env
@@ -34,6 +35,7 @@ pnpm-debug.log*
 
 # Metro
 .metro-cache/
+.native-wind-cache/
 .metro-health-check*
 
 # Temporary files
