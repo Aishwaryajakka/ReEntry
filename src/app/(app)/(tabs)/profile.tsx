@@ -7,6 +7,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react';
+import { useRouter, type RelativePathString } from 'expo-router';
 import { View, Text, Switch } from 'react-native';
 import { Eye, EyeOff, Info, Lock, Copy, Check, Users } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
@@ -30,6 +31,7 @@ function formatDateShort(dateStr: string): string {
 }
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { user, dailyCheckIns, activityLogs, lowStimulationMode, toggleLowStimulation } = useAppContext();
   const { session, role } = useSession();
   const { isDark, toggleTheme } = useTheme();
@@ -395,6 +397,25 @@ export default function ProfileScreen() {
 
       {/* About */}
       <SubheadingText className="mb-3">About ReEntry</SubheadingText>
+      <SectionCard className="mb-4">
+        <View className="mb-3 flex-row items-start gap-3">
+          <View className="mt-0.5">
+            <Info size={18} color={themeColors.foregroundMuted} />
+          </View>
+          <View className="flex-1">
+            <Text className="mb-1 text-base font-semibold text-foreground">How ReEntry is designed</Text>
+            <LabelText className="leading-5">
+              See the guidance and responsible-technology principles behind activity records, school supports, privacy, and AI-assisted observations.
+            </LabelText>
+          </View>
+        </View>
+        <SecondaryButton
+          label="Evidence & design"
+          onPress={() => router.push('/(app)/(tabs)/evidence' as RelativePathString)}
+          className="w-full"
+        />
+      </SectionCard>
+
       <SectionCard className="mb-4">
         <View className="flex-row items-start gap-3">
           <View className="mt-0.5">
