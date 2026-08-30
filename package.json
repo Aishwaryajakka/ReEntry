@@ -7,6 +7,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
+    "demo:setup": "node scripts/setup-demo.mjs",
     "lint": "devkit-lint"
   },
   "dependencies": {
