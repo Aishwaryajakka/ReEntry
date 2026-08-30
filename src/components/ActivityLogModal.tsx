@@ -22,7 +22,11 @@ import { LabelText, MicroText, SubheadingText } from './Typography';
 import { useReducedExperience } from '@/lib/accessibility';
 import { useAppContext } from '@/context/AppContext';
 import { CHALLENGE_TAGS, TOLERANCE_LABELS } from '@/data/mayaDataset';
-import { ACTIVITY_CATEGORIES, type ActivityCategory, type ActivityLog } from '@/data/types';
+import {
+  ACTIVITY_CATEGORIES,
+  type ActivityCategory,
+  type ActivityLog,
+} from '@/data/types';
 import { useThemeColors } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 
@@ -36,16 +40,29 @@ interface ActivityLogModalProps {
   log?: ActivityLog;
 }
 
-export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onClose, log }) => {
-  const { addActivityLog, updateActivityLog, deleteActivityLog, today } = useAppContext();
+export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
+  visible,
+  onClose,
+  log,
+}) => {
+  const {
+    addActivityLog,
+    updateActivityLog,
+    deleteActivityLog,
+    today,
+  } = useAppContext();
+
   const { reduced } = useReducedExperience();
   const theme = useThemeColors();
   const isEditing = !!log;
 
   const [category, setCategory] = useState<ActivityCategory | null>(null);
   const [duration, setDuration] = useState<number>(30);
-  const [tolerance, setTolerance] = useState<ActivityLog['toleranceRating']>(2);
-  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+  const [tolerance, setTolerance] =
+    useState<ActivityLog['toleranceRating']>(2);
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(
+    new Set(),
+  );
   const [note, setNote] = useState('');
   const [customLabel, setCustomLabel] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -53,8 +70,13 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
   const toggleTag = useCallback((id: string) => {
     setSelectedTagIds((prev) => {
       const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
+
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+
       return next;
     });
   }, []);
@@ -83,13 +105,14 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
     }
   }, [visible, log, reset]);
 
-  const isValid = category && customLabel.trim().length > 0;
+  const isValid = !!category && customLabel.trim().length > 0;
 
   const handleSubmit = useCallback(async () => {
-    if (!isValid) {
+    if (!isValid || !category) {
       setError('Please select a category and enter an activity name.');
       return;
     }
+
     setError(null);
 
     const input = {
@@ -107,6 +130,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
     } else {
       await addActivityLog(input);
     }
+
     reset();
     onClose();
   }, [
@@ -128,14 +152,22 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
 
   const handleDelete = useCallback(async () => {
     if (!log) return;
+
     await deleteActivityLog(log.id);
+
     reset();
     onClose();
   }, [deleteActivityLog, log, onClose, reset]);
 
   const displayName = useMemo(() => {
-    if (category === 'Class') return customLabel.trim() || category;
-    if (category === 'Homework') return customLabel.trim() || category;
+    if (category === 'Class') {
+      return customLabel.trim() || category;
+    }
+
+    if (category === 'Homework') {
+      return customLabel.trim() || category;
+    }
+
     return customLabel.trim() || category;
   }, [category, customLabel]);
 
@@ -147,31 +179,50 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <Pressable
-        className="flex-1 bg-black/40 justify-end"
-        onPress={onClose}
-        accessibilityLabel="Close logging flow"
-        accessibilityRole="button"
-      >
+      <View className="flex-1 justify-end">
+        {/* Backdrop.
+            IMPORTANT: this is a sibling of the modal sheet so buttons
+            inside the sheet are never nested inside another Pressable. */}
+        <Pressable
+          className="absolute inset-0 bg-black/40"
+          onPress={onClose}
+          accessibilityLabel="Close logging flow"
+          accessibilityRole="button"
+        />
+
         <KeyboardAvoidingView
           behavior={process.env.EXPO_OS === 'ios' ? 'padding' : 'height'}
           className="flex-1 justify-end"
           pointerEvents="box-none"
         >
-          <Pressable
-            onPress={(e) => e.stopPropagation()}
+          {/* Modal sheet.
+              This MUST remain a View, not a Pressable, because the sheet
+              contains interactive buttons. */}
+          <View
             className="bg-card rounded-t-3xl max-h-[92%]"
-            style={{ borderCurve: 'continuous' } as object}
+            style={
+              {
+                borderCurve: 'continuous',
+              } as object
+            }
           >
             <View className="p-6">
               <View className="flex-row items-center justify-between mb-2">
                 <SubheadingText>Log activity</SubheadingText>
-                <Pressable onPress={onClose} className="p-2 rounded-full active:bg-muted">
+
+                <Pressable
+                  onPress={onClose}
+                  className="p-2 rounded-full active:bg-muted"
+                  accessibilityRole="button"
+                  accessibilityLabel="Close"
+                >
                   <X size={20} color={theme.foreground} />
                 </Pressable>
               </View>
+
               <LabelText className="leading-5 mb-6">
-                Select the activity, duration, and how it felt. Everything is optional except the activity type.
+                Select the activity, duration, and how it felt. Everything is
+                optional except the activity type.
               </LabelText>
             </View>
 
@@ -183,6 +234,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
             >
               {/* 1. Category */}
               <StepLabel>1. What did you do?</StepLabel>
+
               <View className="flex-row flex-wrap gap-2 mb-5">
                 {ACTIVITY_CATEGORIES.map((cat) => (
                   <Pressable
@@ -196,12 +248,16 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
                     )}
                     style={{ minHeight: 40 } as object}
                     accessibilityRole="radio"
-                    accessibilityState={{ checked: category === cat }}
+                    accessibilityState={{
+                      checked: category === cat,
+                    }}
                   >
                     <Text
                       className={cn(
                         'text-sm font-medium',
-                        category === cat ? 'text-primary-foreground' : 'text-foreground',
+                        category === cat
+                          ? 'text-primary-foreground'
+                          : 'text-foreground',
                       )}
                     >
                       {cat}
@@ -214,24 +270,33 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
               {category && (
                 <>
                   <LabelText className="mb-2">Activity name</LabelText>
+
                   <TextInput
                     value={customLabel}
                     onChangeText={setCustomLabel}
                     placeholder="e.g., Chemistry, Bus ride, Cafeteria"
                     placeholderTextColor={theme.foregroundMuted}
                     className="bg-background rounded-xl border border-border px-4 py-3 text-foreground text-base mb-2"
-                    style={{ borderCurve: 'continuous' } as object}
+                    style={
+                      {
+                        borderCurve: 'continuous',
+                      } as object
+                    }
                     accessibilityLabel="Activity name"
                     returnKeyType="done"
                   />
+
                   {error && (
-                    <MicroText className="text-destructive mb-5">{error}</MicroText>
+                    <MicroText className="text-destructive mb-5">
+                      {error}
+                    </MicroText>
                   )}
                 </>
               )}
 
               {/* 2. Duration */}
               <StepLabel>2. For how long?</StepLabel>
+
               <View className="flex-row flex-wrap gap-2 mb-5">
                 {DURATION_OPTIONS.map((mins) => (
                   <Pressable
@@ -244,12 +309,16 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
                         : 'bg-card border-border',
                     )}
                     accessibilityRole="radio"
-                    accessibilityState={{ checked: duration === mins }}
+                    accessibilityState={{
+                      checked: duration === mins,
+                    }}
                   >
                     <Text
                       className={cn(
                         'text-sm font-semibold text-center',
-                        duration === mins ? 'text-primary-foreground' : 'text-foreground',
+                        duration === mins
+                          ? 'text-primary-foreground'
+                          : 'text-foreground',
                       )}
                     >
                       {mins}m
@@ -260,6 +329,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
 
               {/* 3. Manageability */}
               <StepLabel>3. How manageable was it?</StepLabel>
+
               <View className="gap-2 mb-5">
                 {TOLERANCE_OPTIONS.map((rating) => (
                   <Pressable
@@ -272,16 +342,21 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
                         : 'bg-card border-border',
                     )}
                     accessibilityRole="radio"
-                    accessibilityState={{ checked: tolerance === rating }}
+                    accessibilityState={{
+                      checked: tolerance === rating,
+                    }}
                   >
                     <Text
                       className={cn(
                         'text-base font-medium',
-                        tolerance === rating ? 'text-primary-foreground' : 'text-foreground',
+                        tolerance === rating
+                          ? 'text-primary-foreground'
+                          : 'text-foreground',
                       )}
                     >
                       {TOLERANCE_LABELS[rating]}
                     </Text>
+
                     <View className="flex-row gap-1">
                       {[1, 2, 3].map((i) => (
                         <View
@@ -303,24 +378,32 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
 
               {/* 4. Challenge tags */}
               <StepLabel>4. Optional challenges</StepLabel>
+
               <View className="flex-row flex-wrap gap-2 mb-5">
                 {SELECTABLE_TAGS.map((tag) => {
                   const selected = selectedTagIds.has(tag.id);
+
                   return (
                     <Pressable
                       key={tag.id}
                       onPress={() => toggleTag(tag.id)}
                       className={cn(
                         'rounded-full border px-3 py-2',
-                        selected ? 'bg-primary border-primary' : 'bg-card border-border',
+                        selected
+                          ? 'bg-primary border-primary'
+                          : 'bg-card border-border',
                       )}
                       accessibilityRole="checkbox"
-                      accessibilityState={{ checked: selected }}
+                      accessibilityState={{
+                        checked: selected,
+                      }}
                     >
                       <Text
                         className={cn(
                           'text-sm font-medium',
-                          selected ? 'text-primary-foreground' : 'text-foreground',
+                          selected
+                            ? 'text-primary-foreground'
+                            : 'text-foreground',
                         )}
                       >
                         {tag.label}
@@ -332,6 +415,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
 
               {/* 5. Note */}
               <StepLabel>5. Optional note</StepLabel>
+
               <TextInput
                 value={note}
                 onChangeText={setNote}
@@ -340,25 +424,39 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
                 multiline
                 numberOfLines={3}
                 className="bg-background rounded-xl border border-border px-4 py-3 text-foreground text-base mb-4"
-                style={{ borderCurve: 'continuous', minHeight: 72 } as object}
+                style={
+                  {
+                    borderCurve: 'continuous',
+                    minHeight: 72,
+                  } as object
+                }
                 textAlignVertical="top"
                 accessibilityLabel="Optional note"
-                returnKeyType="done"
               />
 
               <DividerLine className="mb-4" />
 
               {/* Live preview */}
               <View className="bg-muted rounded-xl px-4 py-3 mb-5">
-                <MicroText className="mb-1">Will be logged today as:</MicroText>
+                <MicroText className="mb-1">
+                  Will be logged today as:
+                </MicroText>
+
                 <Text className="text-foreground font-semibold">
-                  {displayName} · {duration} min · {TOLERANCE_LABELS[tolerance]}
+                  {displayName} · {duration} min ·{' '}
+                  {TOLERANCE_LABELS[tolerance]}
                 </Text>
+
                 {selectedTagIds.size > 0 && (
                   <View className="flex-row flex-wrap gap-2 mt-2">
                     {Array.from(selectedTagIds).map((id) => {
-                      const tag = SELECTABLE_TAGS.find((t) => t.id === id);
-                      return tag ? <DataBadge key={id} tag={tag} /> : null;
+                      const tag = SELECTABLE_TAGS.find(
+                        (item) => item.id === id,
+                      );
+
+                      return tag ? (
+                        <DataBadge key={id} tag={tag} />
+                      ) : null;
                     })}
                   </View>
                 )}
@@ -371,6 +469,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
                 disabled={!isValid}
                 className="w-full mb-3"
               />
+
               {isEditing && (
                 <SecondaryButton
                   label="Delete entry"
@@ -378,15 +477,28 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({ visible, onC
                   className="w-full mb-3"
                 />
               )}
-              <SecondaryButton label="Cancel" onPress={onClose} className="w-full" />
+
+              <SecondaryButton
+                label="Cancel"
+                onPress={onClose}
+                className="w-full"
+              />
             </ScrollView>
-          </Pressable>
+          </View>
         </KeyboardAvoidingView>
-      </Pressable>
+      </View>
     </Modal>
   );
 };
 
-function StepLabel({ children }: { children: React.ReactNode }) {
-  return <LabelText className="font-semibold text-foreground mb-2 mt-1">{children}</LabelText>;
+function StepLabel({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <LabelText className="font-semibold text-foreground mb-2 mt-1">
+      {children}
+    </LabelText>
+  );
 }
