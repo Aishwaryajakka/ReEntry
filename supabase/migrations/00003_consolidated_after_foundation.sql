@@ -1,8 +1,9 @@
 -- ReEntry consolidated migration
--- Run this ONCE after schema.sql, 00001_auth_role_profiles.sql, and
--- 00002_fast_build_persistent_foundation.sql have already been executed.
+-- Runs after 00001_auth_role_profiles.sql and
+-- 00002_fast_build_persistent_foundation.sql.
 --
--- Replaces/supersedes old migrations 00003 through 00007.
+-- Consolidates the former incremental migrations for preferences, linked
+-- school access, student profiles, and the canonical connection RPC.
 
 BEGIN;
 
