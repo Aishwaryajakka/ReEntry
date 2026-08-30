@@ -1,0 +1,131 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  /* Ensure actual <button> and submit elements never collapse into raw browser defaults. */
+  button,
+  [type='button'],
+  [type='submit'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+    min-height: 52px;
+    padding: 14px 24px;
+    border-radius: 14px;
+    font-weight: 600;
+    line-height: 1.2;
+    cursor: pointer;
+    text-align: center;
+    border: 0;
+    transition: none;
+  }
+
+  button:disabled,
+  [type='button']:disabled,
+  [type='submit']:disabled {
+    cursor: not-allowed;
+    opacity: 1;
+  }
+
+  button:focus-visible,
+  [type='button']:focus-visible,
+  [type='submit']:focus-visible {
+    outline: 2px solid hsl(var(--ring));
+    outline-offset: 2px;
+  }
+
+  :root {
+    /* ReEntry final visual system — bright editorial field journal */
+    /* Forest #344431  Deep Forest #263528  Moss #71856A  Bright Yellow #F6C945  Warm Gold #F4B93F  Rust #A5572F  Linen #DDD1BF  Moon #E8E3D9  Warm White #FFFDF7 */
+
+    /* background = Warm White */
+    --background: 48 100% 99%;
+    /* foreground = Forest */
+    --foreground: 122 14% 23%;
+
+    /* card = warm white with a subtle warm tint */
+    --card: 44 33% 96%;
+    --card-foreground: 122 14% 23%;
+
+    --popover: 44 33% 96%;
+    --popover-foreground: 122 14% 23%;
+
+    /* primary = Forest */
+    --primary: 122 14% 23%;
+    --primary-foreground: 48 100% 99%;
+
+    /* secondary = Moss */
+    --secondary: 111 10% 47%;
+    --secondary-foreground: 48 100% 99%;
+
+    /* muted = soft Moon */
+    --muted: 40 18% 87%;
+    --muted-foreground: 111 10% 40%;
+
+    /* accent = Bright ReEntry Yellow */
+    --accent: 45 90% 62%;
+    --accent-foreground: 122 14% 23%;
+
+    /* destructive = Rust */
+    --destructive: 22 57% 40%;
+    --destructive-foreground: 48 100% 99%;
+
+    /* border / input = subtle warm */
+    --border: 38 24% 82%;
+    --input: 38 24% 82%;
+    --ring: 122 14% 23%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* dark mode — kept warm; Deep Forest background, Warm White text */
+    --background: 122 14% 15%;
+    --foreground: 48 100% 99%;
+    --card: 122 14% 18%;
+    --card-foreground: 48 100% 99%;
+    --popover: 122 14% 18%;
+    --popover-foreground: 48 100% 99%;
+    --primary: 48 100% 99%;
+    --primary-foreground: 122 14% 23%;
+    --secondary: 111 10% 35%;
+    --secondary-foreground: 48 100% 99%;
+    --muted: 122 14% 22%;
+    --muted-foreground: 111 10% 60%;
+    --accent: 45 90% 62%;
+    --accent-foreground: 122 14% 23%;
+    --destructive: 22 57% 45%;
+    --destructive-foreground: 48 100% 99%;
+    --border: 122 14% 26%;
+    --input: 122 14% 26%;
+    --ring: 48 100% 99%;
+  }
+
+  /* Utility to force the light palette on an isolated subtree (e.g., auth screens). */
+  .light {
+    --background: 48 100% 99%;
+    --foreground: 122 14% 23%;
+    --card: 44 33% 96%;
+    --card-foreground: 122 14% 23%;
+    --popover: 44 33% 96%;
+    --popover-foreground: 122 14% 23%;
+    --primary: 122 14% 23%;
+    --primary-foreground: 48 100% 99%;
+    --secondary: 111 10% 47%;
+    --secondary-foreground: 48 100% 99%;
+    --muted: 40 18% 87%;
+    --muted-foreground: 111 10% 40%;
+    --accent: 45 90% 62%;
+    --accent-foreground: 122 14% 23%;
+    --destructive: 22 57% 40%;
+    --destructive-foreground: 48 100% 99%;
+    --border: 38 24% 82%;
+    --input: 38 24% 82%;
+    --ring: 122 14% 23%;
+  }
+}

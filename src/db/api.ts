@@ -1,0 +1,690 @@
+/**
+ * ReEntry database API — thin Supabase client wrapper.
+ * All external database reads/writes go through here.
+ */
+
+import { supabase } from '@/client/supabase';
+import { CHALLENGE_TAGS } from '@/data/mayaDataset';
+import type {
+  AccommodationRecordRow,
+  ActivityLogRow,
+  Appearance,
+  ChallengeTagRow,
+  DailyCheckInRow,
+  StudentAccessRow,
+  UserPreferencesRow,
+} from '@/types/types';
+
+export type { Appearance };
+
+export const DEFAULT_APPEARANCE: Appearance = 'light';
+
+export async function fetchUserPreferences(
+  userId: string,
+): Promise<UserPreferencesRow | null> {
+  const { data, error } = await supabase
+    .from('user_preferences')
+    .select('id, user_id, appearance, low_stimulation_enabled, updated_at')
+    .eq('user_id', userId)
+    .maybeSingle();
+
+  if (error) {
+    console.error('fetchUserPreferences failed', error);
+    return null;
+  }
+  return data;
+}
+
+export async function ensureUserPreferences(userId: string): Promise<UserPreferencesRow> {
+  const existing = await fetchUserPreferences(userId);
+  if (existing) return existing;
+
+  const { data, error } = await supabase
+    .from('user_preferences')
+    .insert({
+      user_id: userId,
+      appearance: DEFAULT_APPEARANCE,
+      low_stimulation_enabled: false,
+    })
+    .select('id, user_id, appearance, low_stimulation_enabled, updated_at')
+    .single();
+
+  if (error || !data) {
+    throw new Error(`Failed to create user preferences: ${error?.message ?? 'unknown'}`);
+  }
+  return data;
+}
+
+export async function updateAppearance(userId: string, appearance: Appearance): Promise<void> {
+  const { error } = await supabase
+    .from('user_preferences')
+    .upsert({ user_id: userId, appearance }, { onConflict: 'user_id' });
+  if (error) {
+    console.error('updateAppearance failed', error);
+    throw error;
+  }
+}
+
+export async function updateLowStimulation(userId: string, enabled: boolean): Promise<void> {
+  const { error } = await supabase
+    .from('user_preferences')
+    .upsert({ user_id: userId, low_stimulation_enabled: enabled }, { onConflict: 'user_id' });
+  if (error) {
+    console.error('updateLowStimulation failed', error);
+    throw error;
+  }
+}
+
+export async function fetchActivityLogs(userId: string): Promise<ActivityLogRow[]> {
+  const { data, error } = await supabase
+    .from('activity_logs')
+    .select('id, student_id, activity_category, activity_name, duration_minutes, manageability, note, occurred_at, created_at')
+    .eq('student_id', userId)
+    .order('occurred_at', { ascending: false });
+
+  if (error) {
+    console.error('fetchActivityLogs failed', error);
+    return [];
+  }
+  return data ?? [];
+}
+
+export async function fetchChallengeTags(userId: string): Promise<ChallengeTagRow[]> {
+  const { data, error } = await supabase
+    .from('challenge_tags')
+    .select('id, activity_log_id, tag, activity_logs!inner(student_id)')
+    .eq('activity_logs.student_id', userId);
+
+  if (error) {
+    console.error('fetchChallengeTags failed', error);
+    return [];
+  }
+  return data ?? [];
+}
+
+export async function updateActivityLog(
+  userId: string,
+  logId: string,
+  input: NewActivityInput,
+): Promise<{ row: ActivityLogRow; tags: ChallengeTagRow[] } | null> {
+  const activityName = input.customLabel?.trim() || input.activityCategory;
+  const occurredAt = input.date ? new Date(`${input.date}T00:00:00`).toISOString() : new Date().toISOString();
+
+  const { data, error } = await supabase
+    .from('activity_logs')
+    .update({
+      activity_category: input.activityCategory,
+      activity_name: activityName,
+      duration_minutes: input.durationMinutes,
+      manageability: input.toleranceRating,
+      note: input.notes.trim() || null,
+      occurred_at: occurredAt,
+    })
+    .eq('id', logId)
+    .eq('student_id', userId)
+    .select('id, student_id, activity_category, activity_name, duration_minutes, manageability, note, occurred_at, created_at')
+    .single();
+
+  if (error || !data) {
+    console.error('updateActivityLog failed', error);
+    return null;
+  }
+
+  // Replace challenge tags.
+  const { error: deleteError } = await supabase
+    .from('challenge_tags')
+    .delete()
+    .eq('activity_log_id', logId);
+  if (deleteError) {
+    console.error('deleteChallengeTags failed', deleteError);
+  }
+
+  if (input.challengeTagIds.length > 0) {
+    const tagLabels = input.challengeTagIds.map((id) => {
+      const known = CHALLENGE_TAGS.find((t) => t.id === id);
+      return known ? known.label : id;
+    });
+    const tagRows = tagLabels.map((tag) => ({ activity_log_id: logId, tag }));
+    const { error: tagError } = await supabase.from('challenge_tags').insert(tagRows);
+    if (tagError) {
+      console.error('updateActivityLog tags insert failed', tagError);
+    }
+  }
+
+  const { data: tags } = await supabase
+    .from('challenge_tags')
+    .select('id, activity_log_id, tag')
+    .eq('activity_log_id', logId);
+
+  return { row: data, tags: tags ?? [] };
+}
+
+export async function deleteActivityLog(userId: string, logId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('activity_logs')
+    .delete()
+    .eq('id', logId)
+    .eq('student_id', userId);
+
+  if (error) {
+    console.error('deleteActivityLog failed', error);
+    return false;
+  }
+  return true;
+}
+
+export async function fetchDailyCheckIns(userId: string): Promise<DailyCheckInRow[]> {
+  const { data, error } = await supabase
+    .from('daily_checkins')
+    .select('id, student_id, checkin_date, overall_manageability, attendance_context, note, created_at')
+    .eq('student_id', userId)
+    .order('checkin_date', { ascending: false });
+
+  if (error) {
+    console.error('fetchDailyCheckIns failed', error);
+    return [];
+  }
+  return data ?? [];
+}
+
+export async function fetchAccommodationRecords(userId: string): Promise<AccommodationRecordRow[]> {
+  const { data, error } = await supabase
+    .from('accommodation_records')
+    .select('id, student_id, title, source_type, source_name, issued_date, valid_until, status, created_by, updated_at')
+    .eq('student_id', userId)
+    .order('valid_until', { ascending: false });
+
+  if (error) {
+    console.error('fetchAccommodationRecords failed', error);
+    return [];
+  }
+  return data ?? [];
+}
+
+export interface NewActivityInput {
+  date: string;
+  activityCategory: string;
+  customLabel?: string;
+  durationMinutes: number;
+  toleranceRating: 1 | 2 | 3;
+  notes: string;
+  challengeTagIds: string[];
+}
+
+export async function addActivityLog(
+  userId: string,
+  input: NewActivityInput,
+): Promise<{ row: ActivityLogRow; tags: ChallengeTagRow[] } | null> {
+  const activityName = input.customLabel?.trim() || input.activityCategory;
+  const occurredAt = input.date ? new Date(`${input.date}T00:00:00`).toISOString() : new Date().toISOString();
+
+  const { data, error } = await supabase
+    .from('activity_logs')
+    .insert({
+      student_id: userId,
+      activity_category: input.activityCategory,
+      activity_name: activityName,
+      duration_minutes: input.durationMinutes,
+      manageability: input.toleranceRating,
+      note: input.notes.trim() || null,
+      occurred_at: occurredAt,
+    })
+    .select('id, student_id, activity_category, activity_name, duration_minutes, manageability, note, occurred_at, created_at')
+    .single();
+
+  if (error || !data) {
+    console.error('addActivityLog failed', error);
+    return null;
+  }
+
+  if (input.challengeTagIds.length > 0) {
+    const tagLabels = input.challengeTagIds.map((id) => {
+      const known = CHALLENGE_TAGS.find((t) => t.id === id);
+      return known ? known.label : id;
+    });
+    const tagRows = tagLabels.map((tag) => ({ activity_log_id: data.id, tag }));
+    const { error: tagError } = await supabase.from('challenge_tags').insert(tagRows);
+    if (tagError) {
+      console.error('addActivityLog tags failed', tagError);
+    }
+  }
+
+  const { data: tags } = await supabase
+    .from('challenge_tags')
+    .select('id, activity_log_id, tag')
+    .eq('activity_log_id', data.id);
+
+  return { row: data, tags: tags ?? [] };
+}
+
+function generateAccessCode(): string {
+  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+  let code = '';
+  for (let i = 0; i < 6; i++) {
+    code += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+  return code;
+}
+
+async function generateUniqueAccessCode(): Promise<string | null> {
+  let attempts = 0;
+  while (attempts < 10) {
+    const code = generateAccessCode();
+    const { data } = await supabase
+      .from('student_access')
+      .select('id')
+      .eq('access_code', code)
+      .maybeSingle();
+    if (!data) return code;
+    attempts++;
+  }
+  return null;
+}
+
+export async function getOrCreateStudentAccessCode(userId: string): Promise<StudentAccessRow | null> {
+  const { data: existing, error: fetchError } = await supabase
+    .from('student_access')
+    .select('id, student_id, viewer_user_id, viewer_role, status, access_code, created_at')
+    .eq('student_id', userId)
+    .eq('status', 'active')
+    .is('viewer_user_id', null)
+    .maybeSingle();
+
+  if (fetchError) {
+    console.error('getOrCreateStudentAccessCode fetch failed', fetchError);
+    return null;
+  }
+
+  if (existing) return existing;
+
+  const code = await generateUniqueAccessCode();
+  if (!code) {
+    console.error('generateUniqueAccessCode failed after retries');
+    return null;
+  }
+
+  const { data, error } = await supabase
+    .from('student_access')
+    .insert({
+      student_id: userId,
+      viewer_role: 'pending',
+      status: 'active',
+      access_code: code,
+    })
+    .select('id, student_id, viewer_user_id, viewer_role, status, access_code, created_at')
+    .single();
+
+  if (error || !data) {
+    console.error('getOrCreateStudentAccessCode insert failed', error);
+    return null;
+  }
+
+  return data;
+}
+
+export async function regenerateStudentAccessCode(userId: string): Promise<StudentAccessRow | null> {
+  const { data: existing } = await supabase
+    .from('student_access')
+    .select('id, student_id, viewer_user_id, viewer_role, status, access_code, created_at')
+    .eq('student_id', userId)
+    .eq('status', 'active')
+    .is('viewer_user_id', null)
+    .maybeSingle();
+
+  const code = await generateUniqueAccessCode();
+  if (!code) {
+    console.error('generateUniqueAccessCode failed after retries');
+    return null;
+  }
+
+  if (existing) {
+    const { data, error } = await supabase
+      .from('student_access')
+      .update({ access_code: code })
+      .eq('id', existing.id)
+      .eq('student_id', userId)
+      .select('id, student_id, viewer_user_id, viewer_role, status, access_code, created_at')
+      .single();
+    if (error || !data) {
+      console.error('regenerateStudentAccessCode update failed', error);
+      return null;
+    }
+    return data;
+  }
+
+  return getOrCreateStudentAccessCode(userId);
+}
+
+export async function fetchStudentAccessLinks(userId: string): Promise<StudentAccessRow[]> {
+  const { data, error } = await supabase
+    .from('student_access')
+    .select('id, student_id, viewer_user_id, viewer_role, status, access_code, created_at')
+    .eq('student_id', userId)
+    .not('viewer_user_id', 'is', null)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('fetchStudentAccessLinks failed', error);
+    return [];
+  }
+
+  return data ?? [];
+}
+
+export async function revokeStudentAccess(userId: string, accessId: string): Promise<boolean> {
+  const { error } = await supabase
+    .from('student_access')
+    .update({ status: 'revoked' })
+    .eq('id', accessId)
+    .eq('student_id', userId);
+
+  if (error) {
+    console.error('revokeStudentAccess failed', error);
+    return false;
+  }
+  return true;
+}
+
+// ---------------------------------------------------------------------------
+// School Staff Workspace
+// ---------------------------------------------------------------------------
+
+export interface SchoolStudent {
+  accessId: string;
+  studentId: string;
+  displayName: string | null;
+  returnToLearnStatus: string | null;
+}
+
+export interface SchoolAccommodation {
+  id: string;
+  studentId: string;
+  title: string;
+  source: string;
+  issuedDate: string | null;
+  updatedAt: string;
+  validUntil: string | null;
+  active: boolean;
+}
+
+export async function connectStudentByCode(
+  accessCode: string,
+  viewerRole: 'school_staff' | 'clinician' = 'school_staff',
+): Promise<string | null> {
+  try {
+    const { data, error } = await supabase.rpc('connect_student_by_code', {
+      access_code: accessCode.trim().toUpperCase(),
+      requested_role: viewerRole,
+    });
+    if (error) {
+      console.error('connectStudentByCode failed', error);
+      return null;
+    }
+    return data as string | null;
+  } catch (err) {
+    console.error('connectStudentByCode exception', err);
+    return null;
+  }
+}
+
+export async function fetchLinkedStudents(
+  viewerId: string,
+  viewerRole: 'school_staff' | 'clinician',
+): Promise<SchoolStudent[]> {
+  const { data, error } = await supabase
+    .from('student_access')
+    .select('id, student_id, student_profiles(id, display_name, return_to_learn_status)')
+    .eq('viewer_user_id', viewerId)
+    .eq('viewer_role', viewerRole)
+    .eq('status', 'active')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('fetchLinkedStudents failed', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => {
+    const profile = row.student_profiles as unknown as { display_name: string | null; return_to_learn_status: string | null } | null;
+    return {
+      accessId: row.id,
+      studentId: row.student_id,
+      displayName: profile?.display_name ?? null,
+      returnToLearnStatus: profile?.return_to_learn_status ?? null,
+    };
+  });
+}
+
+export async function fetchSchoolLinkedStudents(schoolStaffId: string): Promise<SchoolStudent[]> {
+  return fetchLinkedStudents(schoolStaffId, 'school_staff');
+}
+
+export async function fetchSchoolAccommodations(studentIds: string[]): Promise<SchoolAccommodation[]> {
+  if (studentIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('accommodation_records')
+    .select('id, student_id, title, source_name, source_type, issued_date, updated_at, valid_until, status')
+    .in('student_id', studentIds)
+    .eq('status', 'active')
+    .order('updated_at', { ascending: false });
+
+  if (error) {
+    console.error('fetchSchoolAccommodations failed', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    studentId: row.student_id,
+    title: row.title,
+    source: row.source_name ?? row.source_type,
+    issuedDate: row.issued_date,
+    updatedAt: row.updated_at,
+    validUntil: row.valid_until,
+    active: row.status === 'active',
+  }));
+}
+export interface ClinicianActivityLog {
+  id: string;
+  studentId: string;
+  date: string;
+  activityCategory: string;
+  activityName: string;
+  durationMinutes: number;
+  manageability: number;
+  note: string | null;
+}
+
+export interface ClinicianDailyCheckIn {
+  id: string;
+  studentId: string;
+  date: string;
+  overallManageability: number;
+  attendanceContext: string | null;
+  note: string | null;
+}
+
+export interface ClinicianChallengeTag {
+  id: string;
+  activityLogId: string;
+  tag: string;
+}
+
+export async function fetchClinicianLinkedStudents(clinicianId: string): Promise<SchoolStudent[]> {
+  return fetchLinkedStudents(clinicianId, 'clinician');
+}
+
+export async function fetchClinicianActivityLogs(studentIds: string[]): Promise<ClinicianActivityLog[]> {
+  if (studentIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('activity_logs')
+    .select('id, student_id, occurred_at, activity_category, activity_name, duration_minutes, manageability, note')
+    .in('student_id', studentIds)
+    .order('occurred_at', { ascending: false });
+
+  if (error) {
+    console.error('fetchClinicianActivityLogs failed', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    studentId: row.student_id,
+    date: row.occurred_at.slice(0, 10),
+    activityCategory: row.activity_category,
+    activityName: row.activity_name,
+    durationMinutes: row.duration_minutes,
+    manageability: row.manageability,
+    note: row.note,
+  }));
+}
+
+export async function fetchClinicianChallengeTags(logIds: string[]): Promise<ClinicianChallengeTag[]> {
+  if (logIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('challenge_tags')
+    .select('id, activity_log_id, tag')
+    .in('activity_log_id', logIds);
+
+  if (error) {
+    console.error('fetchClinicianChallengeTags failed', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    activityLogId: row.activity_log_id,
+    tag: row.tag,
+  }));
+}
+
+export async function fetchClinicianDailyCheckIns(studentIds: string[]): Promise<ClinicianDailyCheckIn[]> {
+  if (studentIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('daily_checkins')
+    .select('id, student_id, checkin_date, overall_manageability, attendance_context, note')
+    .in('student_id', studentIds)
+    .order('checkin_date', { ascending: false });
+
+  if (error) {
+    console.error('fetchClinicianDailyCheckIns failed', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    studentId: row.student_id,
+    date: row.checkin_date,
+    overallManageability: row.overall_manageability,
+    attendanceContext: row.attendance_context,
+    note: row.note,
+  }));
+}
+
+export async function fetchClinicianAccommodations(studentIds: string[]): Promise<SchoolAccommodation[]> {
+  if (studentIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('accommodation_records')
+    .select('id, student_id, title, source_name, source_type, issued_date, updated_at, valid_until, status')
+    .in('student_id', studentIds)
+    .order('updated_at', { ascending: false });
+
+  if (error) {
+    console.error('fetchClinicianAccommodations failed', error);
+    return [];
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    studentId: row.student_id,
+    title: row.title,
+    source: row.source_name ?? row.source_type,
+    issuedDate: row.issued_date,
+    updatedAt: row.updated_at,
+    validUntil: row.valid_until,
+    active: row.status === 'active',
+  }));
+}
+
+export interface InsertAccommodationInput {
+  studentId: string;
+  title: string;
+  sourceName: string | null;
+  issuedDate?: string | null;
+  validUntil?: string | null;
+  status: 'active' | 'inactive';
+}
+
+export async function insertAccommodation(input: InsertAccommodationInput): Promise<SchoolAccommodation | null> {
+  const { data, error } = await supabase
+    .from('accommodation_records')
+    .insert({
+      student_id: input.studentId,
+      title: input.title,
+      source_name: input.sourceName,
+      source_type: 'clinician',
+      issued_date: input.issuedDate ?? null,
+      valid_until: input.validUntil ?? null,
+      status: input.status,
+    })
+    .select('id, student_id, title, source_name, source_type, issued_date, updated_at, valid_until, status')
+    .single();
+
+  if (error || !data) {
+    console.error('insertAccommodation failed', error);
+    return null;
+  }
+
+  return {
+    id: data.id,
+    studentId: data.student_id,
+    title: data.title,
+    source: data.source_name ?? data.source_type,
+    issuedDate: data.issued_date,
+    updatedAt: data.updated_at,
+    validUntil: data.valid_until,
+    active: data.status === 'active',
+  };
+}
+
+export async function updateAccommodation(
+  accommodationId: string,
+  updates: Partial<InsertAccommodationInput>,
+): Promise<SchoolAccommodation | null> {
+  const { data, error } = await supabase
+    .from('accommodation_records')
+    .update({
+      title: updates.title,
+      source_name: updates.sourceName,
+      issued_date: updates.issuedDate ?? null,
+      valid_until: updates.validUntil ?? null,
+      status: updates.status,
+    })
+    .eq('id', accommodationId)
+    .select('id, student_id, title, source_name, source_type, issued_date, updated_at, valid_until, status')
+    .single();
+
+  if (error || !data) {
+    console.error('updateAccommodation failed', error);
+    return null;
+  }
+
+  return {
+    id: data.id,
+    studentId: data.student_id,
+    title: data.title,
+    source: data.source_name ?? data.source_type,
+    issuedDate: data.issued_date,
+    updatedAt: data.updated_at,
+    validUntil: data.valid_until,
+    active: data.status === 'active',
+  };
+}
+
+
+
