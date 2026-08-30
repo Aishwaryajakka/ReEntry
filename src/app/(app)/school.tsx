@@ -36,6 +36,7 @@ export default function SchoolWorkspaceScreen() {
   const [students, setStudents] = useState<SchoolStudent[]>([]);
   const [accommodations, setAccommodations] = useState<SchoolAccommodation[]>([]);
   const [refreshing, setRefreshing] = useState(false);
+  const [showConnect, setShowConnect] = useState(false);
 
   const loadStudents = useCallback(async () => {
     if (!schoolStaffId) return;
@@ -74,6 +75,7 @@ export default function SchoolWorkspaceScreen() {
     const studentId = await connectStudentByCode(code, 'school_staff');
     if (studentId) {
       setCode('');
+      setShowConnect(false);
       await loadStudents();
     } else {
       setError('That code is invalid, expired, or already in use. Please double-check and try again.');
@@ -110,10 +112,10 @@ export default function SchoolWorkspaceScreen() {
               <EditorialLabel className="mb-3">SCHOOL WORKSPACE</EditorialLabel>
               <HeadingText className="mb-1">Students shared with you</HeadingText>
               <MicroText className="text-muted-foreground mb-5">
-                Only information relevant to current school support is shown here.
+                School staff see recorded supports needed for school, not the student's private recovery records.
               </MicroText>
 
-              <SectionCard className="mb-5">
+              {students.length === 0 || showConnect ? <SectionCard className="mb-5">
                 <View className="flex-row items-center gap-2 mb-2">
                   <Users size={18} color={themeColors.foreground} />
                   <Text className="text-base font-semibold text-foreground">Connect Student</Text>
@@ -143,7 +145,20 @@ export default function SchoolWorkspaceScreen() {
                   loading={loading}
                   className="w-full"
                 />
-              </SectionCard>
+                {students.length > 0 ? (
+                  <SecondaryButton
+                    label="Cancel"
+                    onPress={() => setShowConnect(false)}
+                    className="mt-3 w-full"
+                  />
+                ) : null}
+              </SectionCard> : (
+                <SecondaryButton
+                  label="Connect another student"
+                  onPress={() => setShowConnect(true)}
+                  className="mb-5 self-start"
+                />
+              )}
 
               {students.length === 0 && !refreshing ? (
                 <SectionCard className="items-center py-8">
@@ -173,14 +188,7 @@ export default function SchoolWorkspaceScreen() {
                   </View>
                 </View>
 
-                <View className="bg-muted rounded-xl p-3 mb-3">
-                  <MicroText className="text-muted-foreground mb-1">Return-to-Learn status</MicroText>
-                  <Text className="text-sm font-medium text-foreground">
-                    {student.returnToLearnStatus ?? 'Not recorded'}
-                  </Text>
-                </View>
-
-                <SubheadingText className="text-sm mb-2">Active accommodations</SubheadingText>
+                <SubheadingText className="text-sm mb-2">Current school supports</SubheadingText>
                 {studentAccs.length === 0 ? (
                   <MicroText className="text-muted-foreground">No active accommodations to display.</MicroText>
                 ) : (
@@ -190,22 +198,15 @@ export default function SchoolWorkspaceScreen() {
                         <Text className="text-sm font-medium text-foreground mb-1" numberOfLines={2}>
                           {acc.title}
                         </Text>
-                        <MicroText className="text-muted-foreground">
-                          Source: {acc.source}
-                        </MicroText>
                         {acc.issuedDate ? (
                           <MicroText className="text-muted-foreground">
-                            Issued {formatDate(acc.issuedDate)}
+                            Issued / started: {formatDate(acc.issuedDate)}
                           </MicroText>
                         ) : null}
                         <MicroText className="text-muted-foreground">
-                          Updated {formatDate(acc.updatedAt.slice(0, 10))}
+                          Valid through: {acc.validUntil ? formatDate(acc.validUntil) : 'No end date recorded'}
                         </MicroText>
-                        {acc.validUntil ? (
-                          <MicroText className="text-muted-foreground">
-                            Valid until {formatDate(acc.validUntil)}
-                          </MicroText>
-                        ) : null}
+                        <MicroText className="mt-1 font-semibold text-foreground">Active</MicroText>
                       </View>
                     ))}
                   </View>

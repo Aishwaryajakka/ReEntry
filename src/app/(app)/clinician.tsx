@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { View, Text, TextInput, FlatList, KeyboardAvoidingView } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { Users, Activity, TrendingUp } from 'lucide-react-native';
+import { Users, Activity } from 'lucide-react-native';
 
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
@@ -30,18 +30,11 @@ function formatDate(dateStr: string): string {
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function average(nums: number[]): number {
-  if (nums.length === 0) return 0;
-  return Math.round((nums.reduce((a, b) => a + b, 0) / nums.length) * 10) / 10;
-}
-
-function computeCategoryCounts(logs: ClinicianActivityLog[]): Map<string, number> {
-  const counts = new Map<string, number>();
-  for (const log of logs) {
-    counts.set(log.activityCategory, (counts.get(log.activityCategory) ?? 0) + 1);
-  }
-  return counts;
-}
+const MANAGEABILITY: Record<number, string> = {
+  1: 'Very difficult',
+  2: 'Some difficulty',
+  3: 'Manageable',
+};
 
 export default function ClinicianWorkspaceScreen() {
   const { session, role } = useSession();
@@ -49,6 +42,7 @@ export default function ClinicianWorkspaceScreen() {
 
   const clinicianId = session?.user?.id;
   const displayUsername = session?.user?.email?.replace('@miaoda.com', '');
+  const currentDate = new Date().toISOString().slice(0, 10);
 
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -61,6 +55,7 @@ export default function ClinicianWorkspaceScreen() {
   const [refreshing, setRefreshing] = useState(false);
   const [addStudentId, setAddStudentId] = useState<string | null>(null);
   const [editAcc, setEditAcc] = useState<SchoolAccommodation | null>(null);
+  const [showConnect, setShowConnect] = useState(false);
 
   const loadData = useCallback(async () => {
     if (!clinicianId) return;
@@ -141,6 +136,7 @@ export default function ClinicianWorkspaceScreen() {
     const studentId = await connectStudentByCode(code, 'clinician');
     if (studentId) {
       setCode('');
+      setShowConnect(false);
       await loadData();
     } else {
       setError('That code is invalid, expired, or already in use. Please double-check and try again.');
@@ -180,7 +176,7 @@ export default function ClinicianWorkspaceScreen() {
                   Review self-reported recovery records shared with you by students.
                 </MicroText>
 
-                <SectionCard className="mb-5">
+                {students.length === 0 || showConnect ? <SectionCard className="mb-5">
                   <View className="flex-row items-center gap-2 mb-2">
                     <Users size={18} color={themeColors.foreground} />
                     <Text className="text-base font-semibold text-foreground">Connect Student</Text>
@@ -210,7 +206,20 @@ export default function ClinicianWorkspaceScreen() {
                     loading={loading}
                     className="w-full"
                   />
-                </SectionCard>
+                  {students.length > 0 ? (
+                    <SecondaryButton
+                      label="Cancel"
+                      onPress={() => setShowConnect(false)}
+                      className="mt-3 w-full"
+                    />
+                  ) : null}
+                </SectionCard> : (
+                  <SecondaryButton
+                    label="Connect another student"
+                    onPress={() => setShowConnect(true)}
+                    className="mb-5 self-start"
+                  />
+                )}
 
                 {students.length === 0 && !refreshing ? (
                   <SectionCard className="items-center py-8">
@@ -230,8 +239,14 @@ export default function ClinicianWorkspaceScreen() {
               const recurringTags = Array.from(studentTagCounts.entries())
                 .sort((a, b) => b[1] - a[1])
                 .slice(0, 5);
-              const categoryCounts = computeCategoryCounts(studentLogs);
               const studentAccs = accommodationsByStudent.get(student.studentId) ?? [];
+              const activeStudentAccs = studentAccs.filter(
+                (acc) => acc.active && (!acc.validUntil || acc.validUntil >= currentDate),
+              );
+              const chronologicalDates = studentLogs.map((log) => log.date).sort();
+              const observationWindow = chronologicalDates.length > 0
+                ? `${formatDate(chronologicalDates[0])} – ${formatDate(chronologicalDates[chronologicalDates.length - 1])}`
+                : 'No activity dates recorded';
 
               return (
                 <SectionCard className="mb-4">
@@ -247,35 +262,31 @@ export default function ClinicianWorkspaceScreen() {
                       </Text>
                       <MicroText className="text-muted-foreground">Student</MicroText>
                     </View>
-                    <PrimaryButton
-                      label="Record"
-                      onPress={() => setAddStudentId(student.studentId)}
-                      className="rounded-full px-3 py-1"
-                      style={{ minHeight: 44 }}
-                      accessibilityLabel="Record accommodation"
-                    />
                   </View>
 
-                  <View className="bg-muted rounded-xl p-3 mb-3">
-                    <MicroText className="text-muted-foreground mb-1">Return-to-Learn status</MicroText>
-                    <Text className="text-sm font-medium text-foreground">
-                      {student.returnToLearnStatus ?? 'Not recorded'}
-                    </Text>
-                  </View>
-
-                  {studentCheckIns.length > 0 && (
-                    <View className="bg-muted rounded-xl p-3 mb-3">
-                      <View className="flex-row items-center gap-2 mb-1">
-                        <TrendingUp size={14} color={themeColors.foregroundMuted} />
-                        <MicroText className="text-muted-foreground">Recent daily check-in average</MicroText>
-                      </View>
-                      <Text className="text-sm font-medium text-foreground">
-                        Manageability: {average(studentCheckIns.slice(0, 7).map((c) => c.overallManageability))}
-                      </Text>
+                  <SubheadingText className="mb-2">Student summary</SubheadingText>
+                  <View className="mb-4 gap-2 rounded-xl bg-muted p-3">
+                    <View>
+                      <MicroText className="text-muted-foreground">Observation window</MicroText>
+                      <Text className="text-sm font-medium text-foreground">{observationWindow}</Text>
                     </View>
-                  )}
+                    <View className="flex-row flex-wrap gap-2">
+                      <View className="rounded-full bg-background px-3 py-1.5">
+                        <MicroText className="text-foreground">{studentLogs.length} activities</MicroText>
+                      </View>
+                      <View className="rounded-full bg-background px-3 py-1.5">
+                        <MicroText className="text-foreground">{studentCheckIns.length} check-ins</MicroText>
+                      </View>
+                      <View className="rounded-full bg-background px-3 py-1.5">
+                        <MicroText className="text-foreground">{activeStudentAccs.length} current supports</MicroText>
+                      </View>
+                    </View>
+                  </View>
 
-                  <SubheadingText className="text-sm mb-2">Recent activity logs</SubheadingText>
+                  <SubheadingText className="text-sm mb-2">Functional evidence</SubheadingText>
+                  <MicroText className="mb-3 leading-5 text-muted-foreground">
+                    Recent self-reported activity records. These observations do not determine medical readiness.
+                  </MicroText>
                   {recentLogs.length === 0 ? (
                     <MicroText className="text-muted-foreground mb-3">No activity records yet.</MicroText>
                   ) : (
@@ -298,35 +309,23 @@ export default function ClinicianWorkspaceScreen() {
                                 <MicroText className="text-muted-foreground">{log.durationMinutes} min</MicroText>
                               </View>
                             )}
-                            <View className="flex-row items-center gap-1">
-                              <TrendingUp size={12} color={themeColors.foregroundMuted} />
-                              <MicroText className="text-muted-foreground">Self-reported manageability {log.manageability}</MicroText>
-                            </View>
+                            <MicroText className="text-muted-foreground">
+                              {MANAGEABILITY[log.manageability] ?? `Manageability ${log.manageability}`}
+                            </MicroText>
                           </View>
+                          {challengeTags.some((tag) => tag.activityLogId === log.id) ? (
+                            <View className="mt-2 flex-row flex-wrap gap-1.5">
+                              {challengeTags
+                                .filter((tag) => tag.activityLogId === log.id)
+                                .map((tag) => (
+                                  <View key={tag.id} className="rounded-full bg-background px-2.5 py-1">
+                                    <MicroText className="text-foreground">{tag.tag}</MicroText>
+                                  </View>
+                                ))}
+                            </View>
+                          ) : null}
                         </View>
                       ))}
-                    </View>
-                  )}
-
-                  {categoryCounts.size > 0 && (
-                    <View className="mb-3">
-                      <SubheadingText className="text-sm mb-2">Activity categories</SubheadingText>
-                      <View className="flex-row flex-wrap gap-2">
-                        {Array.from(categoryCounts.entries()).map(([category, count]) => (
-                          <View key={category} className="bg-muted rounded-full px-3 py-1">
-                            <MicroText className="text-foreground">{category}: {count} recorded</MicroText>
-                          </View>
-                        ))}
-                      </View>
-                    </View>
-                  )}
-
-                  {studentLogs.length > 1 && (
-                    <View className="bg-muted rounded-xl p-3 mb-3">
-                      <MicroText className="text-muted-foreground mb-1">Self-reported pattern</MicroText>
-                      <Text className="text-sm font-medium text-foreground">
-                        Compared with earlier entries, the average manageability across this student's {studentLogs.length} activity logs is {average(studentLogs.map((l) => l.manageability))}.
-                      </Text>
                     </View>
                   )}
 
@@ -344,14 +343,13 @@ export default function ClinicianWorkspaceScreen() {
                   )}
 
                   <View className="flex-row items-center justify-between mb-2">
-                    <SubheadingText className="text-sm">Recorded accommodations</SubheadingText>
-                    <MicroText className="text-muted-foreground">Manually recorded by the clinician</MicroText>
+                    <SubheadingText className="text-sm">Current school supports</SubheadingText>
                   </View>
-                  {studentAccs.length === 0 ? (
+                  {activeStudentAccs.length === 0 ? (
                     <MicroText className="text-muted-foreground">No recorded accommodations.</MicroText>
                   ) : (
                     <View className="gap-2">
-                      {studentAccs.map((acc) => (
+                      {activeStudentAccs.map((acc) => (
                         <View key={acc.id} className="bg-muted rounded-xl p-3">
                           <View className="flex-row items-center justify-between mb-1">
                             <Text className="text-sm font-medium text-foreground" numberOfLines={2}>
@@ -388,6 +386,17 @@ export default function ClinicianWorkspaceScreen() {
                       ))}
                     </View>
                   )}
+
+                  <View className="mt-4 border-t border-border pt-4">
+                    <MicroText className="mb-3 leading-5 text-muted-foreground">
+                      Review the student's recorded experiences and document supports you decide are appropriate.
+                    </MicroText>
+                    <PrimaryButton
+                      label="Record accommodation"
+                      onPress={() => setAddStudentId(student.studentId)}
+                      className="w-full"
+                    />
+                  </View>
                 </SectionCard>
               );
             }}
