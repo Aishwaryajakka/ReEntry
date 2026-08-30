@@ -120,7 +120,7 @@ export function RecoveryStory({ activityLogs }: { activityLogs: ActivityLog[] })
         ReEntry looks for associations in what you recorded. These observations do not diagnose, predict recovery, or replace clinical judgment.
       </MicroText>
       <MicroText className="mb-4 text-muted-foreground">
-        Model check: {result.metadata.trainingRecords} records · recent validation error {result.metadata.validationMae?.toFixed(2)} rating points
+        Personalized model based on {result.metadata.trainingRecords} activity records.
       </MicroText>
       {result.patterns.map((pattern) => (
         <PatternCard key={pattern.id} pattern={pattern} activities={activities} />

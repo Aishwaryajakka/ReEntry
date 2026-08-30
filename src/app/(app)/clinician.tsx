@@ -11,6 +11,13 @@ import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } fro
 import { useSession } from '@/ctx';
 import { supabase } from '@/client/supabase';
 import { COLORS, useThemeColors } from '@/lib/theme';
+import { ACTIVITY_CATEGORIES, type ActivityCategory, type ActivityLog } from '@/data/types';
+import { CHALLENGE_TAGS, TOLERANCE_LABELS } from '@/data/activityCatalog';
+import {
+  analyzePersonalizedPatterns,
+  type PatternModelResult,
+  type PersonalizedPattern,
+} from '@/lib/patternModel';
 import {
   connectStudentByCode,
   fetchClinicianLinkedStudents,
@@ -35,6 +42,61 @@ const MANAGEABILITY: Record<number, string> = {
   2: 'Some difficulty',
   3: 'Manageable',
 };
+
+function ClinicianPatternCard({
+  pattern,
+  activities,
+}: {
+  pattern: PersonalizedPattern;
+  activities: Map<string, ActivityLog>;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const evidence = pattern.supportingActivityIds
+    .map((id) => activities.get(id))
+    .filter((activity): activity is ActivityLog => Boolean(activity));
+
+  return (
+    <View className="mb-2 rounded-xl bg-muted p-3">
+      <LabelText className="mb-1 leading-5">{pattern.title}</LabelText>
+      <MicroText className="mb-1 leading-5 text-muted-foreground">
+        {pattern.description}
+      </MicroText>
+      <MicroText className="mb-3 text-muted-foreground">
+        Evidence strength: {pattern.strength} · {pattern.supportCount} supporting records
+      </MicroText>
+      <SecondaryButton
+        label={expanded ? 'Hide details' : 'Why am I seeing this?'}
+        onPress={() => setExpanded((value) => !value)}
+        className="self-start rounded-full px-3 py-1"
+        style={{ minHeight: 44 }}
+      />
+      {expanded ? (
+        <View className="mt-3 border-t border-border pt-3">
+          {evidence.map((activity) => {
+            const tags = activity.challengeTagIds
+              .map((id) => CHALLENGE_TAGS.find((tag) => tag.id === id)?.label)
+              .filter((label): label is string => Boolean(label));
+            return (
+              <View key={activity.id} className="mb-3">
+                <Text className="text-sm font-medium text-foreground">
+                  {formatDate(activity.date)} · {activity.customLabel || activity.activityCategory}
+                </Text>
+                <MicroText className="text-muted-foreground">
+                  {TOLERANCE_LABELS[activity.toleranceRating]} · {activity.durationMinutes} min
+                </MicroText>
+                {tags.length > 0 ? (
+                  <MicroText className="mt-0.5 text-muted-foreground">
+                    Tags: {tags.join(', ')}
+                  </MicroText>
+                ) : null}
+              </View>
+            );
+          })}
+        </View>
+      ) : null}
+    </View>
+  );
+}
 
 export default function ClinicianWorkspaceScreen() {
   const { session, role } = useSession();
@@ -124,6 +186,52 @@ export default function ClinicianWorkspaceScreen() {
     }
     return map;
   }, [accommodations]);
+
+  const patternReviewsByStudent = useMemo(() => {
+    const reviews = new Map<
+      string,
+      { result: PatternModelResult; activities: Map<string, ActivityLog> }
+    >();
+
+    for (const student of students) {
+      const modelActivities = activityLogs
+        .filter(
+          (log) =>
+            log.studentId === student.studentId &&
+            log.manageability >= 1 &&
+            log.manageability <= 3,
+        )
+        .map((log): ActivityLog => {
+          const knownCategory = ACTIVITY_CATEGORIES.includes(
+            log.activityCategory as ActivityCategory,
+          )
+            ? (log.activityCategory as ActivityCategory)
+            : 'Other';
+          const tagIds = challengeTags
+            .filter((tag) => tag.activityLogId === log.id)
+            .map((tag) => CHALLENGE_TAGS.find((known) => known.label === tag.tag)?.id)
+            .filter((id): id is string => Boolean(id));
+
+          return {
+            id: log.id,
+            date: log.date,
+            activityCategory: knownCategory,
+            customLabel: log.activityName,
+            durationMinutes: log.durationMinutes,
+            toleranceRating: log.manageability as ActivityLog['toleranceRating'],
+            notes: log.note ?? '',
+            challengeTagIds: tagIds,
+          };
+        });
+
+      reviews.set(student.studentId, {
+        result: analyzePersonalizedPatterns(modelActivities),
+        activities: new Map(modelActivities.map((activity) => [activity.id, activity])),
+      });
+    }
+
+    return reviews;
+  }, [activityLogs, challengeTags, students]);
 
   const handleConnect = async () => {
     if (!clinicianId) return;
@@ -247,6 +355,7 @@ export default function ClinicianWorkspaceScreen() {
               const observationWindow = chronologicalDates.length > 0
                 ? `${formatDate(chronologicalDates[0])} – ${formatDate(chronologicalDates[chronologicalDates.length - 1])}`
                 : 'No activity dates recorded';
+              const patternReview = patternReviewsByStudent.get(student.studentId);
 
               return (
                 <SectionCard className="mb-4">
@@ -341,6 +450,29 @@ export default function ClinicianWorkspaceScreen() {
                       </View>
                     </View>
                   )}
+
+                  <View className="mb-4 border-t border-border pt-4">
+                    <SubheadingText className="mb-2 text-sm">AI-assisted observations</SubheadingText>
+                    <MicroText className="mb-3 leading-5 text-muted-foreground">
+                      Personalized analysis of this student's recorded activities. These associations support review and do not diagnose, predict recovery, or recommend accommodations.
+                    </MicroText>
+                    {patternReview?.result.status === 'ready' ? (
+                      patternReview.result.patterns.map((pattern) => (
+                        <ClinicianPatternCard
+                          key={pattern.id}
+                          pattern={pattern}
+                          activities={patternReview.activities}
+                        />
+                      ))
+                    ) : (
+                      <View className="rounded-xl bg-muted p-3">
+                        <LabelText className="mb-1">Building the pattern map</LabelText>
+                        <MicroText className="leading-5 text-muted-foreground">
+                          ReEntry does not display AI-assisted observations until enough useful variation exists in the student's records and the model quality checks are usable.
+                        </MicroText>
+                      </View>
+                    )}
+                  </View>
 
                   <View className="flex-row items-center justify-between mb-2">
                     <SubheadingText className="text-sm">Current school supports</SubheadingText>
