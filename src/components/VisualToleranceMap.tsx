@@ -5,8 +5,8 @@ import { COLORS, useThemeColors } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
 
-const LABEL_WIDTH = 100;
-const CELL_SIZE = 62;
+const LABEL_WIDTH = 124;
+const CELL_SIZE = 58;
 
 function dateHeader(date: string): string {
   return new Date(`${date}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
@@ -70,7 +70,7 @@ export function VisualToleranceMap({ dimensions, recordedDates, selectedId, sele
               <Pressable
                 key={dimension.id}
                 onPress={() => onSelect(dimension.id, null)}
-                style={{ height: 78, backgroundColor: rowSelected ? `${COLORS.brightYellow}0A` : 'transparent' }}
+                style={{ height: 78, backgroundColor: rowSelected ? `${COLORS.brightYellow}05` : 'transparent' }}
                 className={cn('justify-center px-2 py-2', rowIndex > 0 && 'border-t border-border')}
                 accessibilityRole="button"
                 accessibilityState={{ selected: rowSelected && selectedDate === null }}
@@ -78,7 +78,7 @@ export function VisualToleranceMap({ dimensions, recordedDates, selectedId, sele
               >
                 {rowSelected ? <View pointerEvents="none" className="absolute bottom-2 left-0 top-2 w-[3px] rounded-full bg-accent" /> : null}
                 <Text className="text-sm font-semibold text-foreground" numberOfLines={2}>{dimension.label}</Text>
-                <MicroText className="mt-1 leading-4 text-muted-foreground" numberOfLines={2}>{compactState(dimension.state)} · {dimension.supportCount} record{dimension.supportCount === 1 ? '' : 's'}</MicroText>
+                <MicroText className="mt-1 leading-4 text-muted-foreground">{compactState(dimension.state)} · {dimension.supportCount} record{dimension.supportCount === 1 ? '' : 's'}</MicroText>
               </Pressable>
               );
             })}
@@ -103,7 +103,7 @@ export function VisualToleranceMap({ dimensions, recordedDates, selectedId, sele
               {dimensions.map((dimension, rowIndex) => {
                 const rowSelected = dimension.id === selectedId;
                 return (
-                  <View key={dimension.id} className={cn('h-[78px] flex-row', rowIndex > 0 && 'border-t border-border')} style={{ backgroundColor: rowSelected ? `${COLORS.brightYellow}0D` : 'transparent' }}>
+                  <View key={dimension.id} className={cn('h-[78px] flex-row', rowIndex > 0 && 'border-t border-border')} style={{ backgroundColor: rowSelected ? `${COLORS.brightYellow}05` : 'transparent' }}>
                     {dimension.cells.map((cell) => {
                       const selected = rowSelected && selectedDate === cell.date;
                       const colors = cellColors(cell.state, theme, isDark, lowStimulation);
@@ -111,7 +111,7 @@ export function VisualToleranceMap({ dimensions, recordedDates, selectedId, sele
                         <Pressable
                           key={cell.date}
                           onPress={() => onSelect(dimension.id, cell.date)}
-                          style={{ width: CELL_SIZE - 8, height: 52, marginHorizontal: 4, marginVertical: 13, borderColor: selected ? COLORS.turmeric : colors.border, borderWidth: selected ? 3 : lowStimulation ? 1 : 1.5, backgroundColor: colors.background }}
+                          style={{ width: 44, height: 44, marginHorizontal: 7, marginVertical: 17, borderColor: selected ? COLORS.turmeric : colors.border, borderWidth: selected ? 2.5 : 1, backgroundColor: colors.background }}
                           className="items-center justify-center rounded-xl"
                           accessibilityRole="button"
                           accessibilityState={{ selected }}
@@ -145,19 +145,19 @@ export function VisualToleranceMap({ dimensions, recordedDates, selectedId, sele
 }
 
 function cellColors(state: ToleranceCellState, theme: ReturnType<typeof useThemeColors>, isDark: boolean, lowStimulation: boolean) {
-  const backgroundAlpha = lowStimulation ? '0A' : isDark ? '20' : '18';
+  const backgroundAlpha = lowStimulation ? '05' : isDark ? '12' : '0D';
 
   if (state === 'Manageable') {
     const symbol = isDark ? '#9CAF94' : '#53694F';
-    return { background: `${symbol}${backgroundAlpha}`, border: `${symbol}70`, symbol };
+    return { background: `${symbol}${backgroundAlpha}`, border: `${symbol}45`, symbol };
   }
   if (state === 'Some difficulty') {
     const symbol = isDark ? '#DDB15C' : '#C58E35';
-    return { background: `${symbol}${backgroundAlpha}`, border: `${symbol}70`, symbol };
+    return { background: `${symbol}${backgroundAlpha}`, border: `${symbol}45`, symbol };
   }
   if (state === 'Very difficult') {
     const symbol = isDark ? '#C88B43' : '#9C642D';
-    return { background: `${symbol}${backgroundAlpha}`, border: `${symbol}85`, symbol };
+    return { background: `${symbol}${backgroundAlpha}`, border: `${symbol}55`, symbol };
   }
   return { background: 'transparent', border: theme.border, symbol: isDark ? '#A8AB9B' : '#8A8D7C' };
 }
