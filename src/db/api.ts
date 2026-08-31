@@ -12,12 +12,86 @@ import type {
   ChallengeTagRow,
   DailyCheckInRow,
   StudentAccessRow,
+  StudentScheduleItemRow,
   UserPreferencesRow,
 } from '@/types/types';
 
 export type { Appearance };
 
 export const DEFAULT_APPEARANCE: Appearance = 'light';
+
+export interface ScheduleItemInput {
+  activityName: string;
+  activityCategory: string;
+  daysOfWeek: number[];
+  startTime: string;
+  endTime: string;
+  remindersEnabled: boolean;
+  active: boolean;
+}
+
+const SCHEDULE_COLUMNS = 'id, student_id, activity_name, activity_category, days_of_week, start_time, end_time, reminders_enabled, active, created_at, updated_at';
+
+export async function fetchStudentScheduleItems(userId: string): Promise<StudentScheduleItemRow[]> {
+  const { data, error } = await supabase
+    .from('student_schedule_items')
+    .select(SCHEDULE_COLUMNS)
+    .eq('student_id', userId)
+    .order('start_time');
+  if (error) {
+    console.error('fetchStudentScheduleItems failed', error);
+    return [];
+  }
+  return data ?? [];
+}
+
+export async function insertStudentScheduleItem(userId: string, input: ScheduleItemInput): Promise<StudentScheduleItemRow> {
+  const { data, error } = await supabase
+    .from('student_schedule_items')
+    .insert({
+      student_id: userId,
+      activity_name: input.activityName.trim(),
+      activity_category: input.activityCategory,
+      days_of_week: input.daysOfWeek,
+      start_time: input.startTime,
+      end_time: input.endTime,
+      reminders_enabled: input.remindersEnabled,
+      active: input.active,
+    })
+    .select(SCHEDULE_COLUMNS)
+    .single();
+  if (error || !data) throw error ?? new Error('Schedule item was not created.');
+  return data;
+}
+
+export async function updateStudentScheduleItem(userId: string, itemId: string, input: ScheduleItemInput): Promise<StudentScheduleItemRow> {
+  const { data, error } = await supabase
+    .from('student_schedule_items')
+    .update({
+      activity_name: input.activityName.trim(),
+      activity_category: input.activityCategory,
+      days_of_week: input.daysOfWeek,
+      start_time: input.startTime,
+      end_time: input.endTime,
+      reminders_enabled: input.remindersEnabled,
+      active: input.active,
+    })
+    .eq('id', itemId)
+    .eq('student_id', userId)
+    .select(SCHEDULE_COLUMNS)
+    .single();
+  if (error || !data) throw error ?? new Error('Schedule item was not updated.');
+  return data;
+}
+
+export async function deleteStudentScheduleItem(userId: string, itemId: string): Promise<void> {
+  const { error } = await supabase
+    .from('student_schedule_items')
+    .delete()
+    .eq('id', itemId)
+    .eq('student_id', userId);
+  if (error) throw error;
+}
 
 export async function fetchUserPreferences(
   userId: string,

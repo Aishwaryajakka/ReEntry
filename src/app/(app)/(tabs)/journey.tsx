@@ -30,7 +30,7 @@ import { DataBadgeList } from '@/components/DataBadge';
 import { CategoryIcon } from '@/components/Icons';
 import { ActivityLogModal } from '@/components/ActivityLogModal';
 import { RecoveryStory } from '@/components/RecoveryStory';
-import { ReEntryWordmark } from '@/components/ReEntryWordmark';
+import { StudentPageHeader } from '@/components/StudentPageHeader';
 import { useAppContext } from '@/context/AppContext';
 import { useReducedExperience } from '@/lib/accessibility';
 import { TOLERANCE_LABELS } from '@/data/activityCatalog';
@@ -126,9 +126,9 @@ function ActivityRow({
             />
           </View>
 
-          <View className="flex-1">
+          <View className="min-w-0 flex-1">
             <View className="flex-row items-center justify-between">
-              <Text className="text-sm font-medium text-foreground">
+              <Text className="mr-2 flex-1 text-sm font-semibold text-foreground" numberOfLines={2}>
                 {title}
               </Text>
 
@@ -261,7 +261,7 @@ export default function JourneyScreen() {
 
   return (
     <ScreenShell>
-      <ReEntryWordmark className="mb-5" />
+      <StudentPageHeader />
 
       <HeadingText className="mb-2 leading-tight text-foreground">
         Recovery Journey

@@ -10,7 +10,11 @@
     "ios": {
       "supportsTablet": true,
       "buildNumber": "1",
-      "bundleIdentifier": "com.miaoda.appe1ekxea1zf29"
+      "bundleIdentifier": "com.miaoda.appe1ekxea1zf29",
+      "infoPlist": {
+        "NSSpeechRecognitionUsageDescription": "Allow ReEntry to transcribe your activity description so you can review it before logging.",
+        "NSMicrophoneUsageDescription": "Allow ReEntry to use the microphone for voice-assisted activity logging."
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -19,7 +23,10 @@
       },
       "predictiveBackGestureEnabled": false,
       "versionCode": 1,
-      "package": "com.miaoda.appe1ekxea1zf29"
+      "package": "com.miaoda.appe1ekxea1zf29",
+      "permissions": [
+        "android.permission.RECORD_AUDIO"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -31,13 +38,27 @@
       "expo-sqlite",
       "expo-font",
       "expo-system-ui",
-      "expo-image"
+      "expo-image",
+      "expo-notifications",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "Allow ReEntry to use the microphone for voice-assisted activity logging.",
+          "speechRecognitionPermission": "Allow ReEntry to transcribe your activity description so you can review it before logging.",
+          "androidSpeechServicePackages": [
+            "com.google.android.googlequicksearchbox"
+          ]
+        }
+      ]
     ],
-    "router": {
-      "root": "src"
-    },
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "e1ae0bb3-49b0-4a48-b299-ebec1d122bd0"
+      }
     }
   }
 }

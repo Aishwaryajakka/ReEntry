@@ -39,11 +39,16 @@ interface ActivityLogModalProps {
   onClose: () => void;
   log?: ActivityLog;
   prefill?: {
-    activityCategory: ActivityCategory;
-    customLabel: string;
-    durationMinutes: number;
-    toleranceRating: ActivityLog['toleranceRating'];
+    activityCategory?: ActivityCategory | null;
+    customLabel?: string | null;
+    durationMinutes?: number | null;
+    toleranceRating?: ActivityLog['toleranceRating'] | null;
+    challengeTagIds?: string[];
+    notes?: string;
   };
+  reviewTranscript?: string;
+  title?: string;
+  submitLabel?: string;
 }
 
 export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
@@ -51,6 +56,8 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
   onClose,
   log,
   prefill,
+  title,
+  submitLabel,
 }) => {
   const {
     addActivityLog,
@@ -104,8 +111,8 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
       setCustomLabel(log?.customLabel ?? prefill?.customLabel ?? '');
       setDuration(log?.durationMinutes ?? prefill?.durationMinutes ?? 30);
       setTolerance(log?.toleranceRating ?? prefill?.toleranceRating ?? 2);
-      setNote(log?.notes ?? '');
-      setSelectedTagIds(new Set(log?.challengeTagIds ?? []));
+      setNote(log?.notes ?? prefill?.notes ?? '');
+      setSelectedTagIds(new Set(log?.challengeTagIds ?? prefill?.challengeTagIds ?? []));
       setError(null);
     } else {
       reset();
@@ -215,7 +222,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
           >
             <View className="p-6">
               <View className="flex-row items-center justify-between mb-2">
-                <SubheadingText>Log activity</SubheadingText>
+                <SubheadingText>{title ?? 'Log activity'}</SubheadingText>
 
                 <Pressable
                   onPress={onClose}
@@ -471,7 +478,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
 
               {/* Actions */}
               <PrimaryButton
-                label={isEditing ? 'Save changes' : 'Save entry'}
+                label={isEditing ? 'Save changes' : submitLabel ?? 'Save entry'}
                 onPress={handleSubmit}
                 disabled={!isValid}
                 className="w-full mb-3"

@@ -7,7 +7,7 @@
  * More difficult in recent records, Not enough records yet.
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text } from 'react-native';
 import { useRouter, type RelativePathString } from 'expo-router';
 import { ScreenShell } from '@/components/ScreenShell';
@@ -15,8 +15,10 @@ import { SectionCard } from '@/components/SectionCard';
 import { PrimaryButton } from '@/components/Buttons';
 import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
 import { CategoryIcon } from '@/components/Icons';
+import { StudentPageHeader } from '@/components/StudentPageHeader';
+import { VisualToleranceMap } from '@/components/VisualToleranceMap';
 import { useAppContext } from '@/context/AppContext';
-import { TOLERANCE_LABELS } from '@/data/activityCatalog';
+import { CHALLENGE_TAGS, TOLERANCE_LABELS } from '@/data/activityCatalog';
 import { ACTIVITY_CATEGORIES } from '@/data/types';
 import type { ActivityLog } from '@/data/types';
 import { COLORS, useThemeColors } from '@/lib/theme';
@@ -25,6 +27,7 @@ import {
   compareEarlierAndRecent,
   groupActivityLogsByCategory,
 } from '@/lib/activityAnalysis';
+import { buildToleranceMap, type ToleranceDimensionId } from '@/lib/toleranceMap';
 
 const CATEGORY_CONFIG: Record<string, { color: string }> = {
   Reading: { color: COLORS.moss },
@@ -49,6 +52,21 @@ interface CategorySummary {
   avg: number | null;
   trend: TrendLabel;
   color: string;
+}
+
+function formatMapDate(date: string): string {
+  return new Date(`${date}T00:00:00`).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+  });
+}
+
+function formatEvidenceDate(date: string): string {
+  return new Date(`${date}T00:00:00`).toLocaleDateString('en-US', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  });
 }
 
 function deriveTrend(ratings: number[]): TrendLabel {
@@ -151,7 +169,7 @@ function CategoryCard({ summary }: { summary: CategorySummary }) {
       </View>
 
       {avgRounded !== null && (
-        <MicroText className="text-muted-foreground">
+        <MicroText className="border-t border-border pt-3 text-muted-foreground">
           Average manageability: {TOLERANCE_LABELS[avgRounded as 1 | 2 | 3]}
         </MicroText>
       )}
@@ -160,8 +178,10 @@ function CategoryCard({ summary }: { summary: CategorySummary }) {
 }
 
 export default function ToleranceScreen() {
-  const { activityLogs } = useAppContext();
+  const { activityLogs, lowStimulationMode } = useAppContext();
   const router = useRouter();
+  const [selectedDimensionId, setSelectedDimensionId] = useState<ToleranceDimensionId>('class-school');
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const categorySummaries = useMemo<CategorySummary[]>(() => {
     const sortedLogs = activityLogs
@@ -177,56 +197,86 @@ export default function ToleranceScreen() {
       .sort((a, b) => b.count - a.count || a.key.localeCompare(b.key));
   }, [activityLogs]);
 
-  const overallPattern = useMemo(() => {
-    const all = activityLogs.slice().sort((a, b) => a.date.localeCompare(b.date));
-    if (all.length < 4) return 'Not enough records yet';
-    const trend = compareEarlierAndRecent(all.map((log) => log.toleranceRating));
-    if (trend === 'improving') return 'Improving in records';
-    if (trend === 'more-difficult') return 'More difficult in recent records';
-    return 'Mixed in records';
-  }, [activityLogs]);
-
-  const topCategory = categorySummaries.find((c) => c.count > 0);
   const totalCount = activityLogs.length;
   const categoryWithRecords = categorySummaries.filter((c) => c.count > 0);
+  const toleranceMap = useMemo(() => buildToleranceMap(activityLogs), [activityLogs]);
+  const selectedDimension = toleranceMap.dimensions.find((dimension) => dimension.id === selectedDimensionId) ?? toleranceMap.dimensions[0];
+  const selectedCell = selectedDate
+    ? selectedDimension.cells.find((cell) => cell.date === selectedDate) ?? null
+    : null;
+  const selectedActivities = selectedCell?.supportingActivities ?? selectedDimension.supportingActivities;
+  const selectedState = selectedCell?.state ?? selectedDimension.state;
+  const recentWindow = toleranceMap.firstDate && toleranceMap.lastDate
+    ? `${formatMapDate(toleranceMap.firstDate)}–${formatMapDate(toleranceMap.lastDate)} · ${toleranceMap.recentActivities.length} activit${toleranceMap.recentActivities.length === 1 ? 'y' : 'ies'}`
+    : 'No recent activity records yet';
 
   return (
     <ScreenShell>
+      <StudentPageHeader />
       <EditorialLabel className="mb-3">Tolerance</EditorialLabel>
-      <HeadingText className="mb-2 leading-tight">Your tolerance{"\n"}areas</HeadingText>
+      <HeadingText className="mb-2 leading-tight">Your tolerance areas</HeadingText>
       <LabelText className="mb-5 leading-5">
-        Based on your activity logs. Patterns compare earlier and recent entries.
+        What has been manageable lately? This view describes your recent activity records.
       </LabelText>
 
-      {/* Overall summary or empty state */}
-      {totalCount === 0 ? (
-        <SectionCard className="mb-5 items-center py-8">
-          <Text className="text-xl font-semibold text-foreground mb-2">Your tolerance map starts here</Text>
-          <MicroText className="text-center leading-5 mb-5 px-4">
-            Log activities from your day and ReEntry will begin showing which parts of school and everyday life feel more or less manageable.
-          </MicroText>
-          <PrimaryButton
-            label="Log an activity"
-            onPress={() => router.navigate('/(app)/(tabs)/today' as RelativePathString)}
-            className="w-full mb-3"
-          />
-          <MicroText className="text-center text-muted-foreground leading-5">
-            Patterns appear as you add real experiences.
-          </MicroText>
-        </SectionCard>
-      ) : (
-        <SectionCard className="mb-5 border-l-4 border-l-secondary">
-          <View>
-            <MicroText className="mb-2 text-muted-foreground">
-              You reported {totalCount} activity{totalCount !== 1 ? 'ies' : 'y'} across {categoryWithRecords.length} categor{categoryWithRecords.length !== 1 ? 'ies' : 'y'}.
-            </MicroText>
-            <LabelText className="leading-5">
-              {overallPattern === 'Not enough records yet'
-                ? 'Keep logging activities. A clearer comparison will appear after a few more entries.'
-                : `Compared with earlier entries, your recent reports are ${overallPattern.toLowerCase()}.`}
-            </LabelText>
+      <SectionCard className="mb-5">
+        <View className="mb-2 flex-row items-start justify-between gap-3">
+          <View className="flex-1">
+            <SubheadingText>Functional Tolerance Map</SubheadingText>
+            <MicroText className="mt-1 leading-5 text-muted-foreground">Based on how manageable your recent activities felt.</MicroText>
           </View>
-        </SectionCard>
+          <MicroText className="max-w-[130px] text-right leading-4 text-muted-foreground">{recentWindow}</MicroText>
+        </View>
+        <VisualToleranceMap
+          dimensions={toleranceMap.dimensions}
+          recordedDates={toleranceMap.recordedDates}
+          selectedId={selectedDimension.id}
+          selectedDate={selectedDate}
+          onSelect={(dimensionId, date) => {
+            setSelectedDimensionId(dimensionId);
+            setSelectedDate(date);
+          }}
+          lowStimulation={lowStimulationMode}
+        />
+      </SectionCard>
+
+      <SectionCard className="mb-5 border-l-4 border-l-accent">
+        <SubheadingText className="mb-1">{selectedDimension.label}</SubheadingText>
+        {selectedDate && <MicroText className="mb-1 font-semibold text-muted-foreground">{formatEvidenceDate(selectedDate)}</MicroText>}
+        <LabelText className="mb-1 leading-5">{selectedState}</LabelText>
+        <MicroText className="mb-4 text-muted-foreground">
+          {selectedActivities.length} supporting record{selectedActivities.length === 1 ? '' : 's'}{selectedDate ? ' on this day' : ' across recent recorded days'}
+        </MicroText>
+        {selectedActivities.length > 0 ? (
+          <View>
+            {selectedActivities.map((activity) => {
+              const relevantTags = activity.challengeTagIds
+                .filter((tagId) => selectedDimension.relevantChallengeTagIds.includes(tagId))
+                .map((tagId) => CHALLENGE_TAGS.find((tag) => tag.id === tagId)?.label)
+                .filter((label): label is string => Boolean(label));
+              return (
+                <View key={activity.id} className="border-t border-border py-3 first:border-t-0">
+                  <View className="flex-row items-start justify-between gap-3">
+                    <Text className="min-w-0 flex-1 text-sm font-semibold text-foreground" numberOfLines={2}>{activity.customLabel || activity.activityCategory}</Text>
+                    <MicroText className="text-muted-foreground">{formatMapDate(activity.date)}</MicroText>
+                  </View>
+                  <MicroText className="mt-1 text-muted-foreground">{TOLERANCE_LABELS[activity.toleranceRating]} · {activity.durationMinutes} min</MicroText>
+                  {relevantTags.length > 0 && (
+                    <MicroText className="mt-1 text-muted-foreground">Relevant tags: {relevantTags.join(', ')}</MicroText>
+                  )}
+                </View>
+              );
+            })}
+          </View>
+        ) : (
+          <LabelText className="leading-5 text-muted-foreground">
+            {selectedDate ? 'No supporting activities were recorded for this area on this date.' : 'No recent activities support this area yet.'}
+          </LabelText>
+        )}
+      </SectionCard>
+
+      {totalCount === 0 && (
+        <PrimaryButton label="Log an activity" onPress={() => router.navigate('/(app)/(tabs)/today' as RelativePathString)} className="mb-5 w-full" />
       )}
 
       {/* Per-category cards */}
@@ -239,18 +289,6 @@ export default function ToleranceScreen() {
             ))}
           </View>
         </>
-      )}
-
-      {topCategory && (
-        <SectionCard className="mb-4 border-l-4 border-l-accent">
-          <MicroText className="mb-1 text-muted-foreground">Your records show</MicroText>
-          <LabelText className="leading-5">
-            {topCategory.key} is your most-logged category ({topCategory.count} record{topCategory.count !== 1 ? 's' : ''}).
-            {topCategory.trend === 'Not enough records yet'
-              ? ' Log more to see a trend.'
-              : ` Compared with earlier entries, this category is ${topCategory.trend.toLowerCase()}.`}
-          </LabelText>
-        </SectionCard>
       )}
 
       <View className="mt-2 px-1">

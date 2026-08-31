@@ -24,6 +24,13 @@ const admin = createClient(url, serviceRoleKey, {
   auth: { autoRefreshToken: false, persistSession: false },
 });
 const password = 'Pass123';
+const mayaSchedule = [
+  ['chemistry', 'Chemistry', 'Class', '09:00', '09:50'],
+  ['english', 'English', 'Class', '10:00', '10:50'],
+  ['math', 'Math', 'Class', '11:00', '11:50'],
+  ['lunch', 'Lunch', 'Social activity', '12:00', '12:30'],
+  ['study-hall', 'Study Hall', 'Class', '13:15', '14:00'],
+];
 const accounts = [
   { key: 'maya', username: 'maya.demo', role: 'student', displayName: 'Maya', age: 16 },
   { key: 'clinician', username: 'clinician.demo', role: 'clinician', displayName: 'Dr. Jordan Lee' },
@@ -74,6 +81,14 @@ async function ensureAccounts() {
 }
 
 async function seedMaya(users) {
+  const schedule = await admin.from('student_schedule_items').upsert(mayaSchedule.map(([key, activityName, activityCategory, startTime, endTime]) => ({
+    id: stableUuid(`maya:schedule:${key}`), student_id: users.maya.id,
+    activity_name: activityName, activity_category: activityCategory,
+    days_of_week: [1, 2, 3, 4, 5], start_time: startTime, end_time: endTime,
+    reminders_enabled: true, active: true,
+  })), { onConflict: 'id' });
+  if (schedule.error) throw schedule.error;
+
   const activityRows = ACTIVITY_LOGS.map((entry) => ({
     id: stableUuid(`maya:activity:${entry.id}`), student_id: users.maya.id,
     activity_category: entry.activityCategory, activity_name: entry.customLabel ?? entry.activityCategory,
@@ -127,8 +142,9 @@ async function verify(users) {
     countFixture('accommodation_records', ACCOMMODATION_RECORDS.map((entry) => stableUuid(`maya:accommodation:${entry.id}`))),
     countFixture('challenge_tags', ACTIVITY_LOGS.flatMap((entry) => entry.challengeTagIds.map((tag) => stableUuid(`maya:tag:${entry.id}:${tag}`)))),
     countFixture('student_access', [stableUuid('maya:link:clinician'), stableUuid('maya:link:school')]),
+    countFixture('student_schedule_items', mayaSchedule.map(([key]) => stableUuid(`maya:schedule:${key}`))),
   ]);
-  if (checks[0] !== 35 || checks[1] !== 14 || checks[2] !== 3 || checks[3] !== expectedTagCount || checks[4] !== 2) throw new Error(`Demo fixture verification failed: ${checks.join('/')}`);
+  if (checks[0] !== 35 || checks[1] !== 14 || checks[2] !== 3 || checks[3] !== expectedTagCount || checks[4] !== 2 || checks[5] !== 5) throw new Error(`Demo fixture verification failed: ${checks.join('/')}`);
 
   const totalQueries = await Promise.all([
     admin.from('activity_logs').select('id', { count: 'exact', head: true }).eq('student_id', users.maya.id),

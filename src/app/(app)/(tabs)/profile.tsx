@@ -17,6 +17,7 @@ import { SecondaryButton, DestructiveButton } from '@/components/Buttons';
 import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
 import { TOLERANCE_LABELS } from '@/data/activityCatalog';
 import { DividerLine } from '@/components/DividerLine';
+import { StudentPageHeader } from '@/components/StudentPageHeader';
 import { useAppContext } from '@/context/AppContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useSession } from '@/ctx';
@@ -148,6 +149,7 @@ export default function ProfileScreen() {
   return (
     <ScreenShell>
       {/* Header */}
+      <StudentPageHeader />
       <EditorialLabel className="mb-3">Profile</EditorialLabel>
       <HeadingText className="mb-6">Settings</HeadingText>
 
@@ -224,9 +226,9 @@ export default function ProfileScreen() {
         <>
           <SubheadingText className="mb-3">Connected Access</SubheadingText>
           <SectionCard className="mb-4">
-            <View className="flex-row items-center gap-2 mb-2">
+            <View className="mb-2 flex-row items-start gap-2">
               <Users size={18} color={themeColors.foreground} />
-              <Text className="text-base font-semibold text-foreground">Connected Access</Text>
+              <LabelText className="flex-1 leading-5">Control who can view the records shared for their role.</LabelText>
             </View>
             <LabelText className="leading-5 mb-4">
               Give this code to your school staff or clinician. They can enter it to connect to your ReEntry data.
@@ -236,11 +238,11 @@ export default function ProfileScreen() {
               {accessCode ? (
                 <>
                   <Text className="text-2xl font-bold tracking-widest text-foreground mb-3">{accessCode}</Text>
-                  <View className="flex-row gap-2">
+                  <View className="flex-row flex-wrap gap-2">
                     <SecondaryButton
                       label={copied ? 'Copied' : 'Copy code'}
                       onPress={handleCopyCode}
-                      className="flex-1"
+                      className="min-w-[130px] flex-1"
                       iconLeft={copied ? <Check size={16} color={themeColors.foreground} /> : <Copy size={16} color={themeColors.foreground} />}
                       accessibilityLabel="Copy access code"
                     />
@@ -248,7 +250,7 @@ export default function ProfileScreen() {
                       label={accessLoading ? '…' : 'New code'}
                       onPress={handleRegenerateCode}
                       disabled={accessLoading}
-                      className="flex-1"
+                      className="min-w-[130px] flex-1"
                       accessibilityLabel="Generate new access code"
                     />
                   </View>

@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar, ChevronLeft, Shield } from 'lucide-react-native';
 
 import { SecondaryButton } from '@/components/Buttons';
-import { ReEntryWordmark } from '@/components/ReEntryWordmark';
+import { StudentPageHeader } from '@/components/StudentPageHeader';
 import { SectionCard } from '@/components/SectionCard';
 import { HeadingText, LabelText, MicroText } from '@/components/Typography';
 import { useAppContext } from '@/context/AppContext';
@@ -68,7 +68,7 @@ export function TeacherView({ visible, onClose }: TeacherViewProps) {
             accessibilityLabel="Back to ReEntry Pass"
           />
 
-          <ReEntryWordmark className="mb-6" />
+          <StudentPageHeader />
           <HeadingText className="mb-2 leading-tight">Current school supports</HeadingText>
           <LabelText className="mb-6 leading-5">
             {activeSchoolRecords.length} active school support{activeSchoolRecords.length === 1 ? '' : 's'}

@@ -4,6 +4,7 @@ import type { RelativePathString } from 'expo-router';
 import { ActivityIndicator, View } from 'react-native';
 
 import { useSession } from '@/ctx';
+import { getLastScheduleNotificationItemId, subscribeToScheduleNotificationResponses } from '@/lib/scheduleNotifications';
 
 function RoleGuard({ children }: { children: React.ReactNode }) {
   const { role, isLoadingRole } = useSession();
@@ -44,6 +45,19 @@ function RoleGuard({ children }: { children: React.ReactNode }) {
 }
 
 export default function AppLayout() {
+  const router = useRouter();
+
+  useEffect(() => {
+    const openScheduleCheckIn = (scheduleItemId: string) => {
+      router.replace({ pathname: '/(app)/(tabs)/today', params: { scheduleItemId } });
+    };
+    const unsubscribe = subscribeToScheduleNotificationResponses(openScheduleCheckIn);
+    getLastScheduleNotificationItemId().then((itemId) => {
+      if (itemId) openScheduleCheckIn(itemId);
+    }).catch(() => undefined);
+    return unsubscribe;
+  }, [router]);
+
   return (
     <RoleGuard>
       <Stack screenOptions={{ headerShown: false }}>

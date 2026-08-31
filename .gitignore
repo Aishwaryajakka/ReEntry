@@ -46,3 +46,7 @@ pnpm-debug.log*
 
 expo-env.d.ts
 # @end expo-cli
+
+# Local build artifacts
+*.apk
+*.log

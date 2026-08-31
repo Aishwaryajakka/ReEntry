@@ -7,16 +7,21 @@
  */
 
 import { useState } from 'react';
+import { Text, View } from 'react-native';
 import { ScreenShell } from '@/components/ScreenShell';
 import { HeadingText, LabelText, MicroText } from '@/components/Typography';
 import { PrimaryButton } from '@/components/Buttons';
+import { SectionCard } from '@/components/SectionCard';
 import { TeacherView } from '@/components/TeacherView';
-import { ReEntryWordmark } from '@/components/ReEntryWordmark';
+import { StudentPageHeader } from '@/components/StudentPageHeader';
 import { useAppContext } from '@/context/AppContext';
+import { School } from 'lucide-react-native';
+import { useThemeColors } from '@/lib/theme';
 
 export default function PassScreen() {
   const { accommodationRecords, today } = useAppContext();
   const [teacherViewVisible, setTeacherViewVisible] = useState(false);
+  const theme = useThemeColors();
 
   const activeRecords = accommodationRecords.filter(
     (r) =>
@@ -27,17 +32,22 @@ export default function PassScreen() {
 
   return (
     <ScreenShell>
-      <ReEntryWordmark className="mb-6" />
-      <HeadingText className="mb-2 leading-tight">Your ReEntry Pass</HeadingText>
-      <LabelText className="mb-6 leading-5">
-        {activeRecords.length} active school support{activeRecords.length === 1 ? '' : 's'}
-      </LabelText>
-
-      <PrimaryButton
-        label="Show my pass"
-        className="mb-5 w-full"
-        onPress={() => setTeacherViewVisible(true)}
-      />
+      <StudentPageHeader />
+      <HeadingText className="mb-4 leading-tight">Your ReEntry Pass</HeadingText>
+      <SectionCard className="mb-5">
+        <View className="mb-4 flex-row items-center gap-3">
+          <View className="h-11 w-11 items-center justify-center rounded-full bg-accent">
+            <School size={21} color={theme.accentForeground} />
+          </View>
+          <View className="min-w-0 flex-1">
+            <Text className="text-lg font-semibold text-foreground">Current school supports</Text>
+            <LabelText className="mt-1 leading-5">
+              {activeRecords.length} active support{activeRecords.length === 1 ? '' : 's'}
+            </LabelText>
+          </View>
+        </View>
+        <PrimaryButton label="Show my pass" className="w-full" onPress={() => setTeacherViewVisible(true)} />
+      </SectionCard>
 
       <TeacherView
         visible={teacherViewVisible}

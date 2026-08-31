@@ -83,6 +83,7 @@ export default function TabsLayout() {
         name="evidence"
         options={{ href: null }}
       />
+      <Tabs.Screen name="schedule" options={{ href: null }} />
     </Tabs>
   );
 }

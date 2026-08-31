@@ -41,6 +41,18 @@ export interface ChallengeTag {
   category?: 'environmental' | 'cognitive' | 'social' | 'physical';
 }
 
+export interface StudentScheduleItem {
+  id: string;
+  activityName: string;
+  activityCategory: ActivityCategory;
+  /** ISO weekday numbers: Monday=1 through Sunday=7. */
+  daysOfWeek: number[];
+  startTime: string;
+  endTime: string;
+  remindersEnabled: boolean;
+  active: boolean;
+}
+
 /**
  * overallFeeling: 1=Very difficult day … 5=Manageable day
  * Optional fields are retained for demo-seed material but are unavailable in

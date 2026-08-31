@@ -31,18 +31,18 @@ function PatternCard({
     .filter((activity): activity is ActivityLog => Boolean(activity));
 
   return (
-    <View className="mb-3 rounded-2xl bg-muted p-4">
-      <LabelText className="mb-1 leading-5">{pattern.title}</LabelText>
-      <MicroText className="mb-1 leading-5 text-muted-foreground">
+    <View className="mb-3 rounded-2xl border border-border bg-background p-4">
+      <Text className="mb-1 text-base font-semibold leading-5 text-foreground">{pattern.title}</Text>
+      <LabelText className="mb-2 leading-5 text-muted-foreground">
         {pattern.description}
-      </MicroText>
+      </LabelText>
       <MicroText className="mb-3 text-muted-foreground">
         Evidence strength: {pattern.strength} · {pattern.supportCount} supporting records
       </MicroText>
       <SecondaryButton
         label={expanded ? 'Hide details' : 'Why am I seeing this?'}
         onPress={() => setExpanded((value) => !value)}
-        className="self-start rounded-full px-3 py-1"
+        className="self-start rounded-full px-4 py-2"
         style={{ minHeight: 44 }}
         accessibilityLabel={expanded ? 'Hide evidence for this pattern' : 'Show evidence for this pattern'}
       />

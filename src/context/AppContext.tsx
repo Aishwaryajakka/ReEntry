@@ -21,6 +21,10 @@ import {
   fetchChallengeTags,
   fetchDailyCheckIns,
   fetchUserPreferences,
+  fetchStudentScheduleItems,
+  insertStudentScheduleItem,
+  updateStudentScheduleItem,
+  deleteStudentScheduleItem,
   updateActivityLog as modifyActivityLog,
   updateLowStimulation,
 } from '@/db/api';
@@ -34,14 +38,16 @@ import type {
   DailyCheckIn,
   DemoUser,
   InsightEvidence,
+  StudentScheduleItem,
 } from '../data/types';
 import type {
   AccommodationRecordRow,
   ActivityLogRow,
   ChallengeTagRow,
   DailyCheckInRow,
+  StudentScheduleItemRow,
 } from '../types/types';
-import type { NewActivityInput } from '@/db/api';
+import type { NewActivityInput, ScheduleItemInput } from '@/db/api';
 
 interface AppState {
   user: DemoUser;
@@ -49,6 +55,7 @@ interface AppState {
   challengeTags: ChallengeTag[];
   dailyCheckIns: DailyCheckIn[];
   accommodationRecords: AccommodationRecord[];
+  scheduleItems: StudentScheduleItem[];
   insightEvidence: InsightEvidence[];
   today: string;
   lowStimulationMode: boolean;
@@ -56,6 +63,9 @@ interface AppState {
   addActivityLog: (input: NewActivityInput) => Promise<void>;
   updateActivityLog: (logId: string, input: NewActivityInput) => Promise<void>;
   deleteActivityLog: (logId: string) => Promise<void>;
+  addScheduleItem: (input: ScheduleItemInput) => Promise<StudentScheduleItem>;
+  updateScheduleItem: (itemId: string, input: ScheduleItemInput) => Promise<StudentScheduleItem>;
+  deleteScheduleItem: (itemId: string) => Promise<void>;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -104,6 +114,19 @@ function toAccommodationRecord(row: AccommodationRecordRow): AccommodationRecord
   };
 }
 
+function toScheduleItem(row: StudentScheduleItemRow): StudentScheduleItem {
+  return {
+    id: row.id,
+    activityName: row.activity_name,
+    activityCategory: row.activity_category as StudentScheduleItem['activityCategory'],
+    daysOfWeek: row.days_of_week,
+    startTime: row.start_time.slice(0, 5),
+    endTime: row.end_time.slice(0, 5),
+    remindersEnabled: row.reminders_enabled,
+    active: row.active,
+  };
+}
+
 function deriveUser(sessionUser: { id: string; email?: string } | undefined): DemoUser {
   if (!sessionUser) {
     return { id: '', firstName: 'Student', age: 16 };
@@ -126,6 +149,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
   const [dailyCheckIns, setDailyCheckIns] = useState<DailyCheckIn[]>([]);
   const [accommodationRecords, setAccommodationRecords] = useState<AccommodationRecord[]>([]);
+  const [scheduleItems, setScheduleItems] = useState<StudentScheduleItem[]>([]);
   const [insights, setInsights] = useState<InsightEvidence[]>([]);
 
   // Low-Stimulation is only meaningful for an authenticated user; auth shell is always normal.
@@ -163,6 +187,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setActivityLogs([]);
       setDailyCheckIns([]);
       setAccommodationRecords([]);
+      setScheduleItems([]);
       setInsights([]);
       return;
     }
@@ -170,16 +195,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     let cancelled = false;
     const load = async () => {
       try {
-        const [logs, dbTags, checkIns, accommodations] = await Promise.all([
+        const [logs, dbTags, checkIns, accommodations, schedule] = await Promise.all([
           fetchActivityLogs(userId),
           fetchChallengeTags(userId),
           fetchDailyCheckIns(userId),
           fetchAccommodationRecords(userId),
+          fetchStudentScheduleItems(userId),
         ]);
         if (cancelled) return;
         setActivityLogs(logs.map((l) => toActivityLog(l, dbTags)));
         setDailyCheckIns(checkIns.map((c) => toDailyCheckIn(c)));
         setAccommodationRecords(accommodations.map((a) => toAccommodationRecord(a)));
+        setScheduleItems(schedule.map(toScheduleItem));
         setInsights([]);
       } catch (e) {
         console.error('AppProvider load student data failed', e);
@@ -255,6 +282,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     [userId],
   );
 
+  const addScheduleItem = useCallback(async (input: ScheduleItemInput) => {
+    if (!userId) throw new Error('Sign in to add a schedule item.');
+    const item = toScheduleItem(await insertStudentScheduleItem(userId, input));
+    setScheduleItems((previous) => [...previous, item].sort((a, b) => a.startTime.localeCompare(b.startTime)));
+    return item;
+  }, [userId]);
+
+  const updateScheduleItem = useCallback(async (itemId: string, input: ScheduleItemInput) => {
+    if (!userId) throw new Error('Sign in to update a schedule item.');
+    const item = toScheduleItem(await updateStudentScheduleItem(userId, itemId, input));
+    setScheduleItems((previous) => previous.map((entry) => entry.id === itemId ? item : entry).sort((a, b) => a.startTime.localeCompare(b.startTime)));
+    return item;
+  }, [userId]);
+
+  const deleteScheduleItem = useCallback(async (itemId: string) => {
+    if (!userId) return;
+    await deleteStudentScheduleItem(userId, itemId);
+    setScheduleItems((previous) => previous.filter((entry) => entry.id !== itemId));
+  }, [userId]);
+
   const user = useMemo(() => deriveUser(session?.user), [session?.user]);
   const today = useMemo(() => new Date().toISOString().split('T')[0], []);
 
@@ -265,6 +312,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       challengeTags: CHALLENGE_TAGS,
       dailyCheckIns,
       accommodationRecords,
+      scheduleItems,
       insightEvidence: insights,
       today,
       lowStimulationMode: exposedLowStimulationMode,
@@ -272,12 +320,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addActivityLog,
       updateActivityLog,
       deleteActivityLog,
+      addScheduleItem,
+      updateScheduleItem,
+      deleteScheduleItem,
     }),
     [
       user,
       activityLogs,
       dailyCheckIns,
       accommodationRecords,
+      scheduleItems,
       insights,
       today,
       exposedLowStimulationMode,
@@ -285,6 +337,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addActivityLog,
       updateActivityLog,
       deleteActivityLog,
+      addScheduleItem,
+      updateScheduleItem,
+      deleteScheduleItem,
     ],
   );
 

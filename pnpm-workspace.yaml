@@ -4,6 +4,7 @@ allowBuilds:
   '@sentry/cli': false
   "@shopify/react-native-skia": true
   better-sqlite3: true
+  dtrace-provider: false
   esbuild: true
 allowUnusedPatches: true
 catalog:
@@ -41,7 +42,7 @@ minimumReleaseAgeExclude:
 overrides:
   expo-audio: 55.0.6
   expo-video: 55.0.5
-  metro-core: 0.83.7
+  metro-core: 0.83.8
 packageExtensions:
   react-native-css-interop:
     dependencies:

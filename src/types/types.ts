@@ -63,3 +63,17 @@ export interface StudentAccessRow {
   access_code: string | null;
   created_at: string;
 }
+
+export interface StudentScheduleItemRow {
+  id: string;
+  student_id: string;
+  activity_name: string;
+  activity_category: string;
+  days_of_week: number[];
+  start_time: string;
+  end_time: string;
+  reminders_enabled: boolean;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
