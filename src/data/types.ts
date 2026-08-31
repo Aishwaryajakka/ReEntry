@@ -131,6 +131,23 @@ export interface SchoolObservation {
   updatedAt: string;
 }
 
+export interface TrustedContact {
+  studentId: string;
+  name: string;
+  relationship: string;
+  phoneNumber: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SharedSupportContact {
+  userId: string;
+  role: 'school_staff' | 'clinician';
+  displayName: string;
+  phone: string | null;
+  email: string | null;
+}
+
 export interface InsightEvidence {
   id: string;
   insightId: string;

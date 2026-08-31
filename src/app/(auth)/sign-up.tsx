@@ -5,7 +5,7 @@ import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } fr
 import { Check } from 'lucide-react-native';
 
 import { PrimaryButton, GhostButton } from '@/components/Buttons';
-import { ReEntryWordmark } from '@/components/ReEntryWordmark';
+import { ReEntryFullLogo } from '@/components/ReEntryFullLogo';
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
 import { BodyText, LabelText, MicroText } from '@/components/Typography';
@@ -111,7 +111,7 @@ export default function SignUpScreen() {
         >
           <View className="gap-6">
             <View className="items-center gap-4">
-              <ReEntryWordmark appearance="light" />
+              <ReEntryFullLogo />
               <BodyText className="text-center">Create your account to get started.</BodyText>
             </View>
 

@@ -90,3 +90,22 @@ export interface SchoolObservationRow {
   created_at: string;
   updated_at: string;
 }
+
+export interface TrustedContactRow {
+  student_id: string;
+  name: string;
+  relationship: string;
+  phone_number: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SharedSupportContactRow {
+  user_id: string;
+  role: 'school_staff' | 'clinician';
+  display_name: string;
+  support_phone: string | null;
+  support_email: string | null;
+  created_at: string;
+  updated_at: string;
+}

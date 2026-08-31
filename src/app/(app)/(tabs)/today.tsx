@@ -19,6 +19,7 @@ import { ActivityLogModal } from '@/components/ActivityLogModal';
 import { VoiceActivityCapture } from '@/components/VoiceActivityCapture';
 import { ActivityCard } from '@/components/ActivityCard';
 import { StudentPageHeader } from '@/components/StudentPageHeader';
+import { DeviceActivityCard } from '@/components/DeviceActivityCard';
 import { HeroBotanical } from '@/components/Icons';
 import { useAppContext } from '@/context/AppContext';
 import { TOLERANCE_LABELS } from '@/data/activityCatalog';
@@ -346,6 +347,8 @@ export default function TodayScreen() {
         )}
         <MicroText className="mt-2 leading-5 text-muted-foreground">ReEntry can remind you after scheduled classes.</MicroText>
       </SectionCard>
+
+      <DeviceActivityCard scheduledClassCount={todaysSchedule.length} />
 
       <SectionCard className="mb-4">
         <LabelText className="mb-2 font-semibold text-foreground">Observation window</LabelText>

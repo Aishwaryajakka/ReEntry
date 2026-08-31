@@ -391,7 +391,7 @@ export default function ClinicianWorkspaceScreen() {
                       onPress={() => setStudentChooserOpen((open) => !open)}
                       accessibilityRole="button"
                       accessibilityState={{ expanded: studentChooserOpen }}
-                      className="min-h-14 flex-row items-center gap-3 rounded-xl border px-3 py-2"
+                      className="min-h-14 flex-row items-center gap-3 rounded-xl border px-3 py-2 active:opacity-90"
                       style={{ borderColor: themeColors.turmeric, backgroundColor: `${themeColors.turmeric}12` }}
                     >
                       <View className="h-9 w-9 items-center justify-center rounded-full bg-accent">
@@ -416,7 +416,7 @@ export default function ClinicianWorkspaceScreen() {
                           }}
                           accessibilityRole="button"
                           accessibilityState={{ selected }}
-                          className="min-h-14 flex-row items-center gap-3 rounded-xl border px-3 py-2"
+                          className="min-h-14 flex-row items-center gap-3 rounded-xl border px-3 py-2 active:opacity-90"
                           style={{ borderColor: selected ? themeColors.turmeric : themeColors.border, backgroundColor: selected ? `${themeColors.turmeric}12` : themeColors.card }}
                         >
                           <View className="h-9 w-9 items-center justify-center rounded-full bg-accent">
@@ -449,11 +449,11 @@ export default function ClinicianWorkspaceScreen() {
                           onPress={() => setActiveTab(tab)}
                           accessibilityRole="tab"
                           accessibilityState={{ selected }}
-                          className="min-h-14 flex-1 items-center justify-center rounded-lg px-0.5 py-1.5"
-                          style={{ backgroundColor: selected ? themeColors.foreground : 'transparent' }}
+                          className="min-h-[60px] flex-1 items-center justify-center rounded-lg px-0.5 py-2 active:opacity-90"
+                          style={{ backgroundColor: selected ? COLORS.deepForest : 'transparent' }}
                         >
-                          <Icon size={16} color={color} />
-                          <Text className="mt-1 text-[9px] font-semibold" numberOfLines={1} style={{ color }}>{label}</Text>
+                          <Icon size={18} color={color} />
+                          <Text className="mt-1 text-[11px] font-semibold" numberOfLines={1} style={{ color }}>{label}</Text>
                         </Pressable>
                       );
                     })}

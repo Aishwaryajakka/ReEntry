@@ -18,6 +18,7 @@ import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } fro
 import { TOLERANCE_LABELS } from '@/data/activityCatalog';
 import { DividerLine } from '@/components/DividerLine';
 import { StudentPageHeader } from '@/components/StudentPageHeader';
+import { NeedSupportSection } from '@/components/NeedSupportSection';
 import { useAppContext } from '@/context/AppContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useSession } from '@/ctx';
@@ -145,6 +146,12 @@ export default function ProfileScreen() {
       .sort((a, b) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id))[0];
     return { checkInCount, logCount, firstEntry, mostRecentEntry, latestActivity };
   }, [dailyCheckIns, activityLogs]);
+  const activeSchoolCount = linkedViewers.filter((link) => link.viewer_role === 'school_staff' && link.status === 'active').length;
+  const activeClinicianCount = linkedViewers.filter((link) => link.viewer_role === 'clinician' && link.status === 'active').length;
+  const countBadgeStyle = {
+    borderColor: themeColors.turmeric,
+    backgroundColor: `${themeColors.turmeric}${lowStimulationMode ? '12' : '22'}`,
+  };
 
   return (
     <ScreenShell>
@@ -177,11 +184,11 @@ export default function ProfileScreen() {
       <SectionCard className="mb-4">
         <View className="flex-row justify-between mb-3">
           <View className="items-center" style={{ flex: 1 }}>
-            <Text className="text-xl font-bold text-foreground">{recoveryContext.checkInCount}</Text>
+            <Text className="text-xl font-bold" style={{ color: themeColors.turmeric }}>{recoveryContext.checkInCount}</Text>
             <MicroText>Daily check-ins</MicroText>
           </View>
           <View className="items-center border-l border-border" style={{ flex: 1 }}>
-            <Text className="text-xl font-bold text-foreground">{recoveryContext.logCount}</Text>
+            <Text className="text-xl font-bold" style={{ color: themeColors.turmeric }}>{recoveryContext.logCount}</Text>
             <MicroText>Activity logs</MicroText>
           </View>
           <View className="items-center border-l border-border" style={{ flex: 1 }}>
@@ -227,14 +234,14 @@ export default function ProfileScreen() {
           <SubheadingText className="mb-3">Connected Access</SubheadingText>
           <SectionCard className="mb-4">
             <View className="mb-2 flex-row items-start gap-2">
-              <Users size={18} color={themeColors.foreground} />
+              <Users size={18} color={themeColors.turmeric} />
               <LabelText className="flex-1 leading-5">Control who can view the records shared for their role.</LabelText>
             </View>
             <LabelText className="leading-5 mb-4">
               Give this code to your school staff or clinician. They can enter it to connect to your ReEntry data.
             </LabelText>
 
-            <View className="bg-muted rounded-xl p-4 mb-4 items-center">
+            <View className="mb-4 items-center rounded-xl border bg-muted p-4" style={{ borderColor: `${themeColors.turmeric}55` }}>
               {accessCode ? (
                 <>
                   <Text className="text-2xl font-bold tracking-widest text-foreground mb-3">{accessCode}</Text>
@@ -243,7 +250,7 @@ export default function ProfileScreen() {
                       label={copied ? 'Copied' : 'Copy code'}
                       onPress={handleCopyCode}
                       className="min-w-[130px] flex-1"
-                      iconLeft={copied ? <Check size={16} color={themeColors.foreground} /> : <Copy size={16} color={themeColors.foreground} />}
+                      iconLeft={copied ? <Check size={16} color={themeColors.turmeric} /> : <Copy size={16} color={themeColors.turmeric} />}
                       accessibilityLabel="Copy access code"
                     />
                     <SecondaryButton
@@ -273,7 +280,12 @@ export default function ProfileScreen() {
               <View className="gap-3">
                 {linkedViewers.some((l) => l.viewer_role === 'school_staff') && (
                   <View>
-                    <Text className="text-sm font-medium text-foreground mb-1">School Staff</Text>
+                    <View className="mb-1 flex-row items-center justify-between gap-2">
+                      <Text className="text-sm font-medium text-foreground">School Staff</Text>
+                      <View className="rounded-full border px-2 py-1" style={countBadgeStyle}>
+                        <Text className="text-xs font-semibold text-foreground">{activeSchoolCount} connected</Text>
+                      </View>
+                    </View>
                     {linkedViewers
                       .filter((l) => l.viewer_role === 'school_staff')
                       .map((link) => (
@@ -298,7 +310,12 @@ export default function ProfileScreen() {
                 )}
                 {linkedViewers.some((l) => l.viewer_role === 'clinician') && (
                   <View>
-                    <Text className="text-sm font-medium text-foreground mb-1">Clinicians</Text>
+                    <View className="mb-1 flex-row items-center justify-between gap-2">
+                      <Text className="text-sm font-medium text-foreground">Clinicians</Text>
+                      <View className="rounded-full border px-2 py-1" style={countBadgeStyle}>
+                        <Text className="text-xs font-semibold text-foreground">{activeClinicianCount} connected</Text>
+                      </View>
+                    </View>
                     {linkedViewers
                       .filter((l) => l.viewer_role === 'clinician')
                       .map((link) => (
@@ -326,6 +343,12 @@ export default function ProfileScreen() {
           </SectionCard>
         </>
       )}
+
+      {role === 'student' && userId ? (
+        <SectionCard className="mb-4">
+          <NeedSupportSection studentId={userId} linkedViewers={linkedViewers} />
+        </SectionCard>
+      ) : null}
 
       {/* Appearance */}
       <SubheadingText className="mb-3">Display</SubheadingText>

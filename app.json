@@ -41,6 +41,12 @@
       "expo-image",
       "expo-notifications",
       [
+        "expo-sensors",
+        {
+          "motionPermission": "Allow ReEntry to use step count as optional context for your day."
+        }
+      ],
+      [
         "expo-speech-recognition",
         {
           "microphonePermission": "Allow ReEntry to use the microphone for voice-assisted activity logging.",

@@ -4,7 +4,7 @@ import type { RelativePathString } from 'expo-router';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 
 import { PrimaryButton, GhostButton } from '@/components/Buttons';
-import { ReEntryWordmark } from '@/components/ReEntryWordmark';
+import { ReEntryFullLogo } from '@/components/ReEntryFullLogo';
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
 import { BodyText, LabelText, MicroText } from '@/components/Typography';
@@ -67,7 +67,7 @@ export default function SignInScreen() {
         >
           <View className="gap-6">
             <View className="items-center gap-4">
-              <ReEntryWordmark appearance="light" />
+              <ReEntryFullLogo />
               <BodyText className="text-center">Sign in to continue your ReEntry journey.</BodyText>
             </View>
 

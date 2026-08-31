@@ -13,18 +13,95 @@ import type {
   DailyCheckInRow,
   StudentAccessRow,
   SchoolObservationRow,
+  SharedSupportContactRow,
   StudentScheduleItemRow,
+  TrustedContactRow,
   UserPreferencesRow,
 } from '@/types/types';
 import type {
   SchoolObservation,
   SchoolObservationType,
   SchoolSupportType,
+  SharedSupportContact,
+  TrustedContact,
 } from '@/data/types';
 
 export type { Appearance };
 
 export const DEFAULT_APPEARANCE: Appearance = 'light';
+
+const SHARED_SUPPORT_CONTACT_COLUMNS = 'user_id, role, display_name, support_phone, support_email, created_at, updated_at';
+
+export async function fetchSharedSupportContactsForStudent(linkedViewerIds: string[]): Promise<SharedSupportContact[]> {
+  const uniqueViewerIds = [...new Set(linkedViewerIds)];
+  if (uniqueViewerIds.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('shared_support_contacts')
+    .select(SHARED_SUPPORT_CONTACT_COLUMNS)
+    .in('user_id', uniqueViewerIds)
+    .order('display_name');
+  if (error) {
+    console.error('fetchSharedSupportContactsForStudent failed', error);
+    return [];
+  }
+  return ((data ?? []) as SharedSupportContactRow[]).map((row) => ({
+    userId: row.user_id,
+    role: row.role,
+    displayName: row.display_name,
+    phone: row.support_phone,
+    email: row.support_email,
+  }));
+}
+
+const TRUSTED_CONTACT_COLUMNS = 'student_id, name, relationship, phone_number, created_at, updated_at';
+
+function normalizeTrustedContact(row: TrustedContactRow): TrustedContact {
+  return {
+    studentId: row.student_id,
+    name: row.name,
+    relationship: row.relationship,
+    phoneNumber: row.phone_number,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export async function fetchTrustedContact(studentId: string): Promise<TrustedContact | null> {
+  const { data, error } = await supabase
+    .from('student_trusted_contacts')
+    .select(TRUSTED_CONTACT_COLUMNS)
+    .eq('student_id', studentId)
+    .maybeSingle();
+  if (error) {
+    console.error('fetchTrustedContact failed', error);
+    return null;
+  }
+  return data ? normalizeTrustedContact(data as TrustedContactRow) : null;
+}
+
+export async function saveTrustedContact(studentId: string, input: { name: string; relationship: string; phoneNumber: string }): Promise<TrustedContact> {
+  const { data, error } = await supabase
+    .from('student_trusted_contacts')
+    .upsert({
+      student_id: studentId,
+      name: input.name.trim(),
+      relationship: input.relationship.trim(),
+      phone_number: input.phoneNumber.trim(),
+    }, { onConflict: 'student_id' })
+    .select(TRUSTED_CONTACT_COLUMNS)
+    .single();
+  if (error || !data) throw error ?? new Error('Trusted contact was not saved.');
+  return normalizeTrustedContact(data as TrustedContactRow);
+}
+
+export async function deleteTrustedContact(studentId: string): Promise<void> {
+  const { error } = await supabase
+    .from('student_trusted_contacts')
+    .delete()
+    .eq('student_id', studentId);
+  if (error) throw error;
+}
 
 export interface ScheduleItemInput {
   activityName: string;

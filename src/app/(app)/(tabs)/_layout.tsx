@@ -20,8 +20,7 @@ export default function TabsLayout() {
         tabBarInactiveTintColor: isDark ? COLORS.linen : COLORS.moss,
         tabBarStyle: {
           backgroundColor: isDark ? COLORS.deepForest : COLORS.moon,
-          borderTopColor: isDark ? COLORS.forest : COLORS.linen,
-          borderTopWidth: 1,
+          borderTopWidth: 0,
           paddingTop: 4,
           paddingBottom: insets.bottom + 4,
           height: 64 + insets.bottom,
@@ -41,6 +40,7 @@ export default function TabsLayout() {
           borderRadius: 10,
           marginHorizontal: 3,
           marginVertical: 3,
+          overflow: 'hidden',
         },
         tabBarIconStyle: {
           marginTop: 0,

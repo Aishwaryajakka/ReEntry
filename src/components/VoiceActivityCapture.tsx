@@ -27,6 +27,8 @@ import {
   type VoiceActivityDraft,
 } from '@/lib/voiceActivityParser';
 import { useThemeColors } from '@/lib/theme';
+import { useTheme } from '@/context/ThemeContext';
+import { cn } from '@/lib/utils';
 
 type CaptureState =
   | 'idle'
@@ -61,6 +63,7 @@ export function VoiceActivityCapture({
   context,
 }: VoiceActivityCaptureProps) {
   const theme = useThemeColors();
+  const { isDark } = useTheme();
   const { reduced } = useReducedExperience();
   const [state, setState] = useState<CaptureState>('idle');
   const [transcript, setTranscript] = useState('');
@@ -155,7 +158,7 @@ export function VoiceActivityCapture({
       onRequestClose={close}
       statusBarTranslucent
     >
-      <View className="flex-1 justify-end">
+      <View className={cn('flex-1 justify-end', isDark && 'dark')}>
         <Pressable
           className="absolute inset-0 bg-black/40"
           onPress={close}
@@ -189,7 +192,7 @@ export function VoiceActivityCapture({
                   label={state === 'requesting-permission' ? 'Requesting permission…' : 'Start listening'}
                   onPress={startListening}
                   disabled={state === 'requesting-permission'}
-                  iconLeft={<Mic size={20} color={state === 'requesting-permission' ? theme.deepForest : theme.warmWhite} />}
+                  iconLeft={<Mic size={20} color={isDark || state === 'requesting-permission' ? theme.deepForest : theme.warmWhite} />}
                   className="mb-3 w-full"
                 />
                 <SecondaryButton label="Type instead" onPress={() => setState('typed-fallback')} className="w-full" />
@@ -203,7 +206,7 @@ export function VoiceActivityCapture({
                 <LabelText className="mb-4 mt-1 text-center text-muted-foreground">
                   {transcript || 'Speak naturally. ReEntry will not save until you confirm.'}
                 </LabelText>
-                <PrimaryButton label="Stop listening" onPress={stop} iconLeft={<Square size={18} color={theme.warmWhite} />} className="w-full" />
+                <PrimaryButton label="Stop listening" onPress={stop} iconLeft={<Square size={18} color={isDark ? theme.deepForest : theme.warmWhite} />} className="w-full" />
                 <SecondaryButton label="Cancel" onPress={close} className="mt-3 w-full" />
               </View>
             )}

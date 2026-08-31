@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import { X } from 'lucide-react-native';
-import { PrimaryButton, SecondaryButton } from './Buttons';
+import { DestructiveButton, PrimaryButton, SecondaryButton } from './Buttons';
 import { DataBadge } from './DataBadge';
 import { DividerLine } from './DividerLine';
 import { LabelText, MicroText, SubheadingText } from './Typography';
@@ -28,6 +28,7 @@ import {
   type ActivityLog,
 } from '@/data/types';
 import { useThemeColors } from '@/lib/theme';
+import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 
 const DURATION_OPTIONS = [15, 30, 45, 60, 90, 120];
@@ -68,6 +69,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
 
   const { reduced } = useReducedExperience();
   const theme = useThemeColors();
+  const { isDark } = useTheme();
   const isEditing = !!log;
 
   const [category, setCategory] = useState<ActivityCategory | null>(null);
@@ -193,7 +195,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <View className="flex-1 justify-end">
+      <View className={cn('flex-1 justify-end', isDark && 'dark')}>
         {/* Backdrop.
             IMPORTANT: this is a sibling of the modal sheet so buttons
             inside the sheet are never nested inside another Pressable. */}
@@ -254,26 +256,17 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                   <Pressable
                     key={cat}
                     onPress={() => setCategory(cat)}
-                    className={cn(
-                      'rounded-full px-4 py-2.5 border',
-                      category === cat
-                        ? 'bg-primary border-primary'
-                        : 'bg-card border-border',
-                    )}
-                    style={{ minHeight: 40 } as object}
+                    className={cn('rounded-full border px-4 py-2.5', category !== cat && 'bg-card border-border')}
+                    style={{
+                      minHeight: 40,
+                      ...(category === cat ? { backgroundColor: theme.turmeric, borderColor: theme.turmeric } : {}),
+                    } as object}
                     accessibilityRole="radio"
                     accessibilityState={{
                       checked: category === cat,
                     }}
                   >
-                    <Text
-                      className={cn(
-                        'text-sm font-medium',
-                        category === cat
-                          ? 'text-primary-foreground'
-                          : 'text-foreground',
-                      )}
-                    >
+                    <Text className="text-sm font-medium" style={{ color: category === cat ? theme.deepForest : theme.foreground }}>
                       {cat}
                     </Text>
                   </Pressable>
@@ -316,25 +309,14 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                   <Pressable
                     key={mins}
                     onPress={() => setDuration(mins)}
-                    className={cn(
-                      'rounded-xl px-4 py-3 border flex-1 min-w-[64]',
-                      duration === mins
-                        ? 'bg-primary border-primary'
-                        : 'bg-card border-border',
-                    )}
+                    className={cn('min-w-[64] flex-1 rounded-xl border px-4 py-3', duration !== mins && 'bg-card border-border')}
+                    style={duration === mins ? { backgroundColor: theme.turmeric, borderColor: theme.turmeric } : undefined}
                     accessibilityRole="radio"
                     accessibilityState={{
                       checked: duration === mins,
                     }}
                   >
-                    <Text
-                      className={cn(
-                        'text-sm font-semibold text-center',
-                        duration === mins
-                          ? 'text-primary-foreground'
-                          : 'text-foreground',
-                      )}
-                    >
+                    <Text className="text-center text-sm font-semibold" style={{ color: duration === mins ? theme.deepForest : theme.foreground }}>
                       {mins}m
                     </Text>
                   </Pressable>
@@ -349,25 +331,14 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                   <Pressable
                     key={rating}
                     onPress={() => setTolerance(rating)}
-                    className={cn(
-                      'flex-row items-center justify-between rounded-xl border px-4 py-3.5',
-                      tolerance === rating
-                        ? 'bg-primary border-primary'
-                        : 'bg-card border-border',
-                    )}
+                    className={cn('flex-row items-center justify-between rounded-xl border px-4 py-3.5', tolerance !== rating && 'bg-card border-border')}
+                    style={tolerance === rating ? { backgroundColor: theme.turmeric, borderColor: theme.turmeric } : undefined}
                     accessibilityRole="radio"
                     accessibilityState={{
                       checked: tolerance === rating,
                     }}
                   >
-                    <Text
-                      className={cn(
-                        'text-base font-medium',
-                        tolerance === rating
-                          ? 'text-primary-foreground'
-                          : 'text-foreground',
-                      )}
-                    >
+                    <Text className="text-base font-medium" style={{ color: tolerance === rating ? theme.deepForest : theme.foreground }}>
                       {TOLERANCE_LABELS[rating]}
                     </Text>
 
@@ -375,14 +346,8 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                       {[1, 2, 3].map((i) => (
                         <View
                           key={i}
-                          className={cn(
-                            'w-2 h-2 rounded-full',
-                            i <= rating
-                              ? tolerance === rating
-                                ? 'bg-primary-foreground'
-                                : 'bg-primary'
-                              : 'bg-border',
-                          )}
+                          className={cn('h-2 w-2 rounded-full', i > rating && 'bg-border')}
+                          style={i <= rating ? { backgroundColor: tolerance === rating ? theme.deepForest : theme.foreground } : undefined}
                         />
                       ))}
                     </View>
@@ -401,25 +366,14 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                     <Pressable
                       key={tag.id}
                       onPress={() => toggleTag(tag.id)}
-                      className={cn(
-                        'rounded-full border px-3 py-2',
-                        selected
-                          ? 'bg-primary border-primary'
-                          : 'bg-card border-border',
-                      )}
+                      className={cn('rounded-full border px-3 py-2', !selected && 'bg-card border-border')}
+                      style={selected ? { backgroundColor: theme.turmeric, borderColor: theme.turmeric } : undefined}
                       accessibilityRole="checkbox"
                       accessibilityState={{
                         checked: selected,
                       }}
                     >
-                      <Text
-                        className={cn(
-                          'text-sm font-medium',
-                          selected
-                            ? 'text-primary-foreground'
-                            : 'text-foreground',
-                        )}
-                      >
+                      <Text className="text-sm font-medium" style={{ color: selected ? theme.deepForest : theme.foreground }}>
                         {tag.label}
                       </Text>
                     </Pressable>
@@ -485,7 +439,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
               />
 
               {isEditing && (
-                <SecondaryButton
+                <DestructiveButton
                   label="Delete entry"
                   onPress={handleDelete}
                   className="w-full mb-3"

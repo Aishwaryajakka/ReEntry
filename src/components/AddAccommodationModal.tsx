@@ -7,6 +7,9 @@ import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
 import { SectionCard } from '@/components/SectionCard';
 import { HeadingText, LabelText, MicroText } from '@/components/Typography';
 import { useThemeColors } from '@/lib/theme';
+import { useTheme } from '@/context/ThemeContext';
+import { cn } from '@/lib/utils';
+import { useReducedExperience } from '@/lib/accessibility';
 import { insertAccommodation, updateAccommodation, type SchoolAccommodation } from '@/db/api';
 
 interface AddAccommodationModalProps {
@@ -25,6 +28,8 @@ function isValidDate(str: string): boolean {
 
 export function AddAccommodationModal({ visible, onClose, studentId, onSaved, accommodation }: AddAccommodationModalProps) {
   const theme = useThemeColors();
+  const { isDark } = useTheme();
+  const { reduced } = useReducedExperience();
   const isEditing = Boolean(accommodation?.id);
   const [title, setTitle] = useState('');
   const [sourceName, setSourceName] = useState('');
@@ -114,11 +119,12 @@ export function AddAccommodationModal({ visible, onClose, studentId, onSaved, ac
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType={reduced ? 'fade' : 'slide'}
       transparent={false}
       onRequestClose={handleClose}
       statusBarTranslucent
     >
+      <View className={cn('flex-1', isDark && 'dark')}>
       <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
         <ScrollView
           className="flex-1"
@@ -227,6 +233,7 @@ export function AddAccommodationModal({ visible, onClose, studentId, onSaved, ac
           <SecondaryButton label="Cancel" onPress={handleClose} className="w-full" disabled={loading} />
         </ScrollView>
       </SafeAreaView>
+      </View>
     </Modal>
   );
 }

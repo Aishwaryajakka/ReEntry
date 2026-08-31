@@ -179,6 +179,7 @@ function CategoryCard({ summary }: { summary: CategorySummary }) {
 
 export default function ToleranceScreen() {
   const { activityLogs, lowStimulationMode } = useAppContext();
+  const theme = useThemeColors();
   const router = useRouter();
   const [selectedDimensionId, setSelectedDimensionId] = useState<ToleranceDimensionId>('class-school');
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
@@ -207,8 +208,8 @@ export default function ToleranceScreen() {
   const selectedActivities = selectedCell?.supportingActivities ?? selectedDimension.supportingActivities;
   const selectedState = selectedCell?.state ?? selectedDimension.state;
   const recentWindow = toleranceMap.firstDate && toleranceMap.lastDate
-    ? `${formatMapDate(toleranceMap.firstDate)}–${formatMapDate(toleranceMap.lastDate)} · ${toleranceMap.recentActivities.length} activit${toleranceMap.recentActivities.length === 1 ? 'y' : 'ies'}`
-    : 'No recent activity records yet';
+    ? `${formatMapDate(toleranceMap.firstDate)}–${formatMapDate(toleranceMap.lastDate)}`
+    : null;
 
   return (
     <ScreenShell>
@@ -225,7 +226,15 @@ export default function ToleranceScreen() {
             <SubheadingText>Functional Tolerance Map</SubheadingText>
             <MicroText className="mt-1 leading-5 text-muted-foreground">Based on how manageable your recent activities felt.</MicroText>
           </View>
-          <MicroText className="max-w-[130px] text-right leading-4 text-muted-foreground">{recentWindow}</MicroText>
+          <View className="max-w-[130px] items-end">
+            <MicroText className="text-right leading-4 text-muted-foreground">{recentWindow ?? 'No recent records yet'}</MicroText>
+            {recentWindow ? (
+              <View className="mt-1 flex-row items-baseline gap-1">
+                <Text className="text-lg font-bold" style={{ color: theme.turmeric }}>{toleranceMap.recentActivities.length}</Text>
+                <MicroText className="text-muted-foreground">recent</MicroText>
+              </View>
+            ) : null}
+          </View>
         </View>
         <VisualToleranceMap
           dimensions={toleranceMap.dimensions}
@@ -244,9 +253,12 @@ export default function ToleranceScreen() {
         <SubheadingText className="mb-1">{selectedDimension.label}</SubheadingText>
         {selectedDate && <MicroText className="mb-1 font-semibold text-muted-foreground">{formatEvidenceDate(selectedDate)}</MicroText>}
         <LabelText className="mb-1 leading-5">{selectedState}</LabelText>
-        <MicroText className="mb-4 text-muted-foreground">
-          {selectedActivities.length} supporting record{selectedActivities.length === 1 ? '' : 's'}{selectedDate ? ' on this day' : ' across recent recorded days'}
-        </MicroText>
+        <View className="mb-4 flex-row items-baseline gap-1.5">
+          <Text className="text-xl font-bold" style={{ color: theme.turmeric }}>{selectedActivities.length}</Text>
+          <MicroText className="text-muted-foreground">
+            supporting record{selectedActivities.length === 1 ? '' : 's'}{selectedDate ? ' on this day' : ' across recent recorded days'}
+          </MicroText>
+        </View>
         {selectedActivities.length > 0 ? (
           <View>
             {selectedActivities.map((activity) => {

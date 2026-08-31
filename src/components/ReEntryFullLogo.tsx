@@ -1,20 +1,17 @@
-/** ReEntry compact wordmark for authenticated app headers. */
+/** ReEntry full logo with tagline for large introductory surfaces. */
 
 import { View, useWindowDimensions } from 'react-native';
 import { Image } from 'expo-image';
-import { cn } from '@/lib/utils';
+
 import { useTheme } from '@/context/ThemeContext';
+import { cn } from '@/lib/utils';
 
 // eslint-disable-next-line image-import/no-missing-image-import
-import WordmarkImage from '../../assets/wordmark.png';
+import LogoImage from '../../assets/logo.png';
 // eslint-disable-next-line image-import/no-missing-image-import
-import WordmarkDarkImage from '../../assets/wordmark-dark.png';
+import LogoDarkImage from '../../assets/logo-dark.png';
 
-interface ReEntryWordmarkProps {
-  className?: string;
-}
-
-export function ReEntryWordmark({ className }: ReEntryWordmarkProps) {
+export function ReEntryFullLogo({ className }: { className?: string }) {
   const { width } = useWindowDimensions();
   const { isDark } = useTheme();
   const logoWidth = Math.min(width * 0.75, 320);
@@ -22,10 +19,10 @@ export function ReEntryWordmark({ className }: ReEntryWordmarkProps) {
   return (
     <View className={cn('items-center', className)}>
       <Image
-        source={isDark ? WordmarkDarkImage : WordmarkImage}
+        source={isDark ? LogoDarkImage : LogoImage}
         contentFit="contain"
-        style={{ width: logoWidth, height: logoWidth / 3 }}
-        accessibilityLabel="ReEntry wordmark"
+        style={{ width: logoWidth, height: logoWidth / 2 }}
+        accessibilityLabel="ReEntry logo"
       />
     </View>
   );

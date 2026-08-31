@@ -210,6 +210,7 @@ export default function JourneyScreen() {
   const [modalOpen, setModalOpen] = useState(false);
 
   const router = useRouter();
+  const theme = useThemeColors();
 
   const sections = useMemo<Section[]>(() => {
     const byDate = new Map<string, ActivityLog[]>();
@@ -260,11 +261,24 @@ export default function JourneyScreen() {
         Recovery Journey
       </HeadingText>
 
-      <LabelText className="mb-5 leading-5 text-muted-foreground">
+      <LabelText className="mb-3 leading-5 text-muted-foreground">
         {observationWindow
-          ? `Observation window: ${observationWindow} · ${uniqueDates} recorded date${uniqueDates === 1 ? '' : 's'}`
+          ? `Observation window: ${observationWindow}`
           : 'Your observation window will appear after you record an activity.'}
       </LabelText>
+
+      {observationWindow ? (
+        <View className="mb-5 flex-row rounded-2xl border border-border bg-card px-4 py-3">
+          <View className="flex-1 items-center">
+            <Text className="text-2xl font-bold" style={{ color: theme.turmeric }}>{uniqueDates}</Text>
+            <MicroText className="text-center text-muted-foreground">recorded day{uniqueDates === 1 ? '' : 's'}</MicroText>
+          </View>
+          <View className="flex-1 items-center border-l border-border">
+            <Text className="text-2xl font-bold" style={{ color: theme.turmeric }}>{totalCount}</Text>
+            <MicroText className="text-center text-muted-foreground">activities observed</MicroText>
+          </View>
+        </View>
+      ) : null}
 
       <RecoveryStory
         activityLogs={activityLogs}
@@ -308,7 +322,7 @@ export default function JourneyScreen() {
               section: { date },
             }) => (
               <View className="py-2 border-b border-border">
-                <Text className="text-sm font-bold text-foreground">
+                <Text className="text-sm font-bold" style={{ color: date === today ? theme.turmeric : theme.foreground }}>
                   {date === today
                     ? 'Today'
                     : formatWeekday(date)}{' '}

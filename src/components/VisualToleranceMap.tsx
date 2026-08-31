@@ -58,7 +58,7 @@ export function VisualToleranceMap({ dimensions, recordedDates, selectedId, sele
     <View>
       <MicroText className="mb-3 font-semibold uppercase tracking-[0.12em] text-muted-foreground">Recent recorded days</MicroText>
 
-      <View className="overflow-hidden rounded-2xl border border-border bg-background">
+      <View className="overflow-hidden rounded-2xl border border-border" style={{ backgroundColor: isDark ? theme.mossLight : theme.background }}>
         <View className="w-full flex-row">
           <View style={{ width: LABEL_WIDTH, flexShrink: 0 }}>
             <View className="h-10 justify-end border-b border-border px-2 py-2">
@@ -94,7 +94,7 @@ export function VisualToleranceMap({ dimensions, recordedDates, selectedId, sele
               <View className="h-10 flex-row border-b border-border">
                 {recordedDates.length > 0 ? recordedDates.map((date) => (
                   <View key={date} style={{ width: CELL_SIZE }} className="items-center justify-end px-1 py-2">
-                    <MicroText className="text-center font-semibold text-foreground">{dateHeader(date)}</MicroText>
+                    <MicroText className="text-center font-semibold" style={{ color: selectedDate === date ? theme.turmeric : theme.foreground }}>{dateHeader(date)}</MicroText>
                   </View>
                 )) : (
                   <View className="w-[190px] justify-center px-3"><MicroText className="text-muted-foreground">No recorded days yet</MicroText></View>

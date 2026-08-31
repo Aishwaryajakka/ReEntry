@@ -11,6 +11,8 @@ import { HeadingText, LabelText, MicroText } from '@/components/Typography';
 import { useAppContext } from '@/context/AppContext';
 import { useReducedExperience } from '@/lib/accessibility';
 import { useThemeColors } from '@/lib/theme';
+import { useTheme } from '@/context/ThemeContext';
+import { cn } from '@/lib/utils';
 
 interface TeacherViewProps {
   visible: boolean;
@@ -30,6 +32,7 @@ export function TeacherView({ visible, onClose }: TeacherViewProps) {
   const { accommodationRecords, today } = useAppContext();
   const { reduced } = useReducedExperience();
   const theme = useThemeColors();
+  const { isDark } = useTheme();
 
   const activeSchoolRecords = useMemo(
     () =>
@@ -53,13 +56,14 @@ export function TeacherView({ visible, onClose }: TeacherViewProps) {
       onRequestClose={onClose}
       statusBarTranslucent
     >
-      <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="w-full max-w-[720px] self-center px-6 pb-16 pt-5"
-          showsVerticalScrollIndicator={false}
-          contentInsetAdjustmentBehavior="automatic"
-        >
+      <View className={cn('flex-1', isDark && 'dark')}>
+        <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
+          <ScrollView
+            className="flex-1 bg-background"
+            contentContainerClassName="w-full max-w-[720px] self-center px-6 pb-16 pt-5"
+            showsVerticalScrollIndicator={false}
+            contentInsetAdjustmentBehavior="automatic"
+          >
           <SecondaryButton
             label="Back"
             onPress={onClose}
@@ -105,8 +109,9 @@ export function TeacherView({ visible, onClose }: TeacherViewProps) {
           <MicroText className="text-center leading-5 text-muted-foreground">
             Recorded accommodations only.
           </MicroText>
-        </ScrollView>
-      </SafeAreaView>
+          </ScrollView>
+        </SafeAreaView>
+      </View>
     </Modal>
   );
 }

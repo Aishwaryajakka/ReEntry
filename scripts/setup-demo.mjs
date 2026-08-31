@@ -196,6 +196,33 @@ async function seedMaya(users) {
     note: entry.note,
   })), { onConflict: 'id' });
   if (observations.error) throw observations.error;
+
+  const trustedContact = await admin.from('student_trusted_contacts').upsert({
+    id: stableUuid('maya:trusted-contact'),
+    student_id: users.maya.id,
+    name: 'Taylor Morgan',
+    relationship: 'Parent',
+    phone_number: '+1 202-555-0147',
+  }, { onConflict: 'student_id' });
+  if (trustedContact.error) throw trustedContact.error;
+
+  const sharedSupportContacts = await admin.from('shared_support_contacts').upsert([
+    {
+      user_id: users.school.id,
+      role: 'school_staff',
+      display_name: 'Alex Rivera',
+      support_phone: '+1 202-555-0125',
+      support_email: 'alex.rivera@example.com',
+    },
+    {
+      user_id: users.clinician.id,
+      role: 'clinician',
+      display_name: 'Dr. Jordan Lee',
+      support_phone: '+1 202-555-0168',
+      support_email: 'jordan.lee@example.com',
+    },
+  ], { onConflict: 'user_id' });
+  if (sharedSupportContacts.error) throw sharedSupportContacts.error;
 }
 
 async function seedAdditionalStudents(users) {
@@ -271,8 +298,9 @@ async function verify(users) {
     countFixture('student_access', [stableUuid('maya:link:clinician'), stableUuid('maya:link:school')]),
     countFixture('student_schedule_items', mayaSchedule.map(([key]) => stableUuid(`maya:schedule:${key}`))),
     countFixture('school_observations', mayaSchoolObservations.map((entry) => stableUuid(`maya:school-observation:${entry.key}`))),
+    countFixture('student_trusted_contacts', [stableUuid('maya:trusted-contact')]),
   ]);
-  if (checks[0] !== 35 || checks[1] !== 14 || checks[2] !== 3 || checks[3] !== expectedTagCount || checks[4] !== 2 || checks[5] !== 5 || checks[6] !== 5) throw new Error(`Demo fixture verification failed: ${checks.join('/')}`);
+  if (checks[0] !== 35 || checks[1] !== 14 || checks[2] !== 3 || checks[3] !== expectedTagCount || checks[4] !== 2 || checks[5] !== 5 || checks[6] !== 5 || checks[7] !== 1) throw new Error(`Demo fixture verification failed: ${checks.join('/')}`);
 
   const profiles = await admin.from('profiles').select('id, role, display_name').in('id', [users.maya.id, users.clinician.id, users.school.id]);
   if (profiles.error || profiles.data?.length !== 3) throw profiles.error ?? new Error('Demo profile verification failed.');
@@ -290,6 +318,9 @@ async function verify(users) {
   if (links.error || links.data?.length !== 2 || !links.data.some((link) => link.viewer_user_id === users.clinician.id && link.viewer_role === 'clinician' && link.status === 'active') || !links.data.some((link) => link.viewer_user_id === users.school.id && link.viewer_role === 'school_staff' && link.status === 'active')) {
     throw links.error ?? new Error('Demo relationship verification failed.');
   }
+
+  const sharedContacts = await admin.from('shared_support_contacts').select('user_id, role, display_name, support_phone, support_email').in('user_id', [users.school.id, users.clinician.id]);
+  if (sharedContacts.error || sharedContacts.data?.length !== 2) throw sharedContacts.error ?? new Error('Shared support contact verification failed.');
 
   const additional = [];
   for (const student of additionalDemoStudents) {

@@ -10,6 +10,7 @@ import {
   analyzePersonalizedPatterns,
   type PersonalizedPattern,
 } from '@/lib/patternModel';
+import { useThemeColors } from '@/lib/theme';
 
 function formatDate(date: string): string {
   return new Date(`${date}T00:00:00`).toLocaleDateString('en-US', {
@@ -26,6 +27,7 @@ function PatternCard({
   activities: Map<string, ActivityLog>;
 }) {
   const [expanded, setExpanded] = useState(false);
+  const theme = useThemeColors();
   const evidence = pattern.supportingActivityIds
     .map((id) => activities.get(id))
     .filter((activity): activity is ActivityLog => Boolean(activity));
@@ -36,9 +38,12 @@ function PatternCard({
       <LabelText className="mb-2 leading-5 text-muted-foreground">
         {pattern.description}
       </LabelText>
-      <MicroText className="mb-3 text-muted-foreground">
-        Evidence strength: {pattern.strength} · {pattern.supportCount} supporting records
-      </MicroText>
+      <View className="mb-3 flex-row flex-wrap items-center gap-2">
+        <MicroText className="text-muted-foreground">Evidence strength: {pattern.strength}</MicroText>
+        <View className="rounded-full border px-2 py-1" style={{ borderColor: theme.turmeric, backgroundColor: `${theme.turmeric}22` }}>
+          <Text className="text-xs font-bold" style={{ color: theme.foreground }}>{pattern.supportCount} supporting records</Text>
+        </View>
+      </View>
       <SecondaryButton
         label={expanded ? 'Hide details' : 'Why am I seeing this?'}
         onPress={() => setExpanded((value) => !value)}
@@ -78,6 +83,7 @@ function PatternCard({
 }
 
 export function RecoveryStory({ activityLogs }: { activityLogs: ActivityLog[] }) {
+  const theme = useThemeColors();
   const result = useMemo(
     () => analyzePersonalizedPatterns(activityLogs),
     [activityLogs],
@@ -109,9 +115,11 @@ export function RecoveryStory({ activityLogs }: { activityLogs: ActivityLog[] })
     <SectionCard className="mb-5 border-l-4 border-l-accent">
       <View className="mb-2 flex-row items-center justify-between gap-2">
         <HeadingText className="flex-1 text-xl">AI-assisted patterns</HeadingText>
-        <MicroText className="text-muted-foreground">
-          {result.patterns.length} pattern{result.patterns.length === 1 ? '' : 's'}
-        </MicroText>
+        <View className="rounded-full px-2.5 py-1" style={{ backgroundColor: `${theme.turmeric}22` }}>
+          <Text className="text-xs font-bold" style={{ color: theme.foreground }}>
+            {result.patterns.length} pattern{result.patterns.length === 1 ? '' : 's'}
+          </Text>
+        </View>
       </View>
       <LabelText className="mb-2 leading-5">
         Personalized analysis of your own activity records.
@@ -119,9 +127,10 @@ export function RecoveryStory({ activityLogs }: { activityLogs: ActivityLog[] })
       <MicroText className="mb-2 leading-5 text-muted-foreground">
         ReEntry looks for associations in what you recorded. These observations do not diagnose, predict recovery, or replace clinical judgment.
       </MicroText>
-      <MicroText className="mb-4 text-muted-foreground">
-        Personalized model based on {result.metadata.trainingRecords} activity records.
-      </MicroText>
+      <View className="mb-4 flex-row items-baseline gap-1.5">
+        <Text className="text-lg font-bold" style={{ color: theme.turmeric }}>{result.metadata.trainingRecords}</Text>
+        <MicroText className="text-muted-foreground">activity records analyzed</MicroText>
+      </View>
       {result.patterns.map((pattern) => (
         <PatternCard key={pattern.id} pattern={pattern} activities={activities} />
       ))}

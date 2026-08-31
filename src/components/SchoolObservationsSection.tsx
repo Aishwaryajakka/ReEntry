@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 
-import { PrimaryButton, SecondaryButton } from './Buttons';
+import { DestructiveButton, PrimaryButton, SecondaryButton } from './Buttons';
 import { LabelText, MicroText, SubheadingText } from './Typography';
 import {
   SCHOOL_OBSERVATION_LABELS,
@@ -186,8 +186,8 @@ export function SchoolObservationsSection({
                   accessibilityState={{ checked: selected }}
                   className="min-h-11 justify-center rounded-full border px-3 py-2"
                   style={{
-                    borderColor: selected ? theme.moss : theme.border,
-                    backgroundColor: selected ? theme.mossLight : theme.background,
+                    borderColor: selected ? theme.turmeric : theme.border,
+                    backgroundColor: selected ? `${theme.turmeric}18` : theme.background,
                   }}
                 >
                   <Text className="text-sm text-foreground">{SCHOOL_SUPPORT_LABELS[support]}</Text>
@@ -243,7 +243,7 @@ export function SchoolObservationsSection({
                 {authoredByCurrentUser ? (
                   <View className="mt-3 flex-row gap-2">
                     <SecondaryButton label="Edit" onPress={() => startEditing(observation)} className="flex-1" />
-                    <SecondaryButton label="Delete" onPress={() => remove(observation)} className="flex-1" />
+                    <DestructiveButton label="Delete" onPress={() => remove(observation)} className="flex-1" />
                   </View>
                 ) : null}
               </View>
