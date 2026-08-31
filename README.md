@@ -313,13 +313,13 @@ ReEntry uses ordinary smartphones, student-confirmed observations, optional loca
 
 This practical architecture does not imply deployment readiness beyond the current prototype.
 
-## Local Development
+## How to Run ReEntry
 
-### Requirements
+### Prerequisites
 
 - Node.js
 - pnpm 11
-- A Supabase project configured for this application
+- A Supabase project configured for ReEntry
 - An appropriate native/development build for native capabilities
 
 ### Environment
@@ -333,7 +333,7 @@ EXPO_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 
 Never expose a `SUPABASE_SERVICE_ROLE_KEY` to client code or commit it to source control.
 
-### Run
+### Run on Web
 
 ```bash
 pnpm install
