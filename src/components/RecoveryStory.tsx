@@ -33,7 +33,7 @@ function PatternCard({
     .filter((activity): activity is ActivityLog => Boolean(activity));
 
   return (
-    <View className="mb-3 rounded-2xl border border-border bg-background p-4">
+    <View className="border-t border-border py-4 first:border-t-0">
       <Text className="mb-1 text-base font-semibold leading-5 text-foreground">{pattern.title}</Text>
       <LabelText className="mb-2 leading-5 text-muted-foreground">
         {pattern.description}

@@ -45,7 +45,6 @@ export default function ProfileScreen() {
   const [accessLoading, setAccessLoading] = useState(false);
 
   const userId = session?.user?.id;
-  const displayUsername = session?.user?.email?.replace('@miaoda.com', '');
   const roleLabel = (() => {
     switch (role) {
       case 'student':
@@ -154,9 +153,9 @@ export default function ProfileScreen() {
   };
 
   return (
-    <ScreenShell>
+    <ScreenShell className="max-w-[880px]">
       {/* Header */}
-      <StudentPageHeader />
+      <StudentPageHeader className="mb-3" />
       <EditorialLabel className="mb-3">Profile</EditorialLabel>
       <HeadingText className="mb-6">Settings</HeadingText>
 
@@ -165,12 +164,12 @@ export default function ProfileScreen() {
         <View className="flex-row items-center gap-4">
           <View className="w-14 h-14 rounded-full bg-accent items-center justify-center">
             <Text className="text-2xl font-bold text-accent-foreground">
-              {(displayUsername ?? user.firstName).charAt(0).toUpperCase()}
+              {user.firstName.charAt(0).toUpperCase()}
             </Text>
           </View>
           <View className="flex-1 min-w-0">
             <Text className="text-base font-semibold text-foreground" numberOfLines={1}>
-              {displayUsername ?? user.firstName}
+              {user.firstName}
             </Text>
             <Text className="text-sm text-muted-foreground mt-0.5">
               {roleLabel}
@@ -179,52 +178,71 @@ export default function ProfileScreen() {
         </View>
       </SectionCard>
 
-      {/* Recovery Context */}
-      <SubheadingText className="mb-3">Recovery Context</SubheadingText>
-      <SectionCard className="mb-4">
-        <View className="flex-row justify-between mb-3">
-          <View className="items-center" style={{ flex: 1 }}>
-            <Text className="text-xl font-bold" style={{ color: themeColors.turmeric }}>{recoveryContext.checkInCount}</Text>
-            <MicroText>Daily check-ins</MicroText>
-          </View>
-          <View className="items-center border-l border-border" style={{ flex: 1 }}>
-            <Text className="text-xl font-bold" style={{ color: themeColors.turmeric }}>{recoveryContext.logCount}</Text>
-            <MicroText>Activity logs</MicroText>
-          </View>
-          <View className="items-center border-l border-border" style={{ flex: 1 }}>
-            <Text className="text-sm font-semibold text-foreground">
-              {recoveryContext.mostRecentEntry ? formatDateShort(recoveryContext.mostRecentEntry) : '—'}
-            </Text>
-            <MicroText>Latest entry</MicroText>
-          </View>
-        </View>
-        <MicroText className="leading-4 text-center">
-          Your records show activity across {recoveryContext.checkInCount} check-in days and {recoveryContext.logCount} activity logs.
-        </MicroText>
-      </SectionCard>
-
-      {/* Latest activity */}
-      <SubheadingText className="mb-3">Latest activity</SubheadingText>
-      <SectionCard className="mb-4">
-        {recoveryContext.latestActivity ? (
-          <View>
-            <View className="flex-row items-center justify-between mb-1">
-              <Text className="text-base font-semibold text-foreground">
-                {recoveryContext.latestActivity.customLabel || recoveryContext.latestActivity.activityCategory}
-              </Text>
-              <MicroText>{formatDateShort(recoveryContext.latestActivity.date)}</MicroText>
+      {/* Appearance */}
+      <SubheadingText className="mb-3 mt-2">Display</SubheadingText>
+      <SectionCard className="mb-5 gap-5">
+        <View className="flex-row items-center justify-between gap-4">
+          <View className="flex-1">
+            <View className="mb-1 flex-row items-center gap-2">
+              <Text className="text-base font-semibold text-foreground">Dark Mode</Text>
             </View>
-            <MicroText className="mb-2">
-              {recoveryContext.latestActivity.durationMinutes} min · {TOLERANCE_LABELS[recoveryContext.latestActivity.toleranceRating]}
-            </MicroText>
-            {recoveryContext.latestActivity.notes ? (
-              <LabelText className="italic leading-5 text-muted-foreground">"{recoveryContext.latestActivity.notes}"</LabelText>
-            ) : null}
+            <LabelText className="leading-5">Use the dark appearance across the app.</LabelText>
           </View>
-        ) : (
-          <MicroText className="leading-4">
-            No activity logs yet. Go to the Today tab and tap Log Activity to add your first entry.
-          </MicroText>
+          <Switch
+            value={isDark}
+            onValueChange={handleToggleTheme}
+            trackColor={{ false: themeColors.mossLight, true: themeColors.moss }}
+            thumbColor={COLORS.warmWhite}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel="Dark Mode toggle"
+            accessibilityRole="switch"
+            accessibilityState={{ checked: isDark }}
+          />
+        </View>
+
+        <View className="h-px bg-border" />
+
+        <View className="flex-row items-center justify-between gap-4">
+          <View className="flex-1">
+            <View className="mb-1 flex-row items-center gap-2">
+              {lowStimulationMode
+                ? <EyeOff size={18} color={themeColors.foreground} />
+                : <Eye size={18} color={themeColors.foreground} />
+              }
+              <Text className="text-base font-semibold text-foreground">
+                Low-Stimulation Mode
+              </Text>
+            </View>
+            <LabelText className="leading-5">
+              {lowStimulationMode
+                ? 'Active — decorative elements removed. All information is preserved.'
+                : 'Remove textures, contours, and decorative elements from all screens.'}
+            </LabelText>
+          </View>
+          <Switch
+            value={lowStimulationMode}
+            onValueChange={handleToggleLowStimulation}
+            trackColor={{ false: themeColors.mossLight, true: themeColors.moss }}
+            thumbColor={COLORS.warmWhite}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            accessibilityLabel="Low-Stimulation Mode toggle"
+            accessibilityRole="switch"
+            accessibilityState={{ checked: lowStimulationMode }}
+          />
+        </View>
+
+        {lowStimulationMode && (
+          <View className="rounded-xl bg-muted px-4 py-3">
+            <LabelText className="leading-5">
+              Low-Stimulation Mode is active across all tabs. Toggle off to restore the full visual experience.
+            </LabelText>
+          </View>
+        )}
+
+        {error && (
+          <View className="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3">
+            <MicroText className="text-destructive">{error}</MicroText>
+          </View>
         )}
       </SectionCard>
 
@@ -241,7 +259,7 @@ export default function ProfileScreen() {
               Give this code to your school staff or clinician. They can enter it to connect to your ReEntry data.
             </LabelText>
 
-            <View className="mb-4 items-center rounded-xl border bg-muted p-4" style={{ borderColor: `${themeColors.turmeric}55` }}>
+            <View className="mb-4 items-center rounded-xl bg-muted px-3 py-4">
               {accessCode ? (
                 <>
                   <Text className="text-2xl font-bold tracking-widest text-foreground mb-3">{accessCode}</Text>
@@ -289,7 +307,7 @@ export default function ProfileScreen() {
                     {linkedViewers
                       .filter((l) => l.viewer_role === 'school_staff')
                       .map((link) => (
-                        <View key={link.id} className="flex-row items-center justify-between bg-muted rounded-xl p-3 mb-2">
+                        <View key={link.id} className="mb-1 flex-row items-center justify-between border-t border-border py-3">
                           <View className="flex-1">
                             <Text className="text-sm text-foreground capitalize">
                               {link.status === 'active' ? 'Active access' : 'Revoked'}
@@ -319,7 +337,7 @@ export default function ProfileScreen() {
                     {linkedViewers
                       .filter((l) => l.viewer_role === 'clinician')
                       .map((link) => (
-                        <View key={link.id} className="flex-row items-center justify-between bg-muted rounded-xl p-3 mb-2">
+                        <View key={link.id} className="mb-1 flex-row items-center justify-between border-t border-border py-3">
                           <View className="flex-1">
                             <Text className="text-sm text-foreground capitalize">
                               {link.status === 'active' ? 'Active access' : 'Revoked'}
@@ -345,76 +363,52 @@ export default function ProfileScreen() {
       )}
 
       {role === 'student' && userId ? (
-        <SectionCard className="mb-4">
-          <NeedSupportSection studentId={userId} linkedViewers={linkedViewers} />
-        </SectionCard>
+        <NeedSupportSection studentId={userId} linkedViewers={linkedViewers} />
       ) : null}
 
-      {/* Appearance */}
-      <SubheadingText className="mb-3">Display</SubheadingText>
-      <SectionCard className="mb-4 gap-5">
-        <View className="flex-row items-center justify-between gap-4">
-          <View className="flex-1">
-            <View className="flex-row items-center gap-2 mb-1">
-              <Text className="text-base font-semibold text-foreground">Dark Mode</Text>
-            </View>
-            <LabelText className="leading-5">Use the dark appearance across the app.</LabelText>
+      {/* Your records */}
+      <SubheadingText className="mb-3">Your records</SubheadingText>
+      <SectionCard className="mb-4">
+        <View className="flex-row justify-between mb-3">
+          <View className="items-center" style={{ flex: 1 }}>
+            <Text className="text-xl font-bold" style={{ color: themeColors.turmeric }}>{recoveryContext.checkInCount}</Text>
+            <MicroText>Daily check-ins</MicroText>
           </View>
-          <Switch
-            value={isDark}
-            onValueChange={handleToggleTheme}
-            trackColor={{ false: themeColors.mossLight, true: themeColors.moss }}
-            thumbColor={COLORS.warmWhite}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityLabel="Dark Mode toggle"
-            accessibilityRole="switch"
-            accessibilityState={{ checked: isDark }}
-          />
+          <View className="items-center border-l border-border" style={{ flex: 1 }}>
+            <Text className="text-xl font-bold" style={{ color: themeColors.turmeric }}>{recoveryContext.logCount}</Text>
+            <MicroText>Activity logs</MicroText>
+          </View>
+          <View className="items-center border-l border-border" style={{ flex: 1 }}>
+            <Text className="text-sm font-semibold text-foreground">
+              {recoveryContext.mostRecentEntry ? formatDateShort(recoveryContext.mostRecentEntry) : '—'}
+            </Text>
+            <MicroText>Latest entry</MicroText>
+          </View>
         </View>
-
-        <View className="h-px bg-border" />
-
-        <View className="flex-row items-center justify-between gap-4">
-          <View className="flex-1">
-            <View className="flex-row items-center gap-2 mb-1">
-              {lowStimulationMode
-                ? <EyeOff size={18} color={themeColors.foreground} />
-                : <Eye size={18} color={themeColors.foreground} />
-              }
-              <Text className="text-base font-semibold text-foreground">
-                Low-Stimulation Mode
+        <MicroText className="leading-4 text-center">
+          Your records show activity across {recoveryContext.checkInCount} check-in days and {recoveryContext.logCount} activity logs.
+        </MicroText>
+        <View className="my-4 h-px bg-border" />
+        <Text className="mb-1 text-base font-semibold text-foreground">Latest activity</Text>
+        {recoveryContext.latestActivity ? (
+          <View>
+            <View className="flex-row items-center justify-between gap-3">
+              <Text className="min-w-0 flex-1 text-base font-semibold text-foreground">
+                {recoveryContext.latestActivity.customLabel || recoveryContext.latestActivity.activityCategory}
               </Text>
+              <MicroText>{formatDateShort(recoveryContext.latestActivity.date)}</MicroText>
             </View>
-            <LabelText className="leading-5">
-              {lowStimulationMode
-                ? 'Active — decorative elements removed. All information is preserved.'
-                : 'Remove textures, contours, and decorative elements from all screens.'}
-            </LabelText>
+            <MicroText className="mb-2">
+              {recoveryContext.latestActivity.durationMinutes} min · {TOLERANCE_LABELS[recoveryContext.latestActivity.toleranceRating]}
+            </MicroText>
+            {recoveryContext.latestActivity.notes ? (
+              <LabelText className="italic leading-5 text-muted-foreground">"{recoveryContext.latestActivity.notes}"</LabelText>
+            ) : null}
           </View>
-          <Switch
-            value={lowStimulationMode}
-            onValueChange={handleToggleLowStimulation}
-            trackColor={{ false: themeColors.mossLight, true: themeColors.moss }}
-            thumbColor={COLORS.warmWhite}
-            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-            accessibilityLabel="Low-Stimulation Mode toggle"
-            accessibilityRole="switch"
-            accessibilityState={{ checked: lowStimulationMode }}
-          />
-        </View>
-
-        {lowStimulationMode && (
-          <View className="mt-3 bg-muted rounded-xl px-4 py-3">
-            <LabelText className="leading-5">
-              Low-Stimulation Mode is active across all tabs. Toggle off to restore the full visual experience.
-            </LabelText>
-          </View>
-        )}
-
-        {error && (
-          <View className="mt-3 bg-destructive/10 rounded-xl px-4 py-3 border border-destructive/30">
-            <MicroText className="text-destructive">{error}</MicroText>
-          </View>
+        ) : (
+          <MicroText className="leading-4">
+            No activity logs yet. Go to the Today tab and tap Log Activity to add your first entry.
+          </MicroText>
         )}
       </SectionCard>
 
@@ -439,9 +433,7 @@ export default function ProfileScreen() {
           onPress={() => router.push('/(app)/(tabs)/evidence' as RelativePathString)}
           className="w-full"
         />
-      </SectionCard>
-
-      <SectionCard className="mb-4">
+        <View className="my-4 h-px bg-border" />
         <View className="flex-row items-start gap-3">
           <View className="mt-0.5">
             <Info size={18} color={themeColors.foregroundMuted} />
@@ -453,9 +445,7 @@ export default function ProfileScreen() {
             </LabelText>
           </View>
         </View>
-      </SectionCard>
-
-      <SectionCard className="mb-4">
+        <View className="my-4 h-px bg-border" />
         <View className="flex-row items-center gap-2 mb-2">
           <Lock size={16} color={themeColors.foregroundMuted} />
           <Text className="text-base font-semibold text-foreground">Language used in this app</Text>
@@ -478,7 +468,7 @@ export default function ProfileScreen() {
       </SectionCard>
 
       {/* Account */}
-      <SecondaryButton label="Sign Out" onPress={handleSignOut} className="w-full mb-4" />
+      <SecondaryButton label="Sign Out" onPress={handleSignOut} className="mb-4 self-start px-5" />
 
       {/* Version */}
       <View className="items-center mt-3 mb-2">

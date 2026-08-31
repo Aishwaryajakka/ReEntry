@@ -4,6 +4,7 @@ import type { ViewStyle } from 'react-native';
 import { GraduationCap, HeartHandshake, Mail, MessageCircle, Pencil, Phone, Stethoscope, Trash2 } from 'lucide-react-native';
 
 import { AccentButton, DestructiveButton, PrimaryButton, SecondaryButton } from './Buttons';
+import { SectionCard } from './SectionCard';
 import { LabelText, MicroText, SubheadingText } from './Typography';
 import { deleteTrustedContact, fetchSharedSupportContactsForStudent, fetchTrustedContact, saveTrustedContact } from '@/db/api';
 import type { SharedSupportContact, TrustedContact } from '@/data/types';
@@ -13,34 +14,33 @@ import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
 
 const SUPPORT_ACTION_STYLE: ViewStyle = {
-  minHeight: 48,
-  paddingHorizontal: 14,
-  paddingVertical: 10,
+  minHeight: 44,
+  paddingHorizontal: 10,
+  paddingVertical: 6,
 };
 
 function ContactActions({ phoneNumber }: { phoneNumber: string }) {
   const theme = useThemeColors();
-  const { isDark } = useTheme();
   const phoneTarget = phoneNumber.replace(/[^+\d]/g, '');
   const secondaryActionStyle: ViewStyle = {
     ...SUPPORT_ACTION_STYLE,
-    backgroundColor: isDark ? theme.mossLight : `${COLORS.warmWhite}CC`,
-    borderWidth: 1.5,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
   };
   return (
-    <View className="mt-2 flex-row gap-2">
+    <View className="flex-row gap-2">
       <AccentButton
         label="Call"
         onPress={() => void Linking.openURL(`tel:${phoneTarget}`)}
         iconLeft={<Phone size={18} color={COLORS.deepForest} />}
-        className="w-[112px] rounded-full"
-        style={SUPPORT_ACTION_STYLE}
+        className="w-[104px] rounded-full"
+        style={{ ...SUPPORT_ACTION_STYLE, backgroundColor: theme.accent, borderColor: theme.accent }}
       />
       <SecondaryButton
         label="Text"
         onPress={() => void Linking.openURL(`sms:${phoneTarget}`)}
         iconLeft={<MessageCircle size={18} color={theme.foreground} />}
-        className="w-[112px] rounded-full"
+        className="w-[104px] rounded-full"
         style={secondaryActionStyle}
       />
     </View>
@@ -51,6 +51,7 @@ function LinkedSupportRow({
   icon,
   title,
   countLabel,
+  detailLabel,
   phoneContacts,
   emailContacts,
   onAction,
@@ -58,46 +59,47 @@ function LinkedSupportRow({
   icon: React.ReactNode;
   title: string;
   countLabel: string;
+  detailLabel?: string;
   phoneContacts: SharedSupportContact[];
   emailContacts: SharedSupportContact[];
   onAction: (channel: 'call' | 'email', contacts: SharedSupportContact[]) => void;
 }) {
   const theme = useThemeColors();
-  const { isDark } = useTheme();
   const secondaryActionStyle: ViewStyle = {
     ...SUPPORT_ACTION_STYLE,
-    backgroundColor: isDark ? theme.mossLight : `${COLORS.warmWhite}CC`,
-    borderWidth: 1.5,
+    backgroundColor: 'transparent',
+    borderWidth: 0,
   };
 
   return (
-    <View className="py-3">
-      <View className="flex-row items-center gap-3">
+    <View className="flex-row flex-wrap items-start gap-x-3 gap-y-1.5 py-2.5">
+      <View className="min-w-[190px] flex-1 flex-row items-center gap-3">
         <View className="h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-muted">{icon}</View>
         <View className="min-w-0 flex-1">
           <Text className="font-semibold text-foreground">{title}</Text>
           <MicroText className="text-muted-foreground">{countLabel}</MicroText>
+          {detailLabel ? <MicroText className="mt-0.5 text-muted-foreground">{detailLabel}</MicroText> : null}
         </View>
       </View>
-      <View className="mt-2 flex-row gap-2 pl-[52px]">
+      <View className="w-[216px] flex-row gap-2 self-center">
         <AccentButton
           label="Call"
           onPress={() => onAction('call', phoneContacts)}
           disabled={phoneContacts.length === 0}
           iconLeft={<Phone size={18} color={COLORS.deepForest} />}
-          className="w-[108px] rounded-full"
-          style={SUPPORT_ACTION_STYLE}
+          className="w-[104px] rounded-full"
+          style={{ ...SUPPORT_ACTION_STYLE, backgroundColor: theme.accent, borderColor: theme.accent }}
         />
         <SecondaryButton
           label="Email"
           onPress={() => onAction('email', emailContacts)}
           disabled={emailContacts.length === 0}
           iconLeft={<Mail size={18} color={theme.foreground} />}
-          className="w-[108px] rounded-full"
+          className="w-[104px] rounded-full"
           style={secondaryActionStyle}
         />
       </View>
-      {phoneContacts.length === 0 && emailContacts.length === 0 ? <MicroText className="mt-1 pl-[52px] text-muted-foreground">No shared phone or email is available.</MicroText> : null}
+      {phoneContacts.length === 0 && emailContacts.length === 0 ? <MicroText className="w-full text-muted-foreground">No shared phone or email is available.</MicroText> : null}
     </View>
   );
 }
@@ -219,37 +221,50 @@ export function NeedSupportSection({ studentId, linkedViewers }: { studentId: st
       : careTeamCount > 0
         ? 'Contact details have not been shared.'
         : 'No connected clinicians.';
+  const schoolContactDetail = schoolContacts.length === 1
+    ? schoolContacts[0].phone ?? schoolContacts[0].email ?? undefined
+    : undefined;
+  const careContactDetail = careContacts.length === 1
+    ? careContacts[0].phone ?? careContacts[0].email ?? undefined
+    : undefined;
 
   return (
     <>
-    <View>
-      <SubheadingText className="mb-1">Need support?</SubheadingText>
-      <LabelText className="leading-5 text-muted-foreground">Choose who you want to reach.</LabelText>
+    <View className="mb-5 w-full">
+      <SubheadingText className="mb-2">Need support?</SubheadingText>
+      <SectionCard className="p-[14px]">
+      <View>
+        <LabelText className="leading-5 text-muted-foreground">Choose who you want to reach.</LabelText>
+      </View>
+
+      <View className="mt-2">
 
       <LinkedSupportRow
         icon={<GraduationCap size={19} color={theme.foreground} />}
         title="School support"
         countLabel={schoolContactLabel}
+        detailLabel={schoolContactDetail}
         phoneContacts={schoolContacts.filter((sharedContact) => Boolean(sharedContact.phone))}
         emailContacts={schoolContacts.filter((sharedContact) => Boolean(sharedContact.email))}
         onAction={beginSupportAction}
       />
 
-      <View className="h-px bg-border" />
+      <View className="h-px bg-border/70" />
 
       <LinkedSupportRow
         icon={<Stethoscope size={18} color={theme.foreground} />}
         title="Care team"
         countLabel={careContactLabel}
+        detailLabel={careContactDetail}
         phoneContacts={careContacts.filter((sharedContact) => Boolean(sharedContact.phone))}
         emailContacts={careContacts.filter((sharedContact) => Boolean(sharedContact.email))}
         onAction={beginSupportAction}
       />
 
-      <View className="h-px bg-border" />
+      <View className="h-px bg-border/70" />
 
-      <View className="py-3">
-        <View className="flex-row items-center gap-3">
+      <View className="flex-row flex-wrap items-start gap-x-3 gap-y-1.5 py-2.5">
+        <View className="min-w-[190px] flex-1 flex-row items-center gap-3">
           <View className="h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-muted">
             <HeartHandshake size={19} color={theme.foreground} />
           </View>
@@ -258,38 +273,44 @@ export function NeedSupportSection({ studentId, linkedViewers }: { studentId: st
             <MicroText className="text-muted-foreground">
               {contact ? `${contact.name} · ${contact.relationship}` : 'Add one parent, caregiver, or trusted adult.'}
             </MicroText>
+            {contact ? <MicroText className="mt-0.5 text-muted-foreground">{contact.phoneNumber}</MicroText> : null}
           </View>
         </View>
 
           {contact && !editing ? (
-            <View className="mt-2 pl-[52px]">
-              <MicroText className="text-muted-foreground">{contact.phoneNumber}</MicroText>
+            <View className="w-[216px] self-center">
               <ContactActions phoneNumber={contact.phoneNumber} />
-              <View className="mt-2 flex-row items-center gap-3">
+            </View>
+          ) : null}
+
+          {contact && !editing ? (
+              <View className="mt-2 w-full flex-row gap-3">
                 <Pressable
                   onPress={beginEdit}
-                  className="min-h-11 flex-row items-center gap-2 rounded-full px-2 active:opacity-70"
+                  className="min-h-11 w-[92px] flex-row items-center justify-center gap-2 rounded-xl border border-border bg-background px-2 active:opacity-70"
                   accessibilityRole="button"
                   accessibilityLabel="Edit trusted adult"
                 >
                   <Pencil size={17} color={theme.foreground} />
                   <Text className="text-sm font-semibold text-foreground">Edit</Text>
                 </Pressable>
-                <DestructiveButton
-                  label="Remove"
+                <Pressable
                   onPress={remove}
-                  iconLeft={<Trash2 size={17} color={COLORS.warmWhite} />}
-                  className="rounded-full px-4"
-                  style={{ minHeight: 44, paddingVertical: 8 }}
-                />
+                  className="min-h-11 w-[92px] flex-row items-center justify-center gap-1 rounded-xl px-2 active:opacity-70"
+                  style={{ backgroundColor: theme.rust }}
+                  accessibilityRole="button"
+                  accessibilityLabel="Remove trusted adult"
+                >
+                  <Trash2 size={16} color={COLORS.warmWhite} />
+                  <Text className="text-sm font-semibold" style={{ color: COLORS.warmWhite }}>Remove</Text>
+                </Pressable>
               </View>
-            </View>
           ) : null}
 
-          {!contact && !editing ? <PrimaryButton label="Add trusted contact" onPress={beginEdit} className="mt-3 w-full" /> : null}
+          {!contact && !editing ? <PrimaryButton label="Add trusted contact" onPress={beginEdit} className="w-full" /> : null}
 
           {editing ? (
-            <View className="mt-3 gap-3 border-t border-border pt-3">
+            <View className="w-full gap-3 border-t border-border pt-3">
               <View>
                 <MicroText className="mb-1 font-semibold text-foreground">Name</MicroText>
                 <TextInput value={name} onChangeText={setName} maxLength={100} placeholder="Name" placeholderTextColor={theme.foregroundMuted} className="rounded-xl border border-border bg-background px-3 py-3 text-foreground" />
@@ -309,18 +330,21 @@ export function NeedSupportSection({ studentId, linkedViewers }: { studentId: st
           ) : null}
       </View>
 
-      <View className="mt-1 border-t border-border pt-3">
+      <View className="mt-4 border-t border-border/70 pt-2.5">
         <Text className="text-sm font-semibold text-foreground">Emergency help</Text>
-        <MicroText className="mt-1 leading-5 text-muted-foreground">For urgent or life-threatening situations, contact local emergency services.</MicroText>
         <DestructiveButton
           label="Emergency services"
           onPress={() => void Linking.openURL('tel:')}
           iconLeft={<Phone size={18} color={COLORS.warmWhite} />}
-          className="mt-2 self-start rounded-full"
+          className="mt-2.5 self-start rounded-full px-4"
           style={SUPPORT_ACTION_STYLE}
         />
-        <MicroText className="mt-2 leading-5 text-muted-foreground">ReEntry does not monitor for emergencies or contact anyone automatically.</MicroText>
+        <MicroText className="mt-2 leading-5 text-muted-foreground">
+          For urgent or life-threatening situations, contact local emergency services. ReEntry does not monitor for emergencies or contact anyone automatically.
+        </MicroText>
       </View>
+      </View>
+      </SectionCard>
     </View>
     <Modal visible={chooser !== null} transparent animationType="fade" onRequestClose={() => setChooser(null)}>
       <View className={cn('flex-1 items-center justify-center px-5', isDark && 'dark')}>

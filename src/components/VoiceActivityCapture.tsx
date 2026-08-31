@@ -8,7 +8,7 @@ import {
   View,
 } from 'react-native';
 import { Mic, Square, X } from 'lucide-react-native';
-import { PrimaryButton, SecondaryButton } from './Buttons';
+import { GhostButton, PrimaryButton, SecondaryButton } from './Buttons';
 import { LabelText, MicroText, SubheadingText } from './Typography';
 import { useReducedExperience } from '@/lib/accessibility';
 import {
@@ -175,7 +175,7 @@ export function VoiceActivityCapture({
               <SubheadingText>Log with voice</SubheadingText>
               <Pressable
                 onPress={close}
-                className="rounded-full p-2 active:bg-muted"
+                className="min-h-11 min-w-11 items-center justify-center rounded-full active:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 accessibilityRole="button"
                 accessibilityLabel="Close"
               >
@@ -207,7 +207,7 @@ export function VoiceActivityCapture({
                   {transcript || 'Speak naturally. ReEntry will not save until you confirm.'}
                 </LabelText>
                 <PrimaryButton label="Stop listening" onPress={stop} iconLeft={<Square size={18} color={isDark ? theme.deepForest : theme.warmWhite} />} className="w-full" />
-                <SecondaryButton label="Cancel" onPress={close} className="mt-3 w-full" />
+                <GhostButton label="Cancel" onPress={close} className="mt-1 self-center px-4" style={{ minHeight: 44 }} />
               </View>
             )}
 

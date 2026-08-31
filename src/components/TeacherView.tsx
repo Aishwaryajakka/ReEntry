@@ -1,10 +1,9 @@
 /** Full ReEntry Pass with minimum-necessary school support information. */
 import { useMemo } from 'react';
-import { Modal, ScrollView, Text, View } from 'react-native';
+import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Calendar, ChevronLeft, Shield } from 'lucide-react-native';
 
-import { SecondaryButton } from '@/components/Buttons';
 import { StudentPageHeader } from '@/components/StudentPageHeader';
 import { SectionCard } from '@/components/SectionCard';
 import { HeadingText, LabelText, MicroText } from '@/components/Typography';
@@ -64,15 +63,18 @@ export function TeacherView({ visible, onClose }: TeacherViewProps) {
             showsVerticalScrollIndicator={false}
             contentInsetAdjustmentBehavior="automatic"
           >
-          <SecondaryButton
-            label="Back"
+          <Pressable
             onPress={onClose}
-            className="mb-6 self-start px-4"
-            iconLeft={<ChevronLeft size={20} color={theme.foreground} />}
+            className="mb-5 min-h-11 self-start flex-row items-center gap-1 px-1 active:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             accessibilityLabel="Back to ReEntry Pass"
-          />
+            accessibilityRole="button"
+          >
+            <ChevronLeft size={20} color={theme.foreground} />
+            <Text className="text-sm font-semibold text-foreground">Back</Text>
+          </Pressable>
 
           <StudentPageHeader />
+          <Text className="mb-2 text-xs font-bold uppercase tracking-[0.18em]" style={{ color: theme.accent }}>ReEntry Pass</Text>
           <HeadingText className="mb-2 leading-tight">Current school supports</HeadingText>
           <LabelText className="mb-6 leading-5">
             {activeSchoolRecords.length} active school support{activeSchoolRecords.length === 1 ? '' : 's'}
@@ -85,7 +87,7 @@ export function TeacherView({ visible, onClose }: TeacherViewProps) {
           ) : (
             <View className="mb-5 gap-3">
               {activeSchoolRecords.map((record) => (
-                <SectionCard key={record.id}>
+                <SectionCard key={record.id} style={{ backgroundColor: theme.mossLight, borderColor: theme.border }}>
                   <Text className="mb-2 text-base font-semibold text-foreground">
                     {record.accommodationType}
                   </Text>

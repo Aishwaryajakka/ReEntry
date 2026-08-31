@@ -3,7 +3,7 @@ import { Modal, Pressable, ScrollView, Switch, TextInput, View } from 'react-nat
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 
-import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
+import { AccentButton, GhostButton } from '@/components/Buttons';
 import { SectionCard } from '@/components/SectionCard';
 import { HeadingText, LabelText, MicroText } from '@/components/Typography';
 import { useThemeColors } from '@/lib/theme';
@@ -137,7 +137,7 @@ export function AddAccommodationModal({ visible, onClose, studentId, onSaved, ac
             <HeadingText className="leading-tight">{isEditing ? 'Edit Accommodation' : 'Record Accommodation'}</HeadingText>
             <Pressable
               onPress={handleClose}
-              className="p-2 rounded-full active:opacity-70"
+              className="min-h-11 min-w-11 items-center justify-center rounded-full active:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               accessibilityLabel="Close"
               accessibilityRole="button"
             >
@@ -223,14 +223,14 @@ export function AddAccommodationModal({ visible, onClose, studentId, onSaved, ac
 
           {error ? <MicroText className="text-destructive mb-3">{error}</MicroText> : null}
 
-          <PrimaryButton
+          <AccentButton
             label={loading ? 'Saving…' : (isEditing ? 'Save Changes' : 'Save Accommodation')}
             onPress={handleSave}
             disabled={loading}
             loading={loading}
-            className="w-full mb-3"
+            className="mb-1 w-full"
           />
-          <SecondaryButton label="Cancel" onPress={handleClose} className="w-full" disabled={loading} />
+          <GhostButton label="Cancel" onPress={handleClose} className="self-center px-4" style={{ minHeight: 44 }} disabled={loading} />
         </ScrollView>
       </SafeAreaView>
       </View>

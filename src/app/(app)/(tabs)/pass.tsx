@@ -9,17 +9,17 @@
 import { useState } from 'react';
 import { Text, View } from 'react-native';
 import { ScreenShell } from '@/components/ScreenShell';
-import { HeadingText, LabelText, MicroText } from '@/components/Typography';
+import { EditorialLabel, HeadingText, LabelText, MicroText } from '@/components/Typography';
 import { PrimaryButton } from '@/components/Buttons';
 import { SectionCard } from '@/components/SectionCard';
 import { TeacherView } from '@/components/TeacherView';
 import { StudentPageHeader } from '@/components/StudentPageHeader';
 import { useAppContext } from '@/context/AppContext';
 import { School } from 'lucide-react-native';
-import { useThemeColors } from '@/lib/theme';
+import { COLORS, useThemeColors } from '@/lib/theme';
 
 export default function PassScreen() {
-  const { accommodationRecords, today } = useAppContext();
+  const { accommodationRecords, lowStimulationMode, today } = useAppContext();
   const [teacherViewVisible, setTeacherViewVisible] = useState(false);
   const theme = useThemeColors();
 
@@ -31,22 +31,34 @@ export default function PassScreen() {
   );
 
   return (
-    <ScreenShell>
-      <StudentPageHeader />
+    <ScreenShell className="max-w-[880px]">
+      <StudentPageHeader className="mb-3" />
+      <EditorialLabel className="mb-3">Pass</EditorialLabel>
       <HeadingText className="mb-4 leading-tight">Your ReEntry Pass</HeadingText>
-      <SectionCard className="mb-5">
+      <SectionCard
+        className="mb-5 min-h-[220px] justify-center overflow-hidden p-6"
+        style={{
+          backgroundColor: COLORS.brightYellow,
+          borderColor: COLORS.warmGold,
+          shadowColor: lowStimulationMode ? 'transparent' : COLORS.warmGold,
+          shadowOpacity: lowStimulationMode ? 0 : 0.16,
+          shadowRadius: lowStimulationMode ? 0 : 14,
+          elevation: lowStimulationMode ? 0 : 4,
+        } as object}
+      >
+        <Text className="mb-2 text-xs font-bold uppercase tracking-[0.18em] text-forest/70">ReEntry Pass</Text>
         <View className="mb-4 flex-row items-center gap-3">
-          <View className="h-11 w-11 items-center justify-center rounded-full bg-accent">
-            <School size={21} color={theme.accentForeground} />
+          <View className="h-11 w-11 items-center justify-center rounded-full" style={{ backgroundColor: COLORS.warmWhite }}>
+            <School size={21} color={COLORS.deepForest} />
           </View>
           <View className="min-w-0 flex-1">
-            <Text className="text-lg font-semibold text-foreground">Current school supports</Text>
-            <LabelText className="mt-1 leading-5">
+            <Text className="text-lg font-semibold text-forest">Current school supports</Text>
+            <LabelText className="mt-1 leading-5 text-forest/80">
               {activeRecords.length} active support{activeRecords.length === 1 ? '' : 's'}
             </LabelText>
           </View>
         </View>
-        <PrimaryButton label="Show my pass" className="w-full" onPress={() => setTeacherViewVisible(true)} />
+        <PrimaryButton label="Show my pass" className="w-full" appearance="light" onPress={() => setTeacherViewVisible(true)} />
       </SectionCard>
 
       <TeacherView

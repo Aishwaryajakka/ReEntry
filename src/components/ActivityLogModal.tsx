@@ -15,7 +15,7 @@ import {
   View,
 } from 'react-native';
 import { X } from 'lucide-react-native';
-import { DestructiveButton, PrimaryButton, SecondaryButton } from './Buttons';
+import { AccentButton, DestructiveButton, GhostButton } from './Buttons';
 import { DataBadge } from './DataBadge';
 import { DividerLine } from './DividerLine';
 import { LabelText, MicroText, SubheadingText } from './Typography';
@@ -228,7 +228,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
 
                 <Pressable
                   onPress={onClose}
-                  className="p-2 rounded-full active:bg-muted"
+                  className="min-h-11 min-w-11 items-center justify-center rounded-full active:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   accessibilityRole="button"
                   accessibilityLabel="Close"
                 >
@@ -259,7 +259,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                     className={cn('rounded-full border px-4 py-2.5', category !== cat && 'bg-card border-border')}
                     style={{
                       minHeight: 40,
-                      ...(category === cat ? { backgroundColor: theme.turmeric, borderColor: theme.turmeric } : {}),
+                      ...(category === cat ? { backgroundColor: theme.accent, borderColor: theme.accent } : {}),
                     } as object}
                     accessibilityRole="radio"
                     accessibilityState={{
@@ -309,8 +309,8 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                   <Pressable
                     key={mins}
                     onPress={() => setDuration(mins)}
-                    className={cn('min-w-[64] flex-1 rounded-xl border px-4 py-3', duration !== mins && 'bg-card border-border')}
-                    style={duration === mins ? { backgroundColor: theme.turmeric, borderColor: theme.turmeric } : undefined}
+                    className={cn('w-[72px] rounded-xl border px-2 py-2.5', duration !== mins && 'bg-card border-border')}
+                    style={{ minHeight: 44, ...(duration === mins ? { backgroundColor: theme.accent, borderColor: theme.accent } : {}) }}
                     accessibilityRole="radio"
                     accessibilityState={{
                       checked: duration === mins,
@@ -332,7 +332,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                     key={rating}
                     onPress={() => setTolerance(rating)}
                     className={cn('flex-row items-center justify-between rounded-xl border px-4 py-3.5', tolerance !== rating && 'bg-card border-border')}
-                    style={tolerance === rating ? { backgroundColor: theme.turmeric, borderColor: theme.turmeric } : undefined}
+                    style={tolerance === rating ? { backgroundColor: theme.accent, borderColor: theme.accent } : undefined}
                     accessibilityRole="radio"
                     accessibilityState={{
                       checked: tolerance === rating,
@@ -367,7 +367,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                       key={tag.id}
                       onPress={() => toggleTag(tag.id)}
                       className={cn('rounded-full border px-3 py-2', !selected && 'bg-card border-border')}
-                      style={selected ? { backgroundColor: theme.turmeric, borderColor: theme.turmeric } : undefined}
+                      style={selected ? { backgroundColor: theme.accent, borderColor: theme.accent } : undefined}
                       accessibilityRole="checkbox"
                       accessibilityState={{
                         checked: selected,
@@ -431,11 +431,11 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
               </View>
 
               {/* Actions */}
-              <PrimaryButton
+              <AccentButton
                 label={isEditing ? 'Save changes' : submitLabel ?? 'Save entry'}
                 onPress={handleSubmit}
                 disabled={!isValid}
-                className="w-full mb-3"
+                className="mb-1 w-full"
               />
 
               {isEditing && (
@@ -446,10 +446,11 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                 />
               )}
 
-              <SecondaryButton
+              <GhostButton
                 label="Cancel"
                 onPress={onClose}
-                className="w-full"
+                className="self-center px-4"
+                style={{ minHeight: 44 }}
               />
             </ScrollView>
           </View>

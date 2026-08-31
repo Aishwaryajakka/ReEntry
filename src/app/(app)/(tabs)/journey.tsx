@@ -25,6 +25,7 @@ import {
   SubheadingText,
   LabelText,
   MicroText,
+  EditorialLabel,
 } from '@/components/Typography';
 import { DataBadgeList } from '@/components/DataBadge';
 import { CategoryIcon } from '@/components/Icons';
@@ -254,8 +255,10 @@ export default function JourneyScreen() {
   }, []);
 
   return (
-    <ScreenShell>
-      <StudentPageHeader />
+    <ScreenShell className="max-w-[880px]">
+      <StudentPageHeader className="mb-3" />
+
+      <EditorialLabel className="mb-3">Journey</EditorialLabel>
 
       <HeadingText className="mb-2 leading-tight text-foreground">
         Recovery Journey

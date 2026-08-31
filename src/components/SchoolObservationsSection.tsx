@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, Pressable, Text, TextInput, View } from 'react-native';
 
-import { DestructiveButton, PrimaryButton, SecondaryButton } from './Buttons';
+import { AccentButton, DestructiveButton, GhostButton, PrimaryButton, SecondaryButton } from './Buttons';
 import { LabelText, MicroText, SubheadingText } from './Typography';
 import {
   SCHOOL_OBSERVATION_LABELS,
@@ -137,11 +137,11 @@ export function SchoolObservationsSection({
       </MicroText>
 
       {editable && !showForm ? (
-        <PrimaryButton label="Record school observation" onPress={() => setShowForm(true)} className="mb-4 w-full" />
+        <AccentButton label="Record school observation" onPress={() => setShowForm(true)} className="w-full" style={{ minHeight: 48, marginBottom: 16 }} />
       ) : null}
 
       {editable && showForm ? (
-        <View className="mb-4 rounded-xl border border-border bg-muted p-4">
+        <View className="mb-3 rounded-xl border border-border bg-muted p-4">
           <LabelText className="mb-2">Context</LabelText>
           <TextInput
             value={context}
@@ -149,7 +149,8 @@ export function SchoolObservationsSection({
             placeholder="Chemistry, English, Lunch…"
             placeholderTextColor={theme.foregroundMuted}
             maxLength={120}
-            className="mb-4 rounded-xl border border-border bg-background px-3 py-3 text-foreground"
+            className="mb-3 rounded-xl border border-border bg-background px-3 py-3 text-foreground"
+            style={{ minHeight: 52 } as object}
           />
 
           <LabelText className="mb-2">What did you observe?</LabelText>
@@ -162,10 +163,10 @@ export function SchoolObservationsSection({
                   onPress={() => setObservationType(type)}
                   accessibilityRole="radio"
                   accessibilityState={{ checked: selected }}
-                  className="min-h-12 justify-center rounded-xl border px-3 py-3"
+                  className="min-h-12 justify-center rounded-xl border px-4 py-2.5"
                   style={{
-                    borderColor: selected ? theme.turmeric : theme.border,
-                    backgroundColor: selected ? `${theme.turmeric}18` : theme.background,
+                    borderColor: selected ? theme.accent : theme.border,
+                    backgroundColor: selected ? `${theme.accent}18` : theme.background,
                   }}
                 >
                   <Text className="text-sm font-medium text-foreground">{SCHOOL_OBSERVATION_LABELS[type]}</Text>
@@ -184,10 +185,10 @@ export function SchoolObservationsSection({
                   onPress={() => toggleSupport(support)}
                   accessibilityRole="checkbox"
                   accessibilityState={{ checked: selected }}
-                  className="min-h-11 justify-center rounded-full border px-3 py-2"
+                  className="min-h-10 justify-center rounded-full border px-3.5 py-2"
                   style={{
-                    borderColor: selected ? theme.turmeric : theme.border,
-                    backgroundColor: selected ? `${theme.turmeric}18` : theme.background,
+                    borderColor: selected ? theme.accent : theme.border,
+                    backgroundColor: selected ? `${theme.accent}18` : theme.background,
                   }}
                 >
                   <Text className="text-sm text-foreground">{SCHOOL_SUPPORT_LABELS[support]}</Text>
@@ -205,18 +206,20 @@ export function SchoolObservationsSection({
             maxLength={500}
             multiline
             textAlignVertical="top"
-            className="min-h-24 rounded-xl border border-border bg-background px-3 py-3 text-foreground"
+            className="rounded-xl border border-border bg-background px-3 py-3 text-foreground"
+            style={{ minHeight: 88 } as object}
           />
-          <MicroText className="mt-2 text-muted-foreground">Use neutral, functional details only.</MicroText>
-          {error ? <Text className="mt-3 text-sm text-destructive">{error}</Text> : null}
-          <PrimaryButton
+          <MicroText className="mt-1.5 text-muted-foreground">Use neutral, functional details only.</MicroText>
+          {error ? <Text className="mt-2 text-sm text-destructive">{error}</Text> : null}
+          <AccentButton
             label={editingId ? 'Save changes' : 'Record observation'}
             onPress={save}
             loading={saving}
             disabled={saving || !context.trim()}
-            className="mt-4 w-full"
+            className="mt-2 w-full"
+            style={{ minHeight: 48 }}
           />
-          <SecondaryButton label="Cancel" onPress={resetForm} disabled={saving} className="mt-2 w-full" />
+          <GhostButton label="Cancel" onPress={resetForm} disabled={saving} className="mt-1.5 self-center px-4" style={{ minHeight: 44 }} />
         </View>
       ) : null}
 
@@ -224,7 +227,7 @@ export function SchoolObservationsSection({
       {observations.length === 0 ? (
         <MicroText className="text-muted-foreground">No school observations recorded yet.</MicroText>
       ) : (
-        <View className="gap-2">
+        <View className="mb-6 gap-2">
           {observations.map((observation) => {
             const authoredByCurrentUser = editable && observation.createdBy === currentUserId;
             return (
@@ -241,9 +244,14 @@ export function SchoolObservationsSection({
                 {observation.note ? <MicroText className="mt-2 leading-5 text-foreground">“{observation.note}”</MicroText> : null}
                 <MicroText className="mt-2 text-muted-foreground">Recorded by school staff</MicroText>
                 {authoredByCurrentUser ? (
-                  <View className="mt-3 flex-row gap-2">
-                    <SecondaryButton label="Edit" onPress={() => startEditing(observation)} className="flex-1" />
-                    <DestructiveButton label="Delete" onPress={() => remove(observation)} className="flex-1" />
+                  <View className="mt-2 flex-row gap-3">
+                    <SecondaryButton
+                      label="Edit"
+                      onPress={() => startEditing(observation)}
+                      className="flex-1 px-3 py-2"
+                      style={{ minHeight: 44, backgroundColor: theme.background, borderColor: theme.border, borderWidth: 1 }}
+                    />
+                    <DestructiveButton label="Delete" onPress={() => remove(observation)} className="flex-1 px-3 py-2" style={{ minHeight: 44 }} />
                   </View>
                 ) : null}
               </View>

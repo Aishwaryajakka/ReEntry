@@ -212,8 +212,8 @@ export default function ToleranceScreen() {
     : null;
 
   return (
-    <ScreenShell>
-      <StudentPageHeader />
+    <ScreenShell className="max-w-[880px]">
+      <StudentPageHeader className="mb-3" />
       <EditorialLabel className="mb-3">Tolerance</EditorialLabel>
       <HeadingText className="mb-2 leading-tight">Your tolerance areas</HeadingText>
       <LabelText className="mb-5 leading-5">

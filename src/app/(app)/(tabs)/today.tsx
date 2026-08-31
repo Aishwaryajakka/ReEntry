@@ -205,7 +205,7 @@ export default function TodayScreen() {
   }, [todaysLogs]);
 
   return (
-    <ScreenShell>
+    <ScreenShell className="max-w-[880px]">
       <StudentPageHeader className="mb-3" />
       <View className="mb-4 flex-row justify-end">
         <EditorialLabel>{formatTodayHeader()}</EditorialLabel>

@@ -21,26 +21,27 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: isDark ? COLORS.deepForest : COLORS.moon,
           borderTopWidth: 0,
-          paddingTop: 4,
-          paddingBottom: insets.bottom + 4,
+          borderBottomWidth: 0,
+          borderColor: 'transparent',
+          paddingTop: 3,
+          paddingBottom: insets.bottom + 2,
           height: 64 + insets.bottom,
-          shadowColor: lowStimulationMode ? 'transparent' : '#344431',
-          shadowOffset: { width: 0, height: -1 },
-          shadowOpacity: lowStimulationMode ? 0 : 0.05,
-          shadowRadius: lowStimulationMode ? 0 : 4,
-          elevation: lowStimulationMode ? 0 : 4,
+          shadowOpacity: 0,
+          shadowRadius: 0,
+          elevation: 0,
         },
         tabBarLabelStyle: {
-          fontSize: 10,
-          fontWeight: '500',
-          lineHeight: 12,
+          fontSize: 12,
+          fontWeight: '600',
+          lineHeight: 14,
           marginBottom: 0,
         },
         tabBarItemStyle: {
           borderRadius: 10,
           marginHorizontal: 3,
-          marginVertical: 3,
-          overflow: 'hidden',
+          marginVertical: 2,
+          borderWidth: 0,
+          borderBottomWidth: 0,
         },
         tabBarIconStyle: {
           marginTop: 0,
@@ -51,8 +52,8 @@ export default function TabsLayout() {
         name="today"
         options={{
           title: 'Today',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Sun size={size} color={focused ? COLORS.brightYellow : color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Sun size={22} color={focused ? COLORS.brightYellow : color} />
           ),
         }}
       />
@@ -60,8 +61,8 @@ export default function TabsLayout() {
         name="tolerance"
         options={{
           title: 'Tolerance',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Activity size={size} color={focused ? COLORS.brightYellow : color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Activity size={22} color={focused ? COLORS.brightYellow : color} />
           ),
         }}
       />
@@ -69,8 +70,8 @@ export default function TabsLayout() {
         name="journey"
         options={{
           title: 'Journey',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Map size={size} color={focused ? COLORS.brightYellow : color} />
+          tabBarIcon: ({ color, focused }) => (
+            <Map size={22} color={focused ? COLORS.brightYellow : color} />
           ),
         }}
       />
@@ -78,8 +79,8 @@ export default function TabsLayout() {
         name="pass"
         options={{
           title: 'Pass',
-          tabBarIcon: ({ color, size, focused }) => (
-            <BookOpen size={size} color={focused ? COLORS.brightYellow : color} />
+          tabBarIcon: ({ color, focused }) => (
+            <BookOpen size={22} color={focused ? COLORS.brightYellow : (isDark ? color : COLORS.moss)} />
           ),
         }}
       />
@@ -87,8 +88,8 @@ export default function TabsLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarIcon: ({ color, size, focused }) => (
-            <User size={size} color={focused ? COLORS.brightYellow : color} />
+          tabBarIcon: ({ color, focused }) => (
+            <User size={22} color={focused ? COLORS.brightYellow : color} />
           ),
         }}
       />

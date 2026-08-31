@@ -151,7 +151,7 @@ The compact Need Support experience offers explicit paths to School support, Car
 
 The architecture supports multiple linked School Staff and Clinicians without rendering large individual cards. Explicitly shared support rows contain only display name, role, support phone, and support email. Active-link and matching-role RLS rules limit student access without broadening general `profiles` access. One contact acts directly; multiple contacts use a chooser rather than silently selecting someone. Call, Email, and applicable Text actions always require a student tap.
 
-The repository contains `00007_student_trusted_contacts.sql` and `00008_shared_support_contacts.sql`, but these are currently pending/unapplied prototype migrations and require review and application before the corresponding persisted contacts are available in a deployed database.
+Migrations `00007_student_trusted_contacts.sql` and `00008_shared_support_contacts.sql` are applied in the demo Supabase database, providing persisted student-managed trusted contacts and explicitly shared support contacts for the demo workflow.
 
 Emergency help is explicit-action only. ReEntry performs no emergency detection and is not an emergency-response service.
 
@@ -159,7 +159,7 @@ Emergency help is explicit-action only. ReEntry performs no emergency detection 
 
 ### Dark Mode and Low-Stimulation Mode
 
-Dark Mode is an application-wide appearance option supported by ReEntry's light/dark brand assets and theme system. Low-Stimulation Mode is separate: it reduces decorative intensity, density, motion, and visual competition where supported while preserving essential information. This is an intentional adolescent/concussion-context UX choice, not symptom treatment.
+Dark Mode is an application-wide appearance option supported by ReEntry's light/dark brand assets and theme system. Low-Stimulation Mode is separate: it reduces decorative intensity, density, motion, and visual competition where supported while preserving essential information. ReEntry uses restrained interaction feedback and reduces non-essential modal motion in Low-Stimulation or reduced-motion contexts. This is an intentional adolescent/concussion-context UX choice, not symptom treatment.
 
 ## Responsible AI by Design
 
@@ -186,7 +186,7 @@ Prohibited outputs include diagnosis, severity classification, recovery percenta
 | Clinician | Relevant evidence for actively linked students, School Observations, and the accommodation workflow permitted by RLS |
 | School Staff | Minimum-necessary recorded school supports and the School Observation workflow for actively linked students |
 
-Supabase Auth identifies users; PostgreSQL Row Level Security combines role checks with active `student_access` relationships. This supports data minimization at the database boundary rather than relying only on hidden UI. Pending `shared_support_contacts` infrastructure is intentionally separate from general/private profile data and is limited to support information explicitly shared with linked students.
+Supabase Auth identifies users; PostgreSQL Row Level Security combines role checks with active `student_access` relationships. This supports data minimization at the database boundary rather than relying only on hidden UI. The implemented `shared_support_contacts` table is intentionally separate from general/private profile data and is limited to support information explicitly shared with linked students.
 
 ReEntry does not claim HIPAA compliance or regulatory certification.
 
@@ -258,10 +258,10 @@ Important PostgreSQL tables in the migration history include:
 - `student_access`
 - `student_schedule_items`
 - `school_observations`
-- `student_trusted_contacts` *(pending migration `00007`)*
-- `shared_support_contacts` *(pending migration `00008`)*
+- `student_trusted_contacts`
+- `shared_support_contacts`
 
-The pending label reflects the current local repository state; it is not a claim that those migrations have been applied to a deployed database.
+Migrations `00007` and `00008` implementing these contact tables are applied to the demo Supabase database. This does not imply production or clinical deployment.
 
 ## Evidence-Informed Design
 

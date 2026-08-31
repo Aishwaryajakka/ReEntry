@@ -528,7 +528,7 @@ export default function ClinicianWorkspaceScreen() {
 
                   {activeTab === 'evidence' ? (
                     <View>
-                  <SubheadingText className="text-sm mb-2">1 · Student-reported evidence</SubheadingText>
+                  <SubheadingText className="text-sm mb-2">Student-reported evidence</SubheadingText>
                   <MicroText className="mb-3 leading-5 text-muted-foreground">
                     Recent self-reported activity records. These observations do not determine medical readiness.
                   </MicroText>
@@ -591,11 +591,11 @@ export default function ClinicianWorkspaceScreen() {
                     studentId={student.studentId}
                     observations={studentSchoolObservations}
                     editable={false}
-                    title="2 · School observations"
+                    title="School observations"
                   />
 
                   <View className="mb-4 border-t border-border pt-4">
-                    <SubheadingText className="mb-2 text-sm">3 · AI-assisted observations</SubheadingText>
+                    <SubheadingText className="mb-2 text-sm">AI-assisted observations</SubheadingText>
                     <MicroText className="mb-3 leading-5 text-muted-foreground">
                       Personalized analysis of this student's recorded activities. These associations support review and do not diagnose, predict recovery, or recommend accommodations.
                     </MicroText>
@@ -668,7 +668,7 @@ export default function ClinicianWorkspaceScreen() {
                   )}
 
                   <View className="mt-4 border-t border-border pt-4">
-                    <SubheadingText className="mb-2 text-sm">5 · Clinician decision</SubheadingText>
+                    <SubheadingText className="mb-2 text-sm">Clinician decision</SubheadingText>
                     <MicroText className="mb-3 leading-5 text-muted-foreground">
                       Review the student's recorded experiences and document supports you decide are appropriate.
                     </MicroText>
