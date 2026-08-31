@@ -95,7 +95,7 @@ function ActivityRow({
   }));
 
   return (
-    <View className="py-3 border-b border-border">
+    <View className="border-b border-border py-3" style={{ width: '100%' }}>
       {/*
         The expandable activity header is one button.
 
@@ -106,27 +106,28 @@ function ActivityRow({
       <Pressable
         onPress={toggle}
         className="active:opacity-80"
+        style={{ width: '100%' }}
         accessibilityRole="button"
         accessibilityLabel={`${title} activity, ${log.durationMinutes} minutes, ${
           TOLERANCE_LABELS[log.toleranceRating]
         }`}
         accessibilityState={{ expanded }}
       >
-        <View className="flex-row items-center gap-3">
-          <View
-            className="w-10 h-10 rounded-full items-center justify-center flex-shrink-0"
-            style={{
-              backgroundColor: theme.mossLight,
-            }}
-          >
-            <CategoryIcon
-              category={log.activityCategory}
-              size={20}
-              color={theme.foreground}
-            />
+        <View style={{ width: '100%', flexDirection: 'row', alignItems: 'stretch' }}>
+          <View style={{ width: 48, flexShrink: 0, alignItems: 'center', justifyContent: 'center' }}>
+            <View
+              className="h-10 w-10 items-center justify-center rounded-full"
+              style={{ backgroundColor: theme.mossLight }}
+            >
+              <CategoryIcon
+                category={log.activityCategory}
+                size={20}
+                color={theme.foreground}
+              />
+            </View>
           </View>
 
-          <View className="min-w-0 flex-1 justify-center">
+          <View style={{ minWidth: 0, flex: 1, justifyContent: 'center', paddingVertical: 4, paddingHorizontal: 8 }}>
             <Text className="text-sm font-semibold text-foreground" numberOfLines={2}>
               {title}
             </Text>
@@ -135,7 +136,7 @@ function ActivityRow({
             </Text>
           </View>
 
-          <View className="min-w-[62px] flex-row items-center justify-end gap-2 self-center">
+          <View style={{ width: 76, flexShrink: 0, flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', columnGap: 8 }}>
             <MicroText className="text-right text-muted-foreground">
               {log.durationMinutes} min
             </MicroText>
@@ -299,6 +300,8 @@ export default function JourneyScreen() {
 
           <SectionList
             sections={sections}
+            style={{ width: '100%' }}
+            contentContainerStyle={{ width: '100%' }}
             keyExtractor={(item) => item.id}
             contentInsetAdjustmentBehavior="automatic"
             renderSectionHeader={({

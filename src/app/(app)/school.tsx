@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { View, Text, TextInput, FlatList, KeyboardAvoidingView, Pressable, Switch } from 'react-native';
 import { useFocusEffect } from 'expo-router';
-import { Users } from 'lucide-react-native';
+import { ChevronDown, ChevronUp, ClipboardList, GraduationCap, LayoutDashboard, UserRound, Users } from 'lucide-react-native';
 
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
@@ -49,6 +49,7 @@ export default function SchoolWorkspaceScreen() {
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'overview' | 'observations' | 'profile'>('overview');
   const [themeError, setThemeError] = useState<string | null>(null);
+  const [studentChooserOpen, setStudentChooserOpen] = useState(false);
 
   const loadStudents = useCallback(async () => {
     if (!schoolStaffId) return;
@@ -129,6 +130,7 @@ export default function SchoolWorkspaceScreen() {
   const selectedStudents = selectedStudentId
     ? students.filter((student) => student.studentId === selectedStudentId)
     : [];
+  const selectedStudent = selectedStudents[0];
 
   if (role !== 'school_staff') {
     return (
@@ -153,7 +155,12 @@ export default function SchoolWorkspaceScreen() {
             ListHeaderComponent={(
               <View className="pb-4">
                 <ReEntryWordmark className="mb-5" />
-                <EditorialLabel className="mb-3">SCHOOL WORKSPACE</EditorialLabel>
+                <View className="mb-3 flex-row items-center gap-2">
+                  <View className="h-9 w-9 items-center justify-center rounded-full" style={{ backgroundColor: `${themeColors.turmeric}22` }}>
+                    <GraduationCap size={20} color={themeColors.foreground} />
+                  </View>
+                  <EditorialLabel>SCHOOL WORKSPACE</EditorialLabel>
+                </View>
                 <HeadingText className="mb-1">Students shared with you</HeadingText>
                 <MicroText className="text-muted-foreground mb-5">
                   School staff see recorded supports needed for school, not the student's private recovery records.
@@ -213,9 +220,25 @@ export default function SchoolWorkspaceScreen() {
                 </SectionCard>
                 ) : null}
 
-                {students.length > 0 ? (
-                  <View className="mb-4 gap-2">
-                    <MicroText className="font-semibold uppercase tracking-[0.12em] text-muted-foreground">Linked students</MicroText>
+                {students.length > 0 && selectedStudent ? (
+                  <View className="mb-4">
+                    <Pressable
+                      onPress={() => setStudentChooserOpen((open) => !open)}
+                      accessibilityRole="button"
+                      accessibilityState={{ expanded: studentChooserOpen }}
+                      className="min-h-14 flex-row items-center gap-3 rounded-xl border px-3 py-2"
+                      style={{ borderColor: themeColors.turmeric, backgroundColor: `${themeColors.turmeric}12` }}
+                    >
+                      <View className="h-9 w-9 items-center justify-center rounded-full bg-accent">
+                        <Text className="font-bold text-accent-foreground">{(selectedStudent.displayName ?? 'Student').charAt(0).toUpperCase()}</Text>
+                      </View>
+                      <View className="flex-1">
+                        <MicroText className="font-semibold uppercase tracking-[0.1em] text-muted-foreground">Selected student</MicroText>
+                        <Text className="font-semibold text-foreground">{selectedStudent.displayName ?? 'Student'}</Text>
+                      </View>
+                      {studentChooserOpen ? <ChevronUp size={18} color={themeColors.foreground} /> : <ChevronDown size={18} color={themeColors.foreground} />}
+                    </Pressable>
+                    {studentChooserOpen ? <View className="mt-2 gap-2">
                     {students.map((student) => {
                       const selected = student.studentId === selectedStudentId;
                       return (
@@ -224,6 +247,7 @@ export default function SchoolWorkspaceScreen() {
                           onPress={() => {
                             setSelectedStudentId(student.studentId);
                             setActiveTab('overview');
+                            setStudentChooserOpen(false);
                           }}
                           accessibilityRole="button"
                           accessibilityState={{ selected }}
@@ -240,6 +264,33 @@ export default function SchoolWorkspaceScreen() {
                         </Pressable>
                       );
                     })}
+                    </View> : null}
+                  </View>
+                ) : null}
+
+                {selectedStudent ? (
+                  <View className="mb-1 flex-row rounded-xl border border-border bg-card p-1">
+                    {([
+                      ['overview', 'Overview', LayoutDashboard],
+                      ['observations', 'Observations', ClipboardList],
+                      ['profile', 'Profile', UserRound],
+                    ] as const).map(([tab, label, Icon]) => {
+                      const selected = activeTab === tab;
+                      const color = selected ? COLORS.brightYellow : themeColors.foreground;
+                      return (
+                        <Pressable
+                          key={tab}
+                          onPress={() => setActiveTab(tab)}
+                          accessibilityRole="tab"
+                          accessibilityState={{ selected }}
+                          className="min-h-14 flex-1 items-center justify-center rounded-lg px-1 py-1.5"
+                          style={{ backgroundColor: selected ? themeColors.foreground : 'transparent' }}
+                        >
+                          <Icon size={17} color={color} />
+                          <Text className="mt-1 text-[11px] font-semibold" style={{ color }}>{label}</Text>
+                        </Pressable>
+                      );
+                    })}
                   </View>
                 ) : null}
             </View>
@@ -249,7 +300,7 @@ export default function SchoolWorkspaceScreen() {
             const studentObservations = observationsByStudent.get(student.studentId) ?? [];
             return (
               <SectionCard className="mb-4">
-                <View className="flex-row items-center gap-3 mb-3">
+                {activeTab !== 'profile' ? <View className="flex-row items-center gap-3 mb-3">
                   <View className="w-10 h-10 rounded-full bg-accent items-center justify-center">
                     <Text className="text-base font-bold text-accent-foreground">
                       {(student.displayName ?? 'Student').charAt(0).toUpperCase()}
@@ -261,25 +312,7 @@ export default function SchoolWorkspaceScreen() {
                     </Text>
                     <MicroText className="text-muted-foreground">Student</MicroText>
                   </View>
-                </View>
-
-                <View className="mb-4 flex-row rounded-xl border border-border bg-muted p-1">
-                  {(['overview', 'observations', 'profile'] as const).map((tab) => {
-                    const selected = activeTab === tab;
-                    return (
-                      <Pressable
-                        key={tab}
-                        onPress={() => setActiveTab(tab)}
-                        accessibilityRole="tab"
-                        accessibilityState={{ selected }}
-                        className="min-h-11 flex-1 items-center justify-center rounded-lg px-2"
-                        style={{ backgroundColor: selected ? themeColors.turmeric : 'transparent' }}
-                      >
-                        <Text className="text-xs font-bold uppercase" style={{ color: selected ? COLORS.deepForest : themeColors.foreground }}>{tab}</Text>
-                      </Pressable>
-                    );
-                  })}
-                </View>
+                </View> : null}
 
                 {activeTab === 'overview' ? (
                   <View>
@@ -327,7 +360,6 @@ export default function SchoolWorkspaceScreen() {
                     <View className="rounded-xl bg-muted p-3">
                       <Text className="font-semibold text-foreground">{staffName}</Text>
                       <MicroText className="text-muted-foreground">School staff</MicroText>
-                      <MicroText className="mt-2 text-muted-foreground">Connected student: {student.displayName ?? 'Student'}</MicroText>
                     </View>
                     <View className="flex-row items-center justify-between gap-4 rounded-xl border border-border p-3">
                       <View className="flex-1">

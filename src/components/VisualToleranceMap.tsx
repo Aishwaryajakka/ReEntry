@@ -5,8 +5,8 @@ import { COLORS, useThemeColors } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 import { useTheme } from '@/context/ThemeContext';
 
-const LABEL_WIDTH = 148;
-const CELL_SIZE = 58;
+const LABEL_WIDTH = 100;
+const CELL_SIZE = 62;
 
 function dateHeader(date: string): string {
   return new Date(`${date}T00:00:00`).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric' });
@@ -59,9 +59,9 @@ export function VisualToleranceMap({ dimensions, recordedDates, selectedId, sele
       <MicroText className="mb-3 font-semibold uppercase tracking-[0.12em] text-muted-foreground">Recent recorded days</MicroText>
 
       <View className="overflow-hidden rounded-2xl border border-border bg-background">
-        <View className="flex-row">
-          <View style={{ width: LABEL_WIDTH }}>
-            <View className="h-10 justify-end border-b border-border px-3 py-2">
+        <View className="w-full flex-row">
+          <View style={{ width: LABEL_WIDTH, flexShrink: 0 }}>
+            <View className="h-10 justify-end border-b border-border px-2 py-2">
               <MicroText className="font-semibold text-muted-foreground">Functional area</MicroText>
             </View>
             {dimensions.map((dimension, rowIndex) => {
@@ -70,20 +70,26 @@ export function VisualToleranceMap({ dimensions, recordedDates, selectedId, sele
               <Pressable
                 key={dimension.id}
                 onPress={() => onSelect(dimension.id, null)}
-                style={{ height: 78 }}
-                className={cn('justify-center px-3 py-2', rowIndex > 0 && 'border-t border-border', rowSelected && selectedDate === null && 'bg-accent/15')}
+                style={{ height: 78, backgroundColor: rowSelected ? `${COLORS.brightYellow}0A` : 'transparent' }}
+                className={cn('justify-center px-2 py-2', rowIndex > 0 && 'border-t border-border')}
                 accessibilityRole="button"
                 accessibilityState={{ selected: rowSelected && selectedDate === null }}
                 accessibilityLabel={`${dimension.label}: ${dimension.state}, ${dimension.supportCount} supporting records`}
               >
+                {rowSelected ? <View pointerEvents="none" className="absolute bottom-2 left-0 top-2 w-[3px] rounded-full bg-accent" /> : null}
                 <Text className="text-sm font-semibold text-foreground" numberOfLines={2}>{dimension.label}</Text>
-                <MicroText className="mt-1 leading-4 text-muted-foreground">{compactState(dimension.state)} · {dimension.supportCount} record{dimension.supportCount === 1 ? '' : 's'}</MicroText>
+                <MicroText className="mt-1 leading-4 text-muted-foreground" numberOfLines={2}>{compactState(dimension.state)} · {dimension.supportCount} record{dimension.supportCount === 1 ? '' : 's'}</MicroText>
               </Pressable>
               );
             })}
           </View>
 
-          <ScrollView horizontal showsHorizontalScrollIndicator contentContainerStyle={{ minWidth: Math.max(recordedDates.length * CELL_SIZE, 190) }}>
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator
+            style={{ flex: 1, minWidth: 0 }}
+            contentContainerStyle={{ width: Math.max(recordedDates.length * CELL_SIZE, 190) }}
+          >
             <View>
               <View className="h-10 flex-row border-b border-border">
                 {recordedDates.length > 0 ? recordedDates.map((date) => (

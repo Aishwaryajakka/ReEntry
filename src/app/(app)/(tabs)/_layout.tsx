@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Sun, Activity, Map, BookOpen, User } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppContext } from '@/context/AppContext';
 import { useTheme } from '@/context/ThemeContext';
 import { COLORS } from '@/lib/theme';
@@ -7,6 +8,7 @@ import { COLORS } from '@/lib/theme';
 export default function TabsLayout() {
   const { isDark } = useTheme();
   const { lowStimulationMode } = useAppContext();
+  const insets = useSafeAreaInsets();
 
   return (
     <Tabs
@@ -14,13 +16,15 @@ export default function TabsLayout() {
       screenOptions={{
         headerShown: false,
         tabBarActiveTintColor: COLORS.brightYellow,
+        tabBarActiveBackgroundColor: COLORS.forest,
         tabBarInactiveTintColor: isDark ? COLORS.linen : COLORS.moss,
         tabBarStyle: {
           backgroundColor: isDark ? COLORS.deepForest : COLORS.moon,
           borderTopColor: isDark ? COLORS.forest : COLORS.linen,
           borderTopWidth: 1,
           paddingTop: 4,
-          height: 60,
+          paddingBottom: insets.bottom + 4,
+          height: 64 + insets.bottom,
           shadowColor: lowStimulationMode ? 'transparent' : '#344431',
           shadowOffset: { width: 0, height: -1 },
           shadowOpacity: lowStimulationMode ? 0 : 0.05,
@@ -30,7 +34,16 @@ export default function TabsLayout() {
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: '500',
-          marginBottom: 4,
+          lineHeight: 12,
+          marginBottom: 0,
+        },
+        tabBarItemStyle: {
+          borderRadius: 10,
+          marginHorizontal: 3,
+          marginVertical: 3,
+        },
+        tabBarIconStyle: {
+          marginTop: 0,
         },
       }}
     >
