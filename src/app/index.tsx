@@ -3,13 +3,13 @@
  * Auth screens are always light; this screen uses the same light treatment.
  */
 
-import { View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useRouter, type RelativePathString } from 'expo-router';
 import { useSession } from '@/ctx';
 import { ScreenShell } from '@/components/ScreenShell';
 import { ReEntryWordmark } from '@/components/ReEntryWordmark';
-import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
-import { BodyText } from '@/components/Typography';
+import { PrimaryButton } from '@/components/Buttons';
+import { BodyText, MicroText } from '@/components/Typography';
 
 export default function LandingScreen() {
   const { session } = useSession();
@@ -23,29 +23,33 @@ export default function LandingScreen() {
 
   return (
     <ScreenShell light>
-      <View className="flex-1 justify-center px-6 py-8 gap-6">
-        <ReEntryWordmark
-          appearance="light"
-          tagline="Return to school. Return to friends. Return to life."
-        />
+      <View className="flex-1 justify-center self-center w-full max-w-[520px] px-6 py-12 gap-6">
+        <ReEntryWordmark appearance="light" />
 
         <BodyText className="text-center leading-6 text-muted-foreground">
-          ReEntry supports observational recovery tracking and communication.
-          It does not diagnose, estimate severity, prescribe treatment, predict
-          recovery time, or provide return-to-play clearance.
+          Track everyday function and share useful recovery context with your care and school teams.
         </BodyText>
 
-        <View className="gap-3 mt-4">
+        <MicroText className="text-center leading-5 text-muted-foreground">
+          ReEntry supports recovery communication and does not provide medical diagnosis or clearance.
+        </MicroText>
+
+        <View className="mt-3 gap-3">
           <PrimaryButton
-            label="Sign In"
-            onPress={() => router.navigate('/(auth)/sign-in' as RelativePathString)}
-            className="w-full"
-          />
-          <SecondaryButton
-            label="Create Account"
+            label="Create account"
             onPress={() => router.navigate('/(auth)/sign-up' as RelativePathString)}
             className="w-full"
           />
+          <View className="flex-row items-center justify-center gap-1">
+            <MicroText className="text-muted-foreground">Already have an account?</MicroText>
+            <Pressable
+              onPress={() => router.navigate('/(auth)/sign-in' as RelativePathString)}
+              accessibilityRole="link"
+              className="min-h-11 justify-center py-3"
+            >
+              <Text className="font-semibold text-foreground">Sign in</Text>
+            </Pressable>
+          </View>
         </View>
       </View>
     </ScreenShell>

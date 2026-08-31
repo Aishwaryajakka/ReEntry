@@ -126,33 +126,25 @@ function ActivityRow({
             />
           </View>
 
-          <View className="min-w-0 flex-1">
-            <View className="flex-row items-center justify-between">
-              <Text className="mr-2 flex-1 text-sm font-semibold text-foreground" numberOfLines={2}>
-                {title}
-              </Text>
-
-              <MicroText className="text-muted-foreground">
-                {log.durationMinutes} min
-              </MicroText>
-            </View>
-
+          <View className="min-w-0 flex-1 justify-center">
+            <Text className="text-sm font-semibold text-foreground" numberOfLines={2}>
+              {title}
+            </Text>
             <Text className="text-xs text-muted-foreground mt-0.5">
               Manageability: {TOLERANCE_LABELS[log.toleranceRating]}
             </Text>
           </View>
 
-          {expanded ? (
-            <ChevronDown
-              size={16}
-              color={theme.foregroundMuted}
-            />
-          ) : (
-            <ChevronRight
-              size={16}
-              color={theme.foregroundMuted}
-            />
-          )}
+          <View className="min-w-[62px] flex-row items-center justify-end gap-2 self-center">
+            <MicroText className="text-right text-muted-foreground">
+              {log.durationMinutes} min
+            </MicroText>
+            {expanded ? (
+              <ChevronDown size={16} color={theme.foregroundMuted} />
+            ) : (
+              <ChevronRight size={16} color={theme.foregroundMuted} />
+            )}
+          </View>
         </View>
       </Pressable>
 

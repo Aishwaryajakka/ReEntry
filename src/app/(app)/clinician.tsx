@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, TextInput, FlatList, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, FlatList, KeyboardAvoidingView, Pressable, Switch } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { Users, Activity } from 'lucide-react-native';
 
@@ -7,12 +7,15 @@ import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
 import { AddAccommodationModal } from '@/components/AddAccommodationModal';
 import { ReEntryWordmark } from '@/components/ReEntryWordmark';
+import { SchoolObservationsSection } from '@/components/SchoolObservationsSection';
 import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
 import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
 import { useSession } from '@/ctx';
 import { supabase } from '@/client/supabase';
 import { COLORS, useThemeColors } from '@/lib/theme';
+import { useTheme } from '@/context/ThemeContext';
 import { ACTIVITY_CATEGORIES, type ActivityCategory, type ActivityLog } from '@/data/types';
+import type { SchoolObservation } from '@/data/types';
 import { CHALLENGE_TAGS, TOLERANCE_LABELS } from '@/data/activityCatalog';
 import {
   analyzePersonalizedPatterns,
@@ -26,6 +29,7 @@ import {
   fetchClinicianChallengeTags,
   fetchClinicianDailyCheckIns,
   fetchClinicianAccommodations,
+  getSchoolObservationsForStudent,
   type SchoolStudent,
   type SchoolAccommodation,
   type ClinicianActivityLog,
@@ -102,9 +106,11 @@ function ClinicianPatternCard({
 export default function ClinicianWorkspaceScreen() {
   const { session, role } = useSession();
   const themeColors = useThemeColors();
+  const { isDark, toggleTheme } = useTheme();
 
   const clinicianId = session?.user?.id;
   const displayUsername = session?.user?.email?.replace('@miaoda.com', '');
+  const clinicianName = session?.user?.user_metadata?.display_name ?? displayUsername ?? 'Clinician';
   const currentDate = new Date().toISOString().slice(0, 10);
 
   const [code, setCode] = useState('');
@@ -115,28 +121,37 @@ export default function ClinicianWorkspaceScreen() {
   const [dailyCheckIns, setDailyCheckIns] = useState<ClinicianDailyCheckIn[]>([]);
   const [challengeTags, setChallengeTags] = useState<ClinicianChallengeTag[]>([]);
   const [accommodations, setAccommodations] = useState<SchoolAccommodation[]>([]);
+  const [schoolObservations, setSchoolObservations] = useState<SchoolObservation[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [addStudentId, setAddStudentId] = useState<string | null>(null);
   const [editAcc, setEditAcc] = useState<SchoolAccommodation | null>(null);
   const [showConnect, setShowConnect] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'evidence' | 'accommodations' | 'profile'>('overview');
+  const [themeError, setThemeError] = useState<string | null>(null);
 
   const loadData = useCallback(async () => {
     if (!clinicianId) return;
     setRefreshing(true);
     const linkedStudents = await fetchClinicianLinkedStudents(clinicianId);
     const studentIds = linkedStudents.map((s) => s.studentId);
-    const [logs, checkins, accs] = await Promise.all([
+    const [logs, checkins, accs, observationGroups] = await Promise.all([
       fetchClinicianActivityLogs(studentIds),
       fetchClinicianDailyCheckIns(studentIds),
       fetchClinicianAccommodations(studentIds),
+      Promise.all(studentIds.map(getSchoolObservationsForStudent)),
     ]);
     const logIds = logs.map((l) => l.id);
     const realTags = await fetchClinicianChallengeTags(logIds);
     setStudents(linkedStudents);
+    setSelectedStudentId((current) => linkedStudents.some((student) => student.studentId === current)
+      ? current
+      : linkedStudents[0]?.studentId ?? null);
     setActivityLogs(logs);
     setChallengeTags(realTags);
     setDailyCheckIns(checkins);
     setAccommodations(accs);
+    setSchoolObservations(observationGroups.flat());
     setRefreshing(false);
   }, [clinicianId]);
 
@@ -187,6 +202,16 @@ export default function ClinicianWorkspaceScreen() {
     }
     return map;
   }, [accommodations]);
+
+  const schoolObservationsByStudent = useMemo(() => {
+    const map = new Map<string, SchoolObservation[]>();
+    for (const observation of schoolObservations) {
+      const list = map.get(observation.studentId) ?? [];
+      list.push(observation);
+      map.set(observation.studentId, list);
+    }
+    return map;
+  }, [schoolObservations]);
 
   const patternReviewsByStudent = useMemo(() => {
     const reviews = new Map<
@@ -257,6 +282,19 @@ export default function ClinicianWorkspaceScreen() {
     await supabase.auth.signOut();
   };
 
+  const handleToggleTheme = async () => {
+    try {
+      setThemeError(null);
+      await toggleTheme();
+    } catch {
+      setThemeError('Appearance could not be updated. Please try again.');
+    }
+  };
+
+  const selectedStudents = selectedStudentId
+    ? students.filter((student) => student.studentId === selectedStudentId)
+    : [];
+
   if (role !== 'clinician') {
     return (
       <ScreenShell>
@@ -272,7 +310,7 @@ export default function ClinicianWorkspaceScreen() {
       <KeyboardAvoidingView behavior="padding" className="flex-1">
         <View className="flex-1 px-5 pt-6 pb-6">
           <FlatList
-            data={students}
+            data={selectedStudents}
             keyExtractor={(item) => item.accessId}
             contentInsetAdjustmentBehavior="automatic"
             refreshing={refreshing}
@@ -339,6 +377,36 @@ export default function ClinicianWorkspaceScreen() {
                     </MicroText>
                   </SectionCard>
                 ) : null}
+
+                {students.length > 0 ? (
+                  <View className="mb-4 gap-2">
+                    <MicroText className="font-semibold uppercase tracking-[0.12em] text-muted-foreground">Linked students</MicroText>
+                    {students.map((student) => {
+                      const selected = student.studentId === selectedStudentId;
+                      return (
+                        <Pressable
+                          key={student.accessId}
+                          onPress={() => {
+                            setSelectedStudentId(student.studentId);
+                            setActiveTab('overview');
+                          }}
+                          accessibilityRole="button"
+                          accessibilityState={{ selected }}
+                          className="min-h-14 flex-row items-center gap-3 rounded-xl border px-3 py-2"
+                          style={{ borderColor: selected ? themeColors.turmeric : themeColors.border, backgroundColor: selected ? `${themeColors.turmeric}12` : themeColors.card }}
+                        >
+                          <View className="h-9 w-9 items-center justify-center rounded-full bg-accent">
+                            <Text className="font-bold text-accent-foreground">{(student.displayName ?? 'Student').charAt(0).toUpperCase()}</Text>
+                          </View>
+                          <View className="flex-1">
+                            <Text className="font-semibold text-foreground">{student.displayName ?? 'Student'}</Text>
+                            <MicroText className="text-muted-foreground">{selected ? 'Selected student' : 'Open workspace'}</MicroText>
+                          </View>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                ) : null}
               </View>
             )}
             renderItem={({ item: student }) => {
@@ -358,6 +426,7 @@ export default function ClinicianWorkspaceScreen() {
                 ? `${formatDate(chronologicalDates[0])} – ${formatDate(chronologicalDates[chronologicalDates.length - 1])}`
                 : 'No activity dates recorded';
               const patternReview = patternReviewsByStudent.get(student.studentId);
+              const studentSchoolObservations = schoolObservationsByStudent.get(student.studentId) ?? [];
 
               return (
                 <SectionCard className="mb-4">
@@ -375,6 +444,26 @@ export default function ClinicianWorkspaceScreen() {
                     </View>
                   </View>
 
+                  <View className="mb-4 flex-row flex-wrap rounded-xl border border-border bg-muted p-1">
+                    {(['overview', 'evidence', 'accommodations', 'profile'] as const).map((tab) => {
+                      const selected = activeTab === tab;
+                      return (
+                        <Pressable
+                          key={tab}
+                          onPress={() => setActiveTab(tab)}
+                          accessibilityRole="tab"
+                          accessibilityState={{ selected }}
+                          className="min-h-11 min-w-[120px] flex-1 items-center justify-center rounded-lg px-2"
+                          style={{ backgroundColor: selected ? themeColors.turmeric : 'transparent' }}
+                        >
+                          <Text className="text-xs font-bold uppercase" style={{ color: selected ? COLORS.deepForest : themeColors.foreground }}>{tab}</Text>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+
+                  {activeTab === 'overview' ? (
+                    <View>
                   <SubheadingText className="mb-2">Student summary</SubheadingText>
                   <View className="mb-4 gap-2 rounded-xl bg-muted p-3">
                     <View>
@@ -394,7 +483,18 @@ export default function ClinicianWorkspaceScreen() {
                     </View>
                   </View>
 
-                  <SubheadingText className="text-sm mb-2">1 · Recorded evidence</SubheadingText>
+                    <View className="rounded-xl border border-border p-3">
+                      <MicroText className="text-muted-foreground">Current review</MicroText>
+                      <LabelText className="mt-1 leading-5">
+                        {recentLogs.length} recent student-reported activities · {studentSchoolObservations.length} school observations · {activeStudentAccs.length} current supports
+                      </LabelText>
+                    </View>
+                    </View>
+                  ) : null}
+
+                  {activeTab === 'evidence' ? (
+                    <View>
+                  <SubheadingText className="text-sm mb-2">1 · Student-reported evidence</SubheadingText>
                   <MicroText className="mb-3 leading-5 text-muted-foreground">
                     Recent self-reported activity records. These observations do not determine medical readiness.
                   </MicroText>
@@ -453,8 +553,15 @@ export default function ClinicianWorkspaceScreen() {
                     </View>
                   )}
 
+                  <SchoolObservationsSection
+                    studentId={student.studentId}
+                    observations={studentSchoolObservations}
+                    editable={false}
+                    title="2 · School observations"
+                  />
+
                   <View className="mb-4 border-t border-border pt-4">
-                    <SubheadingText className="mb-2 text-sm">2 · AI-assisted observations</SubheadingText>
+                    <SubheadingText className="mb-2 text-sm">3 · AI-assisted observations</SubheadingText>
                     <MicroText className="mb-3 leading-5 text-muted-foreground">
                       Personalized analysis of this student's recorded activities. These associations support review and do not diagnose, predict recovery, or recommend accommodations.
                     </MicroText>
@@ -476,8 +583,13 @@ export default function ClinicianWorkspaceScreen() {
                     )}
                   </View>
 
+                    </View>
+                  ) : null}
+
+                  {activeTab === 'accommodations' ? (
+                    <View>
                   <View className="flex-row items-center justify-between mb-2">
-                    <SubheadingText className="text-sm">3 · Current school supports</SubheadingText>
+                    <SubheadingText className="text-sm">Clinician-recorded accommodations</SubheadingText>
                   </View>
                   {activeStudentAccs.length === 0 ? (
                     <MicroText className="text-muted-foreground">No recorded accommodations.</MicroText>
@@ -522,7 +634,7 @@ export default function ClinicianWorkspaceScreen() {
                   )}
 
                   <View className="mt-4 border-t border-border pt-4">
-                    <SubheadingText className="mb-2 text-sm">4 · Clinician decision</SubheadingText>
+                    <SubheadingText className="mb-2 text-sm">5 · Clinician decision</SubheadingText>
                     <MicroText className="mb-3 leading-5 text-muted-foreground">
                       Review the student's recorded experiences and document supports you decide are appropriate.
                     </MicroText>
@@ -532,18 +644,38 @@ export default function ClinicianWorkspaceScreen() {
                       className="w-full"
                     />
                   </View>
+                    </View>
+                  ) : null}
+
+                  {activeTab === 'profile' ? (
+                    <View className="gap-4">
+                      <View className="rounded-xl bg-muted p-3">
+                        <Text className="font-semibold text-foreground">{clinicianName}</Text>
+                        <MicroText className="text-muted-foreground">Clinician</MicroText>
+                        <MicroText className="mt-2 text-muted-foreground">Selected student: {student.displayName ?? 'Student'}</MicroText>
+                      </View>
+                      <View className="flex-row items-center justify-between gap-4 rounded-xl border border-border p-3">
+                        <View className="flex-1">
+                          <Text className="font-semibold text-foreground">Dark Mode</Text>
+                          <MicroText className="text-muted-foreground">Use the dark appearance across ReEntry.</MicroText>
+                        </View>
+                        <Switch
+                          value={isDark}
+                          onValueChange={handleToggleTheme}
+                          trackColor={{ false: themeColors.mossLight, true: themeColors.moss }}
+                          thumbColor={COLORS.warmWhite}
+                          accessibilityLabel="Dark Mode toggle"
+                        />
+                      </View>
+                      {themeError ? <Text className="text-sm text-destructive">{themeError}</Text> : null}
+                      <SecondaryButton label="Sign Out" onPress={handleSignOut} className="w-full" />
+                    </View>
+                  ) : null}
                 </SectionCard>
               );
             }}
             ListFooterComponent={(
-              <View className="pt-4 pb-8">
-                <SecondaryButton label="Sign Out" onPress={handleSignOut} className="w-full" />
-                {displayUsername ? (
-                  <MicroText className="text-center text-muted-foreground mt-3">
-                    Signed in as {displayUsername}
-                  </MicroText>
-                ) : null}
-              </View>
+              <View className="h-8" />
             )}
           />
         </View>

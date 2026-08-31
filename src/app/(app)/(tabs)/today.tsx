@@ -264,7 +264,7 @@ export default function TodayScreen() {
                   onPress={() => openSmartVoiceCapture(smartCaptureActivity)}
                   appearance="light"
                   className="min-w-[130px] flex-1 rounded-full"
-                  style={{ minHeight: 48 }}
+                  style={{ minHeight: 48, backgroundColor: `${COLORS.warmWhite}CC`, borderWidth: 1.5 }}
                   iconLeft={<Mic size={18} color={COLORS.forest} />}
                   accessibilityLabel={`Use voice for ${smartCaptureActivity.label}`}
                 />
@@ -291,7 +291,7 @@ export default function TodayScreen() {
                   onPress={openVoiceCapture}
                   appearance="light"
                   className="min-w-[130px] flex-1 rounded-full"
-                  style={{ minHeight: 48 }}
+                  style={{ minHeight: 48, backgroundColor: `${COLORS.warmWhite}CC`, borderWidth: 1.5 }}
                   iconLeft={<Mic size={18} color={COLORS.forest} />}
                   accessibilityLabel="Use voice to log an activity"
                 />

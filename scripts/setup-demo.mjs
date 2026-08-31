@@ -31,6 +31,13 @@ const mayaSchedule = [
   ['lunch', 'Lunch', 'Social activity', '12:00', '12:30'],
   ['study-hall', 'Study Hall', 'Class', '13:15', '14:00'],
 ];
+const mayaSchoolObservations = [
+  { key: 'chemistry-aug-25', occurredAt: '2026-08-25T14:52:00.000Z', context: 'Chemistry', observationType: 'completed_with_support', supportUsed: ['quiet_environment', 'short_break'], note: 'Used a quieter workspace and returned after a short break.' },
+  { key: 'english-aug-26', occurredAt: '2026-08-26T15:50:00.000Z', context: 'English', observationType: 'completed_as_planned', supportUsed: [], note: 'Completed the scheduled reading and written response.' },
+  { key: 'lunch-aug-27', occurredAt: '2026-08-27T17:15:00.000Z', context: 'Lunch', observationType: 'took_break', supportUsed: ['alternate_workspace'], note: 'Moved to an alternate workspace for part of lunch.' },
+  { key: 'math-aug-28', occurredAt: '2026-08-28T16:52:00.000Z', context: 'Math', observationType: 'completed_with_support', supportUsed: ['extra_time'], note: 'Used additional time to finish the assigned problems.' },
+  { key: 'study-hall-aug-29', occurredAt: '2026-08-29T19:00:00.000Z', context: 'Study hall', observationType: 'reduced_or_stopped', supportUsed: ['reduced_workload'], note: 'Completed a reduced set of assigned work.' },
+];
 const accounts = [
   { key: 'maya', username: 'maya.demo', role: 'student', displayName: 'Maya', age: 16 },
   { key: 'clinician', username: 'clinician.demo', role: 'clinician', displayName: 'Dr. Jordan Lee' },
@@ -126,6 +133,18 @@ async function seedMaya(users) {
     valid_until: entry.activeUntil, status: entry.status ?? 'active', created_by: users.clinician.id,
   })), { onConflict: 'id' });
   if (supports.error) throw supports.error;
+
+  const observations = await admin.from('school_observations').upsert(mayaSchoolObservations.map((entry) => ({
+    id: stableUuid(`maya:school-observation:${entry.key}`),
+    student_id: users.maya.id,
+    created_by: users.school.id,
+    occurred_at: entry.occurredAt,
+    context: entry.context,
+    observation_type: entry.observationType,
+    support_used: entry.supportUsed,
+    note: entry.note,
+  })), { onConflict: 'id' });
+  if (observations.error) throw observations.error;
 }
 
 async function countFixture(table, ids) {
@@ -143,16 +162,18 @@ async function verify(users) {
     countFixture('challenge_tags', ACTIVITY_LOGS.flatMap((entry) => entry.challengeTagIds.map((tag) => stableUuid(`maya:tag:${entry.id}:${tag}`)))),
     countFixture('student_access', [stableUuid('maya:link:clinician'), stableUuid('maya:link:school')]),
     countFixture('student_schedule_items', mayaSchedule.map(([key]) => stableUuid(`maya:schedule:${key}`))),
+    countFixture('school_observations', mayaSchoolObservations.map((entry) => stableUuid(`maya:school-observation:${entry.key}`))),
   ]);
-  if (checks[0] !== 35 || checks[1] !== 14 || checks[2] !== 3 || checks[3] !== expectedTagCount || checks[4] !== 2 || checks[5] !== 5) throw new Error(`Demo fixture verification failed: ${checks.join('/')}`);
+  if (checks[0] !== 35 || checks[1] !== 14 || checks[2] !== 3 || checks[3] !== expectedTagCount || checks[4] !== 2 || checks[5] !== 5 || checks[6] !== 5) throw new Error(`Demo fixture verification failed: ${checks.join('/')}`);
 
   const totalQueries = await Promise.all([
     admin.from('activity_logs').select('id', { count: 'exact', head: true }).eq('student_id', users.maya.id),
     admin.from('daily_checkins').select('id', { count: 'exact', head: true }).eq('student_id', users.maya.id),
     admin.from('accommodation_records').select('id', { count: 'exact', head: true }).eq('student_id', users.maya.id).eq('status', 'active'),
+    admin.from('school_observations').select('id', { count: 'exact', head: true }).eq('student_id', users.maya.id),
   ]);
   for (const query of totalQueries) if (query.error) throw query.error;
-  if (totalQueries[0].count !== 35 || totalQueries[1].count !== 14 || totalQueries[2].count !== 3) {
+  if (totalQueries[0].count !== 35 || totalQueries[1].count !== 14 || totalQueries[2].count !== 3 || totalQueries[3].count !== 5) {
     throw new Error('The reused Maya demo account contains non-fixture rows; no existing data was deleted.');
   }
 
@@ -172,7 +193,7 @@ async function verify(users) {
   if (links.error || links.data?.length !== 2 || !links.data.some((link) => link.viewer_user_id === users.clinician.id && link.viewer_role === 'clinician' && link.status === 'active') || !links.data.some((link) => link.viewer_user_id === users.school.id && link.viewer_role === 'school_staff' && link.status === 'active')) {
     throw links.error ?? new Error('Demo relationship verification failed.');
   }
-  return { activities: checks[0], checkIns: checks[1], accommodations: checks[2] };
+  return { activities: checks[0], checkIns: checks[1], accommodations: checks[2], schoolObservations: checks[6] };
 }
 
 const users = await ensureAccounts();
@@ -193,5 +214,6 @@ School:
 Maya activities: ${totals.activities}
 Maya check-ins: ${totals.checkIns}
 Maya accommodations: ${totals.accommodations}
+Maya school observations: ${totals.schoolObservations}
 Clinician link: ready
 School link: ready`);

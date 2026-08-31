@@ -77,3 +77,16 @@ export interface StudentScheduleItemRow {
   created_at: string;
   updated_at: string;
 }
+
+export interface SchoolObservationRow {
+  id: string;
+  student_id: string;
+  created_by: string;
+  occurred_at: string;
+  context: string;
+  observation_type: string;
+  support_used: string[];
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+}

@@ -1,23 +1,28 @@
 import { useCallback, useMemo, useState } from 'react';
-import { View, Text, TextInput, FlatList, KeyboardAvoidingView } from 'react-native';
+import { View, Text, TextInput, FlatList, KeyboardAvoidingView, Pressable, Switch } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { Users } from 'lucide-react-native';
 
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
 import { ReEntryWordmark } from '@/components/ReEntryWordmark';
+import { SchoolObservationsSection } from '@/components/SchoolObservationsSection';
 import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
 import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
 import { useSession } from '@/ctx';
 import { supabase } from '@/client/supabase';
 import { useThemeColors } from '@/lib/theme';
+import { COLORS } from '@/lib/theme';
+import { useTheme } from '@/context/ThemeContext';
 import {
   connectStudentByCode,
   fetchSchoolLinkedStudents,
   fetchSchoolAccommodations,
+  getSchoolObservationsForStudent,
   type SchoolStudent,
   type SchoolAccommodation,
 } from '@/db/api';
+import type { SchoolObservation } from '@/data/types';
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
@@ -27,25 +32,39 @@ function formatDate(dateStr: string): string {
 export default function SchoolWorkspaceScreen() {
   const { session, role } = useSession();
   const themeColors = useThemeColors();
+  const { isDark, toggleTheme } = useTheme();
 
   const schoolStaffId = session?.user?.id;
   const displayUsername = session?.user?.email?.replace('@miaoda.com', '');
+  const staffName = session?.user?.user_metadata?.display_name ?? displayUsername ?? 'School staff';
 
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [students, setStudents] = useState<SchoolStudent[]>([]);
   const [accommodations, setAccommodations] = useState<SchoolAccommodation[]>([]);
+  const [observations, setObservations] = useState<SchoolObservation[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [showConnect, setShowConnect] = useState(false);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'overview' | 'observations' | 'profile'>('overview');
+  const [themeError, setThemeError] = useState<string | null>(null);
 
   const loadStudents = useCallback(async () => {
     if (!schoolStaffId) return;
     setRefreshing(true);
     const linkedStudents = await fetchSchoolLinkedStudents(schoolStaffId);
-    const accs = await fetchSchoolAccommodations(linkedStudents.map((s) => s.studentId));
+    const studentIds = linkedStudents.map((s) => s.studentId);
+    const [accs, observationGroups] = await Promise.all([
+      fetchSchoolAccommodations(studentIds),
+      Promise.all(studentIds.map(getSchoolObservationsForStudent)),
+    ]);
     setStudents(linkedStudents);
+    setSelectedStudentId((current) => linkedStudents.some((student) => student.studentId === current)
+      ? current
+      : linkedStudents[0]?.studentId ?? null);
     setAccommodations(accs);
+    setObservations(observationGroups.flat());
     setRefreshing(false);
   }, [schoolStaffId]);
 
@@ -64,6 +83,16 @@ export default function SchoolWorkspaceScreen() {
     }
     return map;
   }, [accommodations]);
+
+  const observationsByStudent = useMemo(() => {
+    const map = new Map<string, SchoolObservation[]>();
+    for (const observation of observations) {
+      const list = map.get(observation.studentId) ?? [];
+      list.push(observation);
+      map.set(observation.studentId, list);
+    }
+    return map;
+  }, [observations]);
 
   const handleConnect = async () => {
     if (!schoolStaffId) return;
@@ -88,6 +117,19 @@ export default function SchoolWorkspaceScreen() {
     await supabase.auth.signOut();
   };
 
+  const handleToggleTheme = async () => {
+    try {
+      setThemeError(null);
+      await toggleTheme();
+    } catch {
+      setThemeError('Appearance could not be updated. Please try again.');
+    }
+  };
+
+  const selectedStudents = selectedStudentId
+    ? students.filter((student) => student.studentId === selectedStudentId)
+    : [];
+
   if (role !== 'school_staff') {
     return (
       <ScreenShell>
@@ -103,7 +145,7 @@ export default function SchoolWorkspaceScreen() {
       <KeyboardAvoidingView behavior="padding" className="flex-1">
         <View className="flex-1 px-5 pt-6 pb-6">
           <FlatList
-            data={students}
+            data={selectedStudents}
             keyExtractor={(item) => item.accessId}
             contentInsetAdjustmentBehavior="automatic"
             refreshing={refreshing}
@@ -162,18 +204,49 @@ export default function SchoolWorkspaceScreen() {
                 />
               )}
 
-              {students.length === 0 && !refreshing ? (
+                {students.length === 0 && !refreshing ? (
                 <SectionCard className="items-center py-8">
                   <Text className="text-xl font-semibold text-foreground mb-2">No students connected yet</Text>
                   <MicroText className="text-center leading-5 px-4">
                     When a student shares their access code, their school-relevant information will appear here.
                   </MicroText>
                 </SectionCard>
-              ) : null}
+                ) : null}
+
+                {students.length > 0 ? (
+                  <View className="mb-4 gap-2">
+                    <MicroText className="font-semibold uppercase tracking-[0.12em] text-muted-foreground">Linked students</MicroText>
+                    {students.map((student) => {
+                      const selected = student.studentId === selectedStudentId;
+                      return (
+                        <Pressable
+                          key={student.accessId}
+                          onPress={() => {
+                            setSelectedStudentId(student.studentId);
+                            setActiveTab('overview');
+                          }}
+                          accessibilityRole="button"
+                          accessibilityState={{ selected }}
+                          className="min-h-14 flex-row items-center gap-3 rounded-xl border px-3 py-2"
+                          style={{ borderColor: selected ? themeColors.turmeric : themeColors.border, backgroundColor: selected ? `${themeColors.turmeric}12` : themeColors.card }}
+                        >
+                          <View className="h-9 w-9 items-center justify-center rounded-full bg-accent">
+                            <Text className="font-bold text-accent-foreground">{(student.displayName ?? 'Student').charAt(0).toUpperCase()}</Text>
+                          </View>
+                          <View className="flex-1">
+                            <Text className="font-semibold text-foreground">{student.displayName ?? 'Student'}</Text>
+                            <MicroText className="text-muted-foreground">{selected ? 'Selected student' : 'Open workspace'}</MicroText>
+                          </View>
+                        </Pressable>
+                      );
+                    })}
+                  </View>
+                ) : null}
             </View>
           )}
           renderItem={({ item: student }) => {
             const studentAccs = accommodationsByStudent.get(student.studentId) ?? [];
+            const studentObservations = observationsByStudent.get(student.studentId) ?? [];
             return (
               <SectionCard className="mb-4">
                 <View className="flex-row items-center gap-3 mb-3">
@@ -190,6 +263,29 @@ export default function SchoolWorkspaceScreen() {
                   </View>
                 </View>
 
+                <View className="mb-4 flex-row rounded-xl border border-border bg-muted p-1">
+                  {(['overview', 'observations', 'profile'] as const).map((tab) => {
+                    const selected = activeTab === tab;
+                    return (
+                      <Pressable
+                        key={tab}
+                        onPress={() => setActiveTab(tab)}
+                        accessibilityRole="tab"
+                        accessibilityState={{ selected }}
+                        className="min-h-11 flex-1 items-center justify-center rounded-lg px-2"
+                        style={{ backgroundColor: selected ? themeColors.turmeric : 'transparent' }}
+                      >
+                        <Text className="text-xs font-bold uppercase" style={{ color: selected ? COLORS.deepForest : themeColors.foreground }}>{tab}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+
+                {activeTab === 'overview' ? (
+                  <View>
+                    <MicroText className="mb-3 leading-5 text-muted-foreground">
+                      School staff see recorded supports needed for school, not the student's private recovery records.
+                    </MicroText>
                 <SubheadingText className="text-sm mb-2">Current school supports</SubheadingText>
                 {studentAccs.length === 0 ? (
                   <MicroText className="text-muted-foreground">No active accommodations to display.</MicroText>
@@ -213,18 +309,48 @@ export default function SchoolWorkspaceScreen() {
                     ))}
                   </View>
                 )}
+                  </View>
+                ) : null}
+
+                {activeTab === 'observations' ? (
+                  <SchoolObservationsSection
+                    studentId={student.studentId}
+                    observations={studentObservations}
+                    currentUserId={schoolStaffId}
+                    editable
+                    onChanged={loadStudents}
+                  />
+                ) : null}
+
+                {activeTab === 'profile' ? (
+                  <View className="gap-4">
+                    <View className="rounded-xl bg-muted p-3">
+                      <Text className="font-semibold text-foreground">{staffName}</Text>
+                      <MicroText className="text-muted-foreground">School staff</MicroText>
+                      <MicroText className="mt-2 text-muted-foreground">Connected student: {student.displayName ?? 'Student'}</MicroText>
+                    </View>
+                    <View className="flex-row items-center justify-between gap-4 rounded-xl border border-border p-3">
+                      <View className="flex-1">
+                        <Text className="font-semibold text-foreground">Dark Mode</Text>
+                        <MicroText className="text-muted-foreground">Use the dark appearance across ReEntry.</MicroText>
+                      </View>
+                      <Switch
+                        value={isDark}
+                        onValueChange={handleToggleTheme}
+                        trackColor={{ false: themeColors.mossLight, true: themeColors.moss }}
+                        thumbColor={COLORS.warmWhite}
+                        accessibilityLabel="Dark Mode toggle"
+                      />
+                    </View>
+                    {themeError ? <Text className="text-sm text-destructive">{themeError}</Text> : null}
+                    <SecondaryButton label="Sign Out" onPress={handleSignOut} className="w-full" />
+                  </View>
+                ) : null}
               </SectionCard>
             );
           }}
           ListFooterComponent={(
-            <View className="pt-4 pb-8">
-              <SecondaryButton label="Sign Out" onPress={handleSignOut} className="w-full" />
-              {displayUsername ? (
-                <MicroText className="text-center text-muted-foreground mt-3">
-                  Signed in as {displayUsername}
-                </MicroText>
-              ) : null}
-            </View>
+            <View className="h-8" />
           )}
         />
         </View>

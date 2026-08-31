@@ -12,9 +12,15 @@ import type {
   ChallengeTagRow,
   DailyCheckInRow,
   StudentAccessRow,
+  SchoolObservationRow,
   StudentScheduleItemRow,
   UserPreferencesRow,
 } from '@/types/types';
+import type {
+  SchoolObservation,
+  SchoolObservationType,
+  SchoolSupportType,
+} from '@/data/types';
 
 export type { Appearance };
 
@@ -620,6 +626,93 @@ export async function revokeStudentAccess(
 // ---------------------------------------------------------------------------
 // School Staff / Clinician Workspace
 // ---------------------------------------------------------------------------
+
+const SCHOOL_OBSERVATION_COLUMNS = 'id, student_id, created_by, occurred_at, context, observation_type, support_used, note, created_at, updated_at';
+
+function normalizeSchoolObservation(row: SchoolObservationRow): SchoolObservation {
+  return {
+    id: row.id,
+    studentId: row.student_id,
+    createdBy: row.created_by,
+    occurredAt: row.occurred_at,
+    context: row.context,
+    observationType: row.observation_type as SchoolObservationType,
+    supportUsed: row.support_used as SchoolSupportType[],
+    note: row.note,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at,
+  };
+}
+
+export interface SchoolObservationInput {
+  studentId: string;
+  createdBy: string;
+  context: string;
+  observationType: SchoolObservationType;
+  supportUsed: SchoolSupportType[];
+  note?: string | null;
+}
+
+export async function getSchoolObservationsForStudent(studentId: string): Promise<SchoolObservation[]> {
+  const { data, error } = await supabase
+    .from('school_observations')
+    .select(SCHOOL_OBSERVATION_COLUMNS)
+    .eq('student_id', studentId)
+    .order('occurred_at', { ascending: false });
+
+  if (error) {
+    console.error('getSchoolObservationsForStudent failed', error);
+    return [];
+  }
+
+  return ((data ?? []) as SchoolObservationRow[]).map(normalizeSchoolObservation);
+}
+
+export async function insertSchoolObservation(input: SchoolObservationInput): Promise<SchoolObservation> {
+  const { data, error } = await supabase
+    .from('school_observations')
+    .insert({
+      student_id: input.studentId,
+      created_by: input.createdBy,
+      context: input.context.trim(),
+      observation_type: input.observationType,
+      support_used: input.supportUsed,
+      note: input.note?.trim() || null,
+    })
+    .select(SCHOOL_OBSERVATION_COLUMNS)
+    .single();
+
+  if (error || !data) throw error ?? new Error('School observation was not recorded.');
+  return normalizeSchoolObservation(data as SchoolObservationRow);
+}
+
+export async function updateSchoolObservation(
+  observationId: string,
+  input: Omit<SchoolObservationInput, 'studentId' | 'createdBy'>,
+): Promise<SchoolObservation> {
+  const { data, error } = await supabase
+    .from('school_observations')
+    .update({
+      context: input.context.trim(),
+      observation_type: input.observationType,
+      support_used: input.supportUsed,
+      note: input.note?.trim() || null,
+    })
+    .eq('id', observationId)
+    .select(SCHOOL_OBSERVATION_COLUMNS)
+    .single();
+
+  if (error || !data) throw error ?? new Error('School observation was not updated.');
+  return normalizeSchoolObservation(data as SchoolObservationRow);
+}
+
+export async function deleteSchoolObservation(observationId: string): Promise<void> {
+  const { error } = await supabase
+    .from('school_observations')
+    .delete()
+    .eq('id', observationId);
+  if (error) throw error;
+}
 
 export interface SchoolStudent {
   accessId: string;

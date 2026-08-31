@@ -80,6 +80,57 @@ export interface AccommodationRecord {
   sourceName?: string;
 }
 
+export const SCHOOL_OBSERVATION_TYPES = [
+  'completed_as_planned',
+  'completed_with_support',
+  'took_break',
+  'reduced_or_stopped',
+] as const;
+
+export type SchoolObservationType = (typeof SCHOOL_OBSERVATION_TYPES)[number];
+
+export const SCHOOL_SUPPORT_TYPES = [
+  'quiet_environment',
+  'extra_time',
+  'reduced_screen_exposure',
+  'printed_materials',
+  'short_break',
+  'reduced_workload',
+  'alternate_workspace',
+] as const;
+
+export type SchoolSupportType = (typeof SCHOOL_SUPPORT_TYPES)[number];
+
+export const SCHOOL_OBSERVATION_LABELS: Record<SchoolObservationType, string> = {
+  completed_as_planned: 'Completed as planned',
+  completed_with_support: 'Completed with support',
+  took_break: 'Took a break',
+  reduced_or_stopped: 'Reduced or stopped',
+};
+
+export const SCHOOL_SUPPORT_LABELS: Record<SchoolSupportType, string> = {
+  quiet_environment: 'Quiet environment',
+  extra_time: 'Extra time',
+  reduced_screen_exposure: 'Reduced screen exposure',
+  printed_materials: 'Printed materials',
+  short_break: 'Short break',
+  reduced_workload: 'Reduced workload',
+  alternate_workspace: 'Alternate workspace',
+};
+
+export interface SchoolObservation {
+  id: string;
+  studentId: string;
+  createdBy: string;
+  occurredAt: string;
+  context: string;
+  observationType: SchoolObservationType;
+  supportUsed: SchoolSupportType[];
+  note: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface InsightEvidence {
   id: string;
   insightId: string;
