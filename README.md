@@ -4,206 +4,484 @@
 
 # ReEntry
 
-**Return to school. Return to friends. Return to life.**
+### Return to school. Return to friends. Return to life.
 
-ReEntry is an adolescent-first concussion recovery platform focused on return-to-school and return-to-life. It helps students capture real-world functional tolerance, turns confirmed records into evidence-linked longitudinal observations, and supports privacy-aware collaboration among students, School Staff, and Clinicians.
+A concussion can interrupt much more than sports.
 
-ReEntry supports recovery monitoring and communication. It does **not**:
+For a teenager, recovery can mean trying to make it through chemistry under bright lights, reading long enough to finish an assignment, concentrating in a noisy classroom, using a laptop for schoolwork, or simply spending time with friends without needing to step away.
 
-- diagnose concussion or classify concussion severity;
-- determine medical readiness;
-- predict a recovery date;
-- provide return-to-play clearance;
-- prescribe treatment or automatically prescribe accommodations; or
-- replace professional medical advice.
+Most of those moments happen between appointments.
 
-## The Problem
+By the time a student sees their clinician again, it can be difficult to remember exactly what happened: Which activities felt manageable? When did they need a break? Was there something about the environment that made an activity harder? What support actually helped?
 
-Concussion recovery happens between clinical visits. For adolescents, important functional experiences occur throughout classes, reading, screens, noisy or busy environments, concentration-heavy work, physical activity, social activity, and the broader school day. These experiences vary and can be difficult to remember or communicate later.
+**ReEntry was built for that gap.**
 
-Clinicians need useful longitudinal evidence. Schools need actionable supports without receiving a student's entire private recovery record. Students need a low-friction way to explain what returning to school, friends, and everyday life actually feels like.
+ReEntry helps adolescents capture how returning to school and everyday life is actually going. It turns student-confirmed experiences into understandable longitudinal evidence, helps clinicians inspect supported patterns, and gives schools only the information they need to support the student.
 
-ReEntry addresses this observation and communication gap. It is not a generic symptom tracker, diary, or mood journal; its focus is functional tolerance during adolescent return to school and everyday life.
+The goal is not to tell a teenager when they are "recovered."
 
-## Core Workflow
+The goal is to make the experience between appointments easier to capture, understand, and communicate.
 
-> Student experiences school → ReEntry captures functional tolerance → student confirms the record → personalized ML identifies sufficiently supported patterns → Clinician reviews supporting evidence → Clinician records an accommodation → School Staff receive minimum-necessary support information → student carries the ReEntry Pass
+> **Student experiences school → ReEntry captures the experience → student confirms it → patterns become visible → Clinician reviews the evidence → Clinician records an accommodation → School Staff receive the support information they need → student carries the ReEntry Pass**
 
-Actively linked School Staff can independently contribute structured **School Observations**. These remain a separate, provenance-labeled evidence stream. They are not silently merged into student activity records, Tolerance calculations, Journey student evidence, or personalized ML training data.
+---
 
-## Key Features
+## Recovery Happens in Real Life
 
-### Today / My Day
+Concussion recovery does not happen only in a clinic.
 
-Fast student activity logging captures the activity and category, duration, student-reported manageability, challenge/context tags, an optional note, and recent activity context. Manageability is recorded as `Manageable`, `Some difficulty`, or `Very difficult`. These are student-reported functional observations, not medical conclusions.
+It happens while a student is trying to return to:
+
+- classes;
+- reading and assignments;
+- screens and school devices;
+- noisy or busy environments;
+- concentration-heavy work;
+- physical activity;
+- social activity; and
+- a normal school day.
+
+A student may remember that Tuesday was difficult without remembering what they were doing, how long they had been doing it, or what helped.
+
+A clinician may see the student days or weeks later and have to reconstruct those experiences retrospectively.
+
+A school may want to help but should not need access to the student's entire private recovery record to do so.
+
+ReEntry connects those pieces.
+
+It is not a generic symptom tracker, diary, or mood journal. Its focus is **functional tolerance during adolescent return to school and everyday life**.
+
+---
+
+## What ReEntry Does
+
+### Capture a School Day Without Turning It Into Homework
+
+Students can quickly record:
+
+- what they were doing;
+- how long they did it;
+- whether it felt **Manageable**, **Some difficulty**, or **Very difficult**;
+- relevant challenge or context tags; and
+- an optional note.
+
+These are student-reported functional experiences, not medical conclusions.
 
 ### AI-Assisted Voice Capture
 
-> Student speaks naturally → native/browser speech recognition → deterministic parser → structured activity draft → student reviews or edits → **Confirm & Log** → confirmed activity record
+When typing feels like too much friction, a student can describe an activity naturally.
 
-The parser can extract supported activity, duration, manageability, challenge tags, and text following an explicit note cue. Nothing saves automatically: student confirmation is mandatory. The full transcript is not automatically persisted as a note, raw audio is not retained by ReEntry, and speech is not medically interpreted. Typed fallback uses the same parser.
+> Student speaks → speech recognition → deterministic parser → structured draft → student reviews or edits → **Confirm & Log**
 
-### School Schedule
+ReEntry can extract supported details such as activity, duration, manageability, challenge tags, and explicitly dictated note content.
 
-Students can maintain a recurring, student-owned school schedule with class/activity names, categories, days, start/end times, active state, and reminder preference. Schedule context supports timely Smart Capture without becoming a medical interpretation of the school day.
+The student always reviews the result before it becomes part of their record.
 
-### Smart Capture
+ReEntry does not automatically save a transcript, retain raw audio, or use speech to make medical conclusions. Typed capture follows the same structured parsing path.
 
-After a scheduled class ends, Today can offer a low-friction opportunity to record how manageable it was. ReEntry can prefill already-known schedule context such as the activity, category, timing, and duration; the student still supplies or confirms the functional experience before saving through the normal activity-record path.
+### School Schedule and Smart Capture
 
-> We automate the collection opportunity, not the medical interpretation.
+Students can maintain their recurring school schedule.
+
+After a scheduled class ends, ReEntry can offer a timely opportunity to record how the activity went while the experience is still fresh.
+
+Known schedule information such as class, category, timing, and duration can be prefilled. The student still supplies or confirms the functional experience before anything is saved.
+
+> **We automate the collection opportunity, not the medical interpretation.**
 
 ### Local Class Reminders
 
-Optional, device-local reminders can be scheduled five minutes after enabled classes. They reduce retrospective logging burden without server-side monitoring. Tapping a valid reminder routes the student back to the relevant Today capture flow. Notification permission is requested only when reminders are enabled.
+Students can optionally enable device-local reminders after selected classes.
 
-### Device Activity / Phone Context
+The reminders are designed to reduce the burden of trying to reconstruct an entire school day later.
 
-ReEntry provides optional device activity context through `expo-sensors` and `Pedometer` on supported native devices:
+Notification permission is requested only when reminders are enabled, and the reminders do not create server-side monitoring of the student.
 
-- existing permission is checked without prompting;
-- the student chooses **Allow** before ReEntry requests permission;
-- **Not now** defers access for the session;
-- the displayed step count is watched only while the relevant screen is active;
+---
+
+## Optional Device Activity Context
+
+ReEntry also explores a deliberately limited form of phone/device context.
+
+On supported native devices, the app can display optional step context using `expo-sensors` / `Pedometer`.
+
+This feature is intentionally conservative:
+
+- the student chooses whether to allow access;
 - no location is collected;
-- no hidden or background monitoring is performed;
-- no step history is persisted;
+- no hidden or continuous background monitoring is performed;
+- step history is not persisted;
 - steps are not attached to activity records;
-- steps are not shared with School Staff or Clinicians;
-- steps are not an ML input; and
-- steps are not interpreted as concussion severity, medical safety, or readiness.
+- steps are not shared with School Staff;
+- steps are not shared with Clinicians;
+- steps are not an input to the ML model; and
+- steps are never interpreted as concussion severity, readiness, or medical safety.
 
-Unsupported devices and web show a graceful unavailable state. ReEntry does not claim full-day Android step tracking, screen-time tracking, heart-rate tracking, location tracking, or sensor-based concussion detection.
+Unsupported devices and web receive a graceful unavailable state.
 
-> ReEntry can automate contextual collection without automating medical interpretation.
+ReEntry does **not** claim to provide screen-time surveillance, location tracking, heart-rate monitoring, continuous Android step history, or sensor-based concussion detection.
+
+> **Context can support a conversation without becoming a medical conclusion.**
+
+---
+
+## Seeing the Week, Not Just Individual Entries
 
 ### Observation Window
 
-Today and Journey frame the student's actual loaded records within a longitudinal observation window: first recorded date, most recent date, represented days, and activity count. This makes the evidence under review clear. It does not imply that any number of days is a universal recovery timeline.
+ReEntry makes the evidence under review explicit.
+
+Today and Journey show the student's actual loaded observation window using:
+
+- first recorded date;
+- most recent recorded date;
+- represented days; and
+- activity count.
+
+The observation window describes the available evidence. It does not imply that any number of days represents a universal concussion recovery timeline.
 
 ### Visual Tolerance Map
 
-The interactive recent-record heatmap organizes functional evidence across Class / School, Screens, Reading, Noise / Busy, Concentration, Physical Activity, and Social Activity. Its four descriptive states are Manageable, Some difficulty, Very difficult, and No record.
+Individual activity logs can become difficult to understand as a list.
 
-Cells are derived from real supporting records. Tapping a cell reveals evidence for that dimension/date, while row interaction exposes recent evidence for the dimension. Minimum-data states are respected, no synthetic evidence is generated, and the map is descriptive—not a recovery score.
+The Tolerance Map organizes recent functional experiences across:
 
-### Journey
+- Class / School
+- Screens
+- Reading
+- Noise / Busy
+- Concentration
+- Physical Activity
+- Social Activity
 
-Journey is the longitudinal recovery-story and evidence experience. It combines the observation window, chronological activity history, evidence-linked personalized observations, and supporting-record drill-down. Every surfaced ML-assisted pattern can be traced to confirmed records.
+Each cell represents actual supporting records and uses four descriptive states:
 
-Journey does not show a recovery percentage, predicted recovery date, medical readiness, or claims of causation.
+- **Manageable**
+- **Some difficulty**
+- **Very difficult**
+- **No record**
 
-### Personalized ML Pattern Engine
+Students can select a cell or functional area to inspect the evidence underneath it.
 
-ReEntry implements an actual personalized ridge-regression pattern engine in pure TypeScript. Its pipeline:
+No synthetic evidence is generated.
 
-1. sorts the current student's confirmed activity records chronologically;
-2. constructs deterministic features from activity-category one-hot values, challenge-tag presence, normalized duration, relative order in the observation window, and the immediately prior recorded manageability value;
-3. fits a ridge-regularized model to that student's own records;
-4. evaluates on a chronological final 25% holdout (at least three records);
-5. compares mean absolute error with a training-mean baseline;
+The map is descriptive. It is **not a recovery percentage, severity score, readiness score, or medical clearance system**.
+
+---
+
+## Journey: From Individual Moments to Patterns
+
+A student should not have to mentally compare dozens of entries to understand what has been happening.
+
+Journey combines:
+
+- the observation window;
+- chronological activity history;
+- personalized evidence-linked observations; and
+- supporting-record drill-down.
+
+This is where ReEntry's personalized ML model becomes useful.
+
+Instead of asking:
+
+> "What does the model think my recovery percentage is?"
+
+ReEntry asks:
+
+> **"Are there sufficiently supported patterns in this student's own confirmed functional experiences that may be useful to review?"**
+
+Every surfaced pattern can be traced back to supporting records.
+
+---
+
+## Personalized ML Pattern Engine
+
+ReEntry implements a personalized ridge-regression pattern engine in TypeScript.
+
+The model operates on the **current student's own confirmed records**.
+
+Its pipeline:
+
+1. sorts confirmed activity records chronologically;
+2. creates deterministic features from activity categories, challenge tags, normalized duration, relative position in the observation window, and immediately prior recorded manageability;
+3. fits a ridge-regularized model;
+4. evaluates it using a chronological final 25% holdout with at least three records;
+5. compares mean absolute error against a training-mean baseline;
 6. applies minimum-record, rating-variability, validation-quality, coefficient-strength, and evidence-support gates;
 7. suppresses unsupported or unusable patterns; and
 8. surfaces at most three eligible associations with supporting activity IDs.
 
-The current gate requires at least 10 records and useful rating variation. Category, challenge-tag, and duration coefficients can become human-readable patterns only when the feature and direction have sufficient record support. Internal validation metrics remain model metadata rather than unexplained student-facing scores.
+The current gate requires at least 10 records and useful variation in recorded manageability.
 
-The model identifies associations in recorded functional experiences. It does not diagnose, establish causation, predict recovery, recommend treatment, determine readiness, or prescribe accommodations.
+Category, challenge-tag, and duration coefficients can become human-readable observations only when both the feature and direction have sufficient supporting records.
 
-### Explainability and Evidence Provenance
+Internal validation metrics remain model metadata rather than unexplained student-facing scores.
 
-> Pattern → evidence/support information → **Why am I seeing this?** → exact supporting records
+### What the Model Does Not Do
 
-Supporting activity IDs connect each surfaced observation to real records, giving students and Clinicians visibility into why it appeared. This is evidence provenance for an observational association, not proof of medical causation.
+The model does **not**:
 
-### School Observations
+- diagnose concussion;
+- classify concussion severity;
+- establish medical causation;
+- predict a recovery date;
+- calculate a recovery percentage;
+- determine medical readiness;
+- recommend treatment;
+- recommend medication;
+- provide return-to-play clearance; or
+- prescribe accommodations.
 
-Actively linked School Staff can record structured observations:
+It identifies supported associations in recorded functional experiences.
 
-- Completed as planned
-- Completed with support
-- Took a break
-- Reduced or stopped
+---
 
-Records include school context, structured supports used, an optional note, and author/date provenance. They remain explicitly school-recorded, distinct from student self-report, reviewable by the Clinician, excluded from ML inputs, and unable to silently alter Tolerance or Journey student evidence.
+## "Why Am I Seeing This?"
 
-### Clinician Workspace
+An AI-assisted observation should not be a mysterious statement that the student or clinician is expected to trust.
 
-The multi-student Clinician workspace presents actively linked students and distinct evidence sources: student-reported records, longitudinal context, evidence-linked ML observations with supporting-record drill-down, School Observations, and active accommodations. It also supports accommodation management.
+ReEntry connects surfaced observations back to evidence:
 
-AI surfaces observational evidence. The Clinician interprets it. The Clinician—not AI—records accommodations.
+> **Pattern → support information → Why am I seeing this? → supporting records**
 
-### School Staff Workspace
+Supporting activity IDs allow the student and Clinician to inspect the records behind an observation.
 
-The multi-student School Staff workspace provides active/recorded school supports, structured School Observation tools, and minimum-necessary student information for actively linked students. It intentionally does not expose the student's entire private recovery record; that privacy boundary is part of the product design.
+This provides **evidence provenance**, not proof of medical causation.
 
-### Accommodations
+---
 
-Accommodations are Clinician-authored recorded school supports. ReEntry does not generate or automatically prescribe them. Once recorded, the same accommodation data becomes actionable in the Clinician workspace, minimum-necessary School view, and student ReEntry Pass.
+## School Observations
 
-### ReEntry Pass
+Students experience school from one perspective. School Staff may observe something different.
 
-The student-facing ReEntry Pass presents current recorded school supports in a practical, portable view. It is not medical clearance, a return-to-play decision, a readiness score, or proof of recovery.
+Actively linked School Staff can therefore record a separate structured observation:
 
-### Need Support
+- **Completed as planned**
+- **Completed with support**
+- **Took a break**
+- **Reduced or stopped**
 
-The compact Need Support experience offers explicit paths to School support, Care team, a student-managed Trusted adult, and Emergency help.
+A School Observation can include:
 
-The architecture supports multiple linked School Staff and Clinicians without rendering large individual cards. Explicitly shared support rows contain only display name, role, support phone, and support email. Active-link and matching-role RLS rules limit student access without broadening general `profiles` access. One contact acts directly; multiple contacts use a chooser rather than silently selecting someone. Call, Email, and applicable Text actions always require a student tap.
+- school context;
+- structured supports used;
+- an optional neutral note;
+- author provenance; and
+- date/time provenance.
 
-Migrations `00007_student_trusted_contacts.sql` and `00008_shared_support_contacts.sql` are applied in the demo Supabase database, providing persisted student-managed trusted contacts and explicitly shared support contacts for the demo workflow.
+These records remain explicitly **school-recorded**.
 
-Emergency help is explicit-action only. ReEntry performs no emergency detection and is not an emergency-response service.
+They are not silently merged into student self-report.
 
-> ReEntry does not monitor for emergencies or contact anyone automatically.
+They do not alter the student's Tolerance Map, Journey student evidence, or personalized ML training data.
 
-### Dark Mode and Low-Stimulation Mode
+Clinicians can review them as a distinct evidence stream.
 
-Dark Mode is an application-wide appearance option supported by ReEntry's light/dark brand assets and theme system. Low-Stimulation Mode is separate: it reduces decorative intensity, density, motion, and visual competition where supported while preserving essential information. ReEntry uses restrained interaction feedback and reduces non-essential modal motion in Low-Stimulation or reduced-motion contexts. This is an intentional adolescent/concussion-context UX choice, not symptom treatment.
+---
 
-## Responsible AI by Design
+## The Clinician Makes the Decision
 
-Safety is implemented throughout the workflow, not added only as a disclaimer:
+ReEntry's Clinician workspace brings together relevant information for actively linked students:
 
-- **Voice capture:** draft → student confirmation → persistence.
-- **ML:** confirmed student data → personalized model → validation/evidence gates → supported observation.
-- **Explainability:** surfaced pattern → supporting-record provenance.
-- **Clinician:** AI does not make accommodation decisions.
-- **School:** minimum-necessary disclosure rather than full private recovery records.
-- **Pass:** recorded supports, not medical clearance.
-- **Device activity:** optional local context, not medical interpretation.
-- **Need Support:** explicit communication action only; no automatic contact or emergency detection.
+- student-reported functional evidence;
+- longitudinal context;
+- personalized evidence-linked observations;
+- supporting-record drill-down;
+- School Observations; and
+- recorded accommodations.
 
-ReEntry uses observational language such as “You reported…,” “Your records show…,” “This pattern appeared…,” and “Compared with your earlier entries….”
+The distinction is intentional:
 
-Prohibited outputs include diagnosis, severity classification, recovery percentage, recovery-date prediction, treatment recommendations, medication advice, return-to-play clearance, medical readiness, causation claims, and automated accommodation prescriptions.
+> **AI surfaces observational evidence. The Clinician interprets it. The Clinician—not AI—records accommodations.**
+
+ReEntry does not automatically generate or prescribe school accommodations.
+
+---
+
+## Giving Schools What They Need — Not Everything
+
+School Staff need actionable support information.
+
+They do not necessarily need a student's entire private recovery history.
+
+The School Staff workspace therefore focuses on:
+
+- current recorded school supports;
+- School Observation tools; and
+- minimum-necessary information for actively linked students.
+
+Private student activity history, Journey evidence, and other recovery information are not simply exposed to School Staff because they are linked to the student.
+
+That privacy boundary is part of the product design.
+
+---
+
+## ReEntry Pass
+
+When a Clinician records an accommodation, the same support can become useful in several places:
+
+**Clinician → School → Student**
+
+The student's ReEntry Pass provides a simple view of their currently recorded school supports that they can carry or show when needed.
+
+The Pass is **not**:
+
+- medical clearance;
+- proof of recovery;
+- a readiness score; or
+- a return-to-play decision.
+
+It communicates recorded supports.
+
+---
+
+## Need Support
+
+Recovery also involves people.
+
+Need Support gives students explicit ways to reach:
+
+- **School support**
+- **Care team**
+- **Trusted adult**
+- **Emergency help**
+
+A student can manage their own Trusted Adult contact.
+
+Explicitly shared School Staff and Clinician support contacts contain only the support information required for this workflow: display name, role, support phone, and support email.
+
+Active-link and matching-role Row Level Security rules determine which shared support contacts a student can access without exposing broader profile information.
+
+Call, Email, and applicable Text actions always require a student action.
+
+Emergency help is also explicit-action only.
+
+> **ReEntry does not monitor for emergencies or contact anyone automatically.**
+
+ReEntry is not an emergency-response service.
+
+---
 
 ## Privacy-Aware Role Design
 
+Different people need different information.
+
 | Role | Access |
 | --- | --- |
-| Student | Own private activity/check-in records, schedule, Tolerance Map, Journey, accommodations, ReEntry Pass, trusted-support configuration, and other student-owned preferences/data |
-| Clinician | Relevant evidence for actively linked students, School Observations, and the accommodation workflow permitted by RLS |
-| School Staff | Minimum-necessary recorded school supports and the School Observation workflow for actively linked students |
+| **Student** | Own private activity/check-in records, schedule, Tolerance Map, Journey, accommodations, ReEntry Pass, trusted-support configuration, and other student-owned preferences/data |
+| **Clinician** | Relevant evidence for actively linked students, School Observations, evidence-linked ML observations, and permitted accommodation workflows |
+| **School Staff** | Minimum-necessary recorded school supports and School Observation workflows for actively linked students |
 
-Supabase Auth identifies users; PostgreSQL Row Level Security combines role checks with active `student_access` relationships. This supports data minimization at the database boundary rather than relying only on hidden UI. The implemented `shared_support_contacts` table is intentionally separate from general/private profile data and is limited to support information explicitly shared with linked students.
+Supabase Auth identifies users.
 
-ReEntry does not claim HIPAA compliance or regulatory certification.
+PostgreSQL Row Level Security combines role checks with active `student_access` relationships.
+
+This means data minimization is enforced at the database boundary rather than relying only on hiding information in the UI.
+
+The `shared_support_contacts` table is intentionally separate from broader/private profile data and contains only explicitly shared support information.
+
+ReEntry does not claim HIPAA compliance, regulatory certification, or production clinical deployment readiness.
+
+---
+
+## Responsible AI by Design
+
+Responsible AI in ReEntry is not a disclaimer added at the end of the project.
+
+It shapes the workflow.
+
+### Voice
+
+**Capture → draft → student review → confirmation → persistence**
+
+The student remains in control of what becomes a record.
+
+### Personalized ML
+
+**Confirmed student records → personalized model → validation/evidence gates → supported observation**
+
+Insufficient evidence produces no pattern rather than a forced conclusion.
+
+### Explainability
+
+**Observation → supporting evidence → exact records**
+
+A user can inspect why something appeared.
+
+### Clinician
+
+AI does not make accommodation decisions.
+
+### School
+
+Schools receive minimum-necessary support information rather than the student's entire private recovery history.
+
+### ReEntry Pass
+
+The Pass communicates recorded supports, not medical readiness.
+
+### Device Context
+
+Optional device activity remains context, not medical interpretation.
+
+### Need Support
+
+Communication requires explicit student action. ReEntry does not automatically contact people or attempt to detect emergencies.
+
+### Language
+
+ReEntry intentionally uses observational language such as:
+
+- "You reported..."
+- "Your records show..."
+- "This pattern appeared..."
+- "Compared with your earlier entries..."
+
+ReEntry avoids outputs that claim diagnosis, severity, recovery percentage, recovery date, treatment recommendations, medication advice, medical readiness, causation, return-to-play clearance, or automatically prescribed accommodations.
+
+---
+
+## Designed for a Teenager Who Is Already Dealing With Enough
+
+A recovery tool should not become another assignment.
+
+ReEntry's adolescent-focused UX includes:
+
+- fast activity logging;
+- voice-assisted capture to reduce long-form typing;
+- Smart Capture after relevant school activities;
+- comfortable touch targets;
+- Dark Mode;
+- Low-Stimulation Mode;
+- restrained motion and interaction feedback;
+- visual rather than purely textual longitudinal evidence;
+- consistent role-specific navigation; and
+- evidence drill-down instead of unexplained AI conclusions.
+
+The visual system uses warm cream, deep forest, and a focused ReEntry yellow accent to create hierarchy without turning every interaction into an alert.
+
+Low-Stimulation Mode is a UX adaptation intended to reduce non-essential visual competition and motion where supported. It is not presented as treatment for concussion symptoms.
+
+No WCAG or formal accessibility certification is claimed.
+
+---
 
 ## Technical Architecture
 
 **Frontend**
 
-- Expo and React Native
-- Expo Router
+- Expo
+- React Native
 - React Native Web
+- Expo Router
 - TypeScript
 
 **Backend**
 
-- Supabase and PostgreSQL
+- Supabase
+- PostgreSQL
 - Supabase Auth
-- Row Level Security
+- PostgreSQL Row Level Security
 - Supabase `sign-up` Edge Function
 
 **Native capabilities**
@@ -214,23 +492,30 @@ ReEntry does not claim HIPAA compliance or regulatory certification.
 
 **ML**
 
-- Personalized local ridge-regression pattern engine
+- personalized local ridge-regression pattern engine
 
-The project supports web and native mobile development. Native speech recognition, local notifications, and pedometer behavior require an appropriate native/development build and compatible platform permissions/hardware; they cannot be fully represented by Expo Go or web.
+The project supports web and native mobile development.
 
-## Architecture Diagram
+Native speech recognition, local notifications, and pedometer behavior require an appropriate native/development build and compatible platform permissions/hardware. Expo Go and web cannot fully represent those native capabilities.
+
+---
+
+## Architecture
 
 ```mermaid
 flowchart TD
     Student[Student] --> Capture[Activity Logging / Voice Capture / Smart Capture]
     Capture --> Confirm[Student Review and Confirmation]
     Confirm --> Records[(Confirmed Activity Records)]
+
     Records --> Tolerance[Visual Tolerance Map]
     Records --> Journey[Journey / Timeline]
     Records --> ML[Personalized Ridge Regression]
+
     ML --> Gates[Quality and Evidence Gates]
     Gates --> Observation[Evidence-Linked Observation]
     Observation --> Review[Clinician Review]
+
     Journey --> Review
 
     School[School Staff] --> SchoolEvidence[(School Observations)]
@@ -243,11 +528,15 @@ flowchart TD
     Pedometer[Device Pedometer] --> LocalContext[Optional Local Session Context]
 ```
 
-School Observations flow to Clinician review but never into the personalized ML engine. Device steps remain a separate local context path and are neither persisted nor clinically interpreted.
+School Observations can inform Clinician review but never become inputs to the personalized ML engine.
+
+Device steps remain a separate local context path and are neither persisted nor clinically interpreted.
+
+---
 
 ## Data Model
 
-Important PostgreSQL tables in the migration history include:
+Important PostgreSQL tables include:
 
 - `profiles`
 - `user_preferences`
@@ -261,57 +550,113 @@ Important PostgreSQL tables in the migration history include:
 - `student_trusted_contacts`
 - `shared_support_contacts`
 
-Migrations `00007` and `00008` implementing these contact tables are applied to the demo Supabase database. This does not imply production or clinical deployment.
+Migrations `00007` and `00008` implement persisted student-managed Trusted Adult contacts and explicitly shared support contacts in the demo environment.
+
+Their presence does not imply production or clinical deployment.
+
+---
 
 ## Evidence-Informed Design
 
-ReEntry's design is informed by themes in:
+ReEntry's design was informed by themes in:
 
-- Consensus statement on concussion in sport: the 6th International Conference on Concussion in Sport
-- Living Concussion Guidelines
-- PedsConcussion Living Guideline for Pediatric Concussion
+- the **Consensus statement on concussion in sport: the 6th International Conference on Concussion in Sport**;
+- the **Living Concussion Guidelines**; and
+- the **PedsConcussion Living Guideline for Pediatric Concussion**.
 
-Themes such as return to school, gradual return to activity as tolerated, temporary school supports, ongoing monitoring and modification, and collaboration among students, caregivers, school personnel, and healthcare professionals inform concrete product decisions: functional activity capture, a longitudinal observation window, recorded accommodations, role-specific collaboration, and human clinical interpretation.
+Relevant themes include:
 
-This is design context—not endorsement, clinical validation, or a claim that ReEntry itself is medical guidance.
+- returning to school;
+- gradual return to activity as tolerated;
+- temporary school supports;
+- ongoing monitoring and modification; and
+- collaboration among students, caregivers, school personnel, and healthcare professionals.
+
+Those themes influenced concrete ReEntry decisions including functional activity capture, a longitudinal observation window, recorded accommodations, role-specific collaboration, and human clinical interpretation.
+
+These sources provide design context.
+
+They do **not** represent endorsement of ReEntry, clinical validation of ReEntry, or a claim that ReEntry itself provides medical guidance.
+
+---
+
+## A Day With ReEntry
+
+All people and records in the demo are synthetic.
+
+Meet **Maya**, a 16-year-old student returning to school after a concussion.
+
+Her recovery does not happen on a dashboard. It happens while she is trying to get through her normal day.
+
+1. Maya starts with her recurring school schedule already in ReEntry.
+2. After class, Smart Capture gives her a timely opportunity to record how the activity went.
+3. If typing feels like too much friction, she can describe the experience using Voice Capture.
+4. Maya reviews the structured draft before confirming anything.
+5. Her confirmed experiences gradually build her Tolerance Map and Journey.
+6. Once enough usable evidence exists, her personalized model may surface an evidence-linked observation.
+7. Maya or her Clinician can inspect the records supporting that observation.
+8. School Staff can separately record what they observed at school without altering Maya's self-reported evidence.
+9. Her Clinician can review those evidence streams together.
+10. The Clinician—not the AI—decides whether to record an accommodation.
+11. School Staff receive the relevant support without gaining access to Maya's entire private recovery history.
+12. Maya can carry those recorded supports through her ReEntry Pass.
+13. If she needs a person rather than another screen, Need Support gives her a direct path to her School support, Care team, or Trusted Adult.
+
+Additional synthetic students demonstrate the multi-student School and Clinician workspaces.
+
+No demo passwords are published in this README.
+
+---
 
 ## Why ReEntry Is Different
 
-> real-world adolescent experiences + low-friction confirmed capture + schedule/context-aware collection + functional tolerance visualization + personalized evidence-linked ML + structured School Observations + Clinician interpretation + accommodations + minimum-necessary School communication + ReEntry Pass
+There are many ways to collect symptoms.
 
-ReEntry connects that full return-to-school evidence loop. The core idea is not simply tracking concussion symptoms; it is translating everyday functional experiences into understandable, traceable, role-appropriate information that can support return-to-school communication.
+ReEntry focuses on a different question:
 
-## Accessibility and Adolescent UX
+> **What does returning to everyday life actually look like for this student?**
 
-Intentional design choices include adolescent-first workflows, fast activity logging, voice-assisted capture with less long-form typing, comfortable touch targets, Dark Mode, Low-Stimulation Mode, a visual Tolerance Map, consistent role-specific navigation, restrained visual hierarchy, and evidence drill-down instead of unexplained AI conclusions.
+It connects:
 
-No WCAG or formal accessibility certification is claimed.
+**real-world adolescent experiences  
+→ low-friction confirmed capture  
+→ schedule/context-aware collection  
+→ functional tolerance visualization  
+→ personalized evidence-linked ML  
+→ structured School Observations  
+→ Clinician interpretation  
+→ recorded accommodations  
+→ minimum-necessary School communication  
+→ ReEntry Pass**
 
-## Demo Story
+The value is not any single screen.
 
-All demo people and records are synthetic.
+It is the loop between the student experiencing life, the evidence they choose to record, the Clinician trying to understand that evidence, and the School trying to provide appropriate support without seeing everything.
 
-1. Maya, age 16, moves through her school day.
-2. Her recurring schedule provides class context.
-3. Smart Capture or Voice Capture reduces logging friction.
-4. Maya reviews and confirms her activity record.
-5. Confirmed records contribute to Tolerance and Journey.
-6. With sufficient usable evidence, the personalized model may surface an evidence-linked observation.
-7. Maya or the Clinician can inspect its supporting records.
-8. School Staff can contribute a separate structured School Observation.
-9. The Clinician reviews the distinct evidence streams.
-10. The Clinician records an accommodation.
-11. School Staff receive the relevant minimum-necessary support.
-12. Maya can carry or show the ReEntry Pass.
-13. Need Support provides an explicit path to human support when needed.
-
-Additional synthetic students demonstrate multi-student School and Clinician workspaces. No demo passwords are published here.
+---
 
 ## Real-World Feasibility
 
-ReEntry uses ordinary smartphones, student-confirmed observations, optional local device context, local reminders, role-based collaboration, and Clinician-authored accommodations. It does not depend on continuous surveillance, specialized medical hardware, automatic concussion detection, continuous Clinician monitoring, or giving School Staff the student's full private record.
+ReEntry is designed around tools that students and schools could realistically have access to:
 
-This practical architecture does not imply deployment readiness beyond the current prototype.
+- ordinary smartphones;
+- student-confirmed observations;
+- optional local device context;
+- local reminders;
+- role-based collaboration; and
+- Clinician-authored accommodations.
+
+It does not depend on:
+
+- specialized medical hardware;
+- continuous surveillance;
+- automatic concussion detection;
+- continuous Clinician monitoring; or
+- giving School Staff the student's complete private recovery record.
+
+This practical architecture does not imply production or clinical deployment readiness.
+
+---
 
 ## How to Run ReEntry
 
@@ -319,12 +664,12 @@ This practical architecture does not imply deployment readiness beyond the curre
 
 - Node.js
 - pnpm 11
-- A Supabase project configured for ReEntry
-- An appropriate native/development build for native capabilities
+- a Supabase project configured for ReEntry
+- an appropriate native/development build for native-only capabilities
 
 ### Environment
 
-Create a local `.env` containing the public client configuration:
+Create a local `.env` with the public Supabase client configuration:
 
 ```bash
 EXPO_PUBLIC_SUPABASE_URL=your-project-url
@@ -340,7 +685,7 @@ pnpm install
 pnpm web
 ```
 
-Other supported development commands:
+### Native Development
 
 ```bash
 pnpm start
@@ -348,12 +693,40 @@ pnpm android
 pnpm ios
 ```
 
-Speech recognition, notifications, and pedometer/device activity require a compatible native/development build; do not rely on Expo Go or web to represent those native features fully.
+Speech recognition, notifications, and pedometer/device activity require a compatible native/development build and appropriate platform permissions/hardware.
+
+Do not rely on Expo Go or web to represent those native capabilities fully.
+
+---
 
 ## Prototype Status and Limitations
 
-ReEntry is a Hack for Humanity prototype. It is not clinically validated, a diagnostic system, or an approved medical device. It makes no claims of diagnostic accuracy, regulatory certification, or HIPAA compliance. The personalized ML workflow is currently demonstrated with prototype and synthetic demo data where applicable.
+ReEntry is a **Hack for Humanity prototype**.
 
-Step availability depends on native platform, hardware, and permission support. Further clinical evaluation, privacy/security review, accessibility testing, and real-user testing would be required before real-world clinical deployment.
+It is not:
 
-ReEntry's practical differentiator remains focused: translating real-world adolescent functional tolerance into evidence-linked, privacy-aware collaboration across student, School Staff, and Clinician.
+- a clinically validated concussion system;
+- a diagnostic tool;
+- an approved medical device;
+- an emergency-response service; or
+- a substitute for professional medical advice.
+
+The personalized ML workflow is demonstrated using prototype and synthetic demo data where applicable.
+
+Step availability depends on native platform, hardware, and permission support.
+
+Before real-world clinical deployment, ReEntry would require substantially more work including clinical evaluation, privacy and security review, accessibility testing, regulatory analysis where applicable, and testing with real students, families, School Staff, and healthcare professionals.
+
+---
+
+## What We're Trying to Build
+
+A concussion can make ordinary parts of being a teenager unexpectedly difficult.
+
+A class. A screen. A crowded lunchroom. Homework. Practice. Friends.
+
+Those experiences should not disappear simply because they happened between appointments.
+
+ReEntry is an attempt to make those moments easier to capture, easier to understand, and easier to communicate — **without asking AI to make the medical decisions that belong to people.**
+
+**Return to school. Return to friends. Return to life.**
