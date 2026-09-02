@@ -56,6 +56,7 @@ interface AppState {
   dailyCheckIns: DailyCheckIn[];
   accommodationRecords: AccommodationRecord[];
   scheduleItems: StudentScheduleItem[];
+  studentDataLoaded: boolean;
   insightEvidence: InsightEvidence[];
   today: string;
   lowStimulationMode: boolean;
@@ -66,6 +67,7 @@ interface AppState {
   addScheduleItem: (input: ScheduleItemInput) => Promise<StudentScheduleItem>;
   updateScheduleItem: (itemId: string, input: ScheduleItemInput) => Promise<StudentScheduleItem>;
   deleteScheduleItem: (itemId: string) => Promise<void>;
+  refreshStudentData: () => Promise<void>;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -141,9 +143,10 @@ function deriveUser(sessionUser: { id: string; email?: string } | undefined): De
 }
 
 export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { session, role } = useSession();
+  const { session, role, isLoading, isLoadingRole } = useSession();
   const userId = session?.user?.id;
   const isStudent = role === 'student';
+  const authReady = !isLoading && !isLoadingRole;
 
   const [lowStimulationMode, setLowStimulationMode] = useState(false);
   const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
@@ -151,6 +154,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [accommodationRecords, setAccommodationRecords] = useState<AccommodationRecord[]>([]);
   const [scheduleItems, setScheduleItems] = useState<StudentScheduleItem[]>([]);
   const [insights, setInsights] = useState<InsightEvidence[]>([]);
+  const [studentDataLoaded, setStudentDataLoaded] = useState(false);
+  const studentDataRequestRef = useRef<{ userId: string; promise: Promise<void> } | null>(null);
+  const activeStudentIdRef = useRef<string | null>(null);
+  activeStudentIdRef.current = authReady && userId && isStudent ? userId : null;
 
   // Low-Stimulation is only meaningful for an authenticated user; auth shell is always normal.
   const exposedLowStimulationMode = userId ? lowStimulationMode : false;
@@ -181,42 +188,54 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
   }, [userId]);
 
-  // Load student-owned data. New accounts start with empty arrays; demo data is never attached.
-  useEffect(() => {
-    if (!userId || !isStudent) {
-      setActivityLogs([]);
-      setDailyCheckIns([]);
-      setAccommodationRecords([]);
-      setScheduleItems([]);
-      setInsights([]);
-      return;
+  const refreshStudentData = useCallback(async () => {
+    if (!authReady || !userId || !isStudent) return;
+    if (studentDataRequestRef.current?.userId === userId) {
+      return studentDataRequestRef.current.promise;
     }
 
-    let cancelled = false;
-    const load = async () => {
+    const requestedUserId = userId;
+    const promise = (async () => {
       try {
         const [logs, dbTags, checkIns, accommodations, schedule] = await Promise.all([
-          fetchActivityLogs(userId),
-          fetchChallengeTags(userId),
-          fetchDailyCheckIns(userId),
-          fetchAccommodationRecords(userId),
-          fetchStudentScheduleItems(userId),
+          fetchActivityLogs(requestedUserId),
+          fetchChallengeTags(requestedUserId),
+          fetchDailyCheckIns(requestedUserId),
+          fetchAccommodationRecords(requestedUserId),
+          fetchStudentScheduleItems(requestedUserId),
         ]);
-        if (cancelled) return;
+        if (activeStudentIdRef.current !== requestedUserId) return;
         setActivityLogs(logs.map((l) => toActivityLog(l, dbTags)));
         setDailyCheckIns(checkIns.map((c) => toDailyCheckIn(c)));
         setAccommodationRecords(accommodations.map((a) => toAccommodationRecord(a)));
         setScheduleItems(schedule.map(toScheduleItem));
         setInsights([]);
+        setStudentDataLoaded(true);
       } catch (e) {
         console.error('AppProvider load student data failed', e);
       }
-    };
-    load();
-    return () => {
-      cancelled = true;
-    };
-  }, [userId, isStudent]);
+    })();
+    studentDataRequestRef.current = { userId: requestedUserId, promise };
+    await promise;
+    if (studentDataRequestRef.current?.promise === promise) studentDataRequestRef.current = null;
+  }, [authReady, isStudent, userId]);
+
+  // Load student-owned data when native session and role hydration identifies the
+  // authenticated student. Pre-auth state is cleared but is never marked loaded.
+  useEffect(() => {
+    if (!authReady || !userId || !isStudent) {
+      studentDataRequestRef.current = null;
+      setActivityLogs([]);
+      setDailyCheckIns([]);
+      setAccommodationRecords([]);
+      setScheduleItems([]);
+      setInsights([]);
+      setStudentDataLoaded(false);
+      return;
+    }
+
+    void refreshStudentData();
+  }, [authReady, isStudent, refreshStudentData, userId]);
 
   const toggleLowStimulation = useCallback(async () => {
     if (!userId) {
@@ -313,6 +332,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       dailyCheckIns,
       accommodationRecords,
       scheduleItems,
+      studentDataLoaded,
       insightEvidence: insights,
       today,
       lowStimulationMode: exposedLowStimulationMode,
@@ -323,6 +343,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addScheduleItem,
       updateScheduleItem,
       deleteScheduleItem,
+      refreshStudentData,
     }),
     [
       user,
@@ -330,6 +351,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       dailyCheckIns,
       accommodationRecords,
       scheduleItems,
+      studentDataLoaded,
       insights,
       today,
       exposedLowStimulationMode,
@@ -340,6 +362,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       addScheduleItem,
       updateScheduleItem,
       deleteScheduleItem,
+      refreshStudentData,
     ],
   );
 

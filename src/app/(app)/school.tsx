@@ -386,7 +386,7 @@ export default function SchoolWorkspaceScreen() {
                     </View>
                     <View>
                       <SubheadingText className="mb-3 text-sm">Account</SubheadingText>
-                      <SecondaryButton label="Sign Out" onPress={handleSignOut} className="self-center px-5" style={{ minHeight: 44 }} />
+                      <SecondaryButton label="Sign Out" onPress={handleSignOut} className="mb-4 w-full self-center px-5" style={{ minHeight: 44 }} />
                     </View>
                   </View>
                 ) : null}

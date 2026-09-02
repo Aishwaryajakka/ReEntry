@@ -41,21 +41,24 @@ export function ProfessionalFormSheet({
       <View className={cn('flex-1 justify-end', isDark && 'dark')}>
         <Pressable className="absolute inset-0 bg-black/40" onPress={loading ? undefined : onClose} accessibilityRole="button" accessibilityLabel="Close form" />
         <KeyboardAvoidingView behavior={process.env.EXPO_OS === 'ios' ? 'padding' : 'height'} className="flex-1 justify-end" pointerEvents="box-none">
-          <View className="max-h-[92%] w-full max-w-[680px] self-center rounded-t-3xl bg-card" style={{ paddingBottom: insets.bottom }}>
+          <View
+            className="w-full max-w-[680px] self-center rounded-t-3xl bg-card"
+            style={{ maxHeight: '86%', paddingBottom: insets.bottom }}
+          >
             <View className="flex-row items-center justify-between px-5 pt-5">
               <SubheadingText className="flex-1 pr-3">{title}</SubheadingText>
               <Pressable onPress={loading ? undefined : onClose} disabled={loading} className="min-h-11 min-w-11 items-center justify-center rounded-full active:bg-muted" accessibilityRole="button" accessibilityLabel="Close">
                 <X size={20} color={theme.foreground} />
               </Pressable>
             </View>
-            <ScrollView contentContainerClassName="px-5 pb-5 pt-5" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <ScrollView className="flex-shrink" contentContainerClassName="px-5 pt-5" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
               {children}
-              {error ? <MicroText className="mt-3 text-destructive">{error}</MicroText> : null}
-              <View className="mt-6">
-                <AccentButton label={primaryLabel} onPress={onPrimaryPress} loading={loading} disabled={loading || primaryDisabled} className="w-full" />
-                <GhostButton label="Cancel" onPress={onClose} disabled={loading} className="mt-3 w-full" />
-              </View>
             </ScrollView>
+            <View className="px-5 pb-5 pt-6">
+              {error ? <MicroText className="mb-3 text-destructive">{error}</MicroText> : null}
+              <AccentButton label={primaryLabel} onPress={onPrimaryPress} loading={loading} disabled={loading || primaryDisabled} className="w-full" />
+              <GhostButton label="Cancel" onPress={onClose} disabled={loading} className="mt-3 w-full" />
+            </View>
           </View>
         </KeyboardAvoidingView>
       </View>

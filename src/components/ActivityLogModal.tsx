@@ -12,7 +12,6 @@ import {
   ScrollView,
   Text,
   TextInput,
-  useWindowDimensions,
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -73,7 +72,6 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
   const theme = useThemeColors();
   const { isDark } = useTheme();
   const insets = useSafeAreaInsets();
-  const { height: windowHeight } = useWindowDimensions();
   const isEditing = !!log;
 
   const [category, setCategory] = useState<ActivityCategory | null>(null);
@@ -237,7 +235,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
             style={
               {
                 borderCurve: 'continuous',
-                maxHeight: Math.max(320, windowHeight - insets.top - 12),
+                height: '90%',
                 paddingBottom: insets.bottom,
               } as object
             }
@@ -473,7 +471,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
               <GhostButton
                 label="Cancel"
                 onPress={onClose}
-                className="self-center px-4"
+                className="w-full"
                 style={{ minHeight: 44 }}
               />
             </View>

@@ -1,7 +1,10 @@
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
+import { View } from 'react-native';
+import { StatusBar } from 'expo-status-bar';
 import { useSession } from '@/ctx';
 import { fetchUserPreferences, updateAppearance, type Appearance } from '@/db/api';
+import { cn } from '@/lib/utils';
 
 export type { Appearance };
 
@@ -83,7 +86,13 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     <ThemeContext.Provider
       value={{ theme: activeTheme, isDark, initialized, toggleTheme, setTheme }}
     >
-      {children}
+      <View className={cn('flex-1', isDark && 'dark')}>
+        <StatusBar
+          style={isDark ? 'light' : 'dark'}
+          backgroundColor={isDark ? '#263528' : '#E8E3D9'}
+        />
+        {children}
+      </View>
     </ThemeContext.Provider>
   );
 }

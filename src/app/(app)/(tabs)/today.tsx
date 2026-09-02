@@ -7,9 +7,9 @@
  */
 
 import { useCallback, useMemo, useState } from 'react';
-import { Pressable, View, Text } from 'react-native';
+import { ActivityIndicator, Pressable, View, Text } from 'react-native';
 import { Mic, Plus } from 'lucide-react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import type { RelativePathString } from 'expo-router';
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
@@ -22,6 +22,7 @@ import { StudentPageHeader } from '@/components/StudentPageHeader';
 import { DeviceActivityCard } from '@/components/DeviceActivityCard';
 import { HeroBotanical } from '@/components/Icons';
 import { useAppContext } from '@/context/AppContext';
+import { useSession } from '@/ctx';
 import { TOLERANCE_LABELS } from '@/data/activityCatalog';
 import { COLORS, useThemeColors } from '@/lib/theme';
 import type { ActivityCategory, ActivityLog, StudentScheduleItem } from '@/data/types';
@@ -78,7 +79,9 @@ function isScheduleItemLogged(item: StudentScheduleItem, logs: ActivityLog[]): b
 }
 
 export default function TodayScreen() {
-  const { today, activityLogs, lowStimulationMode, scheduleItems } = useAppContext();
+  const { today, activityLogs, lowStimulationMode, scheduleItems, studentDataLoaded, refreshStudentData } = useAppContext();
+  const { session } = useSession();
+  const studentId = session?.user.id;
   const router = useRouter();
   const { scheduleItemId } = useLocalSearchParams<{ scheduleItemId?: string }>();
   const theme = useThemeColors();
@@ -88,6 +91,12 @@ export default function TodayScreen() {
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState<string | undefined>();
   const [voiceContext, setVoiceContext] = useState<VoiceActivityContext | undefined>();
+
+  useFocusEffect(
+    useCallback(() => {
+      if (studentId) void refreshStudentData();
+    }, [refreshStudentData, studentId]),
+  );
 
   const todaysLogs = useMemo(
     () => activityLogs.filter((l) => l.date === today).sort((a, b) => a.id.localeCompare(b.id)),
@@ -227,7 +236,7 @@ export default function TodayScreen() {
           elevation: lowStimulationMode ? 0 : 4,
         } as object}
       >
-        <View className="flex-1">
+        <View>
           <View className="mb-3 flex-row items-center justify-between gap-3">
             <Text className="text-xs font-bold uppercase tracking-[0.18em] text-forest/70">Today at School</Text>
             <Text className="text-sm font-semibold text-forest/80">
@@ -318,7 +327,9 @@ export default function TodayScreen() {
             <Text className="font-semibold text-foreground">Manage</Text>
           </Pressable>
         </View>
-        {todaysSchedule.length > 0 ? todaysSchedule.map((item) => {
+        {!studentDataLoaded ? (
+          <ActivityIndicator color={theme.foreground} accessibilityLabel="Loading school schedule" />
+        ) : todaysSchedule.length > 0 ? todaysSchedule.map((item) => {
           const now = new Date();
           const minutesNow = now.getHours() * 60 + now.getMinutes();
           const logged = todaysLogs.some((log) => (log.customLabel ?? '').trim().toLocaleLowerCase('en-US') === item.label.trim().toLocaleLowerCase('en-US'));
