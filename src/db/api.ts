@@ -481,7 +481,7 @@ export async function addActivityLog(
 
   if (error || !data) {
     console.error('addActivityLog failed', error);
-    return null;
+    throw new Error('Your activity could not be saved. Please try again.');
   }
 
   if (input.challengeTagIds.length > 0) {

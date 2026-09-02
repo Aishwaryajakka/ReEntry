@@ -326,7 +326,11 @@ export default function TodayScreen() {
           return (
             <View key={item.id} className="flex-row items-center justify-between border-t border-border py-3 first:border-t-0">
               <View className="flex-1"><Text className="font-semibold text-foreground">{item.label}</Text><MicroText className="mt-1 text-muted-foreground">{formatScheduleTime(`${String(Math.floor(item.startMinutes / 60)).padStart(2, '0')}:${String(item.startMinutes % 60).padStart(2, '0')}`)}–{formatScheduleTime(`${String(Math.floor(item.endMinutes / 60)).padStart(2, '0')}:${String(item.endMinutes % 60).padStart(2, '0')}`)}</MicroText></View>
-              <View
+              <Pressable
+                onPress={status === 'Log now' ? () => openSmartCapture(item, 2) : undefined}
+                disabled={status !== 'Log now'}
+                accessibilityRole={status === 'Log now' ? 'button' : undefined}
+                accessibilityLabel={status === 'Log now' ? `Log ${item.label} now` : `${item.label}: ${status}`}
                 className="rounded-full border px-3 py-1.5"
                 style={{
                   backgroundColor: status === 'Log now' ? COLORS.brightYellow : theme.mossLight,
@@ -339,7 +343,7 @@ export default function TodayScreen() {
                 >
                   {status}
                 </Text>
-              </View>
+              </Pressable>
             </View>
           );
         }) : (
@@ -402,7 +406,7 @@ export default function TodayScreen() {
         prefill={capturePrefill}
         reviewTranscript={voiceTranscript}
         title={voiceTranscript ? 'Review your activity' : undefined}
-        submitLabel={voiceTranscript ? 'Confirm & Log' : undefined}
+        submitLabel={editingLog ? undefined : 'Confirm & Log'}
       />
       <VoiceActivityCapture
         visible={voiceOpen}

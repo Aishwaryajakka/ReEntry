@@ -1,15 +1,9 @@
 import { useState, useCallback, useEffect } from 'react';
-import { Modal, Pressable, ScrollView, Switch, TextInput, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { X } from 'lucide-react-native';
+import { Switch, TextInput, View } from 'react-native';
 
-import { AccentButton, GhostButton } from '@/components/Buttons';
-import { SectionCard } from '@/components/SectionCard';
-import { HeadingText, LabelText, MicroText } from '@/components/Typography';
+import { LabelText, MicroText } from '@/components/Typography';
+import { ProfessionalFormSheet } from '@/components/ProfessionalFormSheet';
 import { useThemeColors } from '@/lib/theme';
-import { useTheme } from '@/context/ThemeContext';
-import { cn } from '@/lib/utils';
-import { useReducedExperience } from '@/lib/accessibility';
 import { insertAccommodation, updateAccommodation, type SchoolAccommodation } from '@/db/api';
 
 interface AddAccommodationModalProps {
@@ -28,8 +22,6 @@ function isValidDate(str: string): boolean {
 
 export function AddAccommodationModal({ visible, onClose, studentId, onSaved, accommodation }: AddAccommodationModalProps) {
   const theme = useThemeColors();
-  const { isDark } = useTheme();
-  const { reduced } = useReducedExperience();
   const isEditing = Boolean(accommodation?.id);
   const [title, setTitle] = useState('');
   const [sourceName, setSourceName] = useState('');
@@ -117,98 +109,78 @@ export function AddAccommodationModal({ visible, onClose, studentId, onSaved, ac
   };
 
   return (
-    <Modal
+    <ProfessionalFormSheet
       visible={visible}
-      animationType={reduced ? 'fade' : 'slide'}
-      transparent={false}
-      onRequestClose={handleClose}
-      statusBarTranslucent
+      title={isEditing ? 'Edit accommodation' : 'Record accommodation'}
+      primaryLabel={isEditing ? 'Save changes' : 'Save accommodation'}
+      onPrimaryPress={handleSave}
+      onClose={handleClose}
+      loading={loading}
+      error={error}
     >
-      <View className={cn('flex-1', isDark && 'dark')}>
-      <SafeAreaView className="flex-1 bg-background" edges={['top', 'left', 'right']}>
-        <ScrollView
-          className="flex-1"
-          contentContainerClassName="w-full max-w-[720px] self-center px-6 pt-6 pb-24"
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          contentInsetAdjustmentBehavior="automatic"
-        >
-          <View className="flex-row items-center justify-between mb-4">
-            <HeadingText className="leading-tight">{isEditing ? 'Edit Accommodation' : 'Record Accommodation'}</HeadingText>
-            <Pressable
-              onPress={handleClose}
-              className="min-h-11 min-w-11 items-center justify-center rounded-full active:opacity-70 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              accessibilityLabel="Close"
-              accessibilityRole="button"
-            >
-              <X size={22} color={theme.foreground} />
-            </Pressable>
-          </View>
+      <View className="gap-4">
+        <MicroText className="leading-5 text-muted-foreground">
+          Record a support or accommodation that may be visible to the student and authorized school staff.
+        </MicroText>
+        <View className="gap-[6px]">
+          <LabelText>Title *</LabelText>
+          <TextInput
+            value={title}
+            onChangeText={setTitle}
+            placeholder="e.g., Reduced screen time"
+            placeholderTextColor={theme.foregroundMuted}
+            className="rounded-xl border border-border bg-background px-4 py-3 text-base text-foreground"
+            style={{ minHeight: 52 } as object}
+            returnKeyType="next"
+            editable={!loading}
+          />
+        </View>
 
-          <MicroText className="text-muted-foreground mb-5 leading-5">
-            Record a support or accommodation that may be visible to the student and authorized school staff.
-          </MicroText>
-
-          <SectionCard className="gap-4 mb-4">
-            <View className="gap-2">
-              <LabelText>Title *</LabelText>
-              <TextInput
-                value={title}
-                onChangeText={setTitle}
-                placeholder="e.g., Reduced screen time"
-                placeholderTextColor={theme.foregroundMuted}
-                className="bg-background text-foreground rounded-xl px-4 py-3.5 text-base border border-border"
-                style={{ minHeight: 52 } as object}
-                returnKeyType="next"
-                editable={!loading}
-              />
-            </View>
-
-            <View className="gap-2">
+        <View className="gap-[6px]">
               <LabelText>Source / Issuer</LabelText>
               <TextInput
                 value={sourceName}
                 onChangeText={setSourceName}
                 placeholder="e.g., Dr. Smith, Neurology"
                 placeholderTextColor={theme.foregroundMuted}
-                className="bg-background text-foreground rounded-xl px-4 py-3.5 text-base border border-border"
+                className="rounded-xl border border-border bg-background px-4 py-3 text-base text-foreground"
                 style={{ minHeight: 52 } as object}
                 returnKeyType="next"
                 editable={!loading}
               />
-            </View>
+        </View>
 
-            <View className="gap-2">
+        <View className="gap-[6px]">
               <LabelText>Issued date (optional)</LabelText>
               <TextInput
                 value={issuedDate}
                 onChangeText={setIssuedDate}
                 placeholder="YYYY-MM-DD"
                 placeholderTextColor={theme.foregroundMuted}
-                className="bg-background text-foreground rounded-xl px-4 py-3.5 text-base border border-border"
+                className="rounded-xl border border-border bg-background px-4 py-3 text-base text-foreground"
                 style={{ minHeight: 52 } as object}
                 keyboardType="numbers-and-punctuation"
                 returnKeyType="next"
                 editable={!loading}
               />
-            </View>
+        </View>
 
-            <View className="gap-2">
+        <View className="gap-[6px]">
               <LabelText>Valid until (optional)</LabelText>
               <TextInput
                 value={validUntil}
                 onChangeText={setValidUntil}
                 placeholder="YYYY-MM-DD"
                 placeholderTextColor={theme.foregroundMuted}
-                className="bg-background text-foreground rounded-xl px-4 py-3.5 text-base border border-border"
+                className="rounded-xl border border-border bg-background px-4 py-3 text-base text-foreground"
                 style={{ minHeight: 52 } as object}
                 keyboardType="numbers-and-punctuation"
                 returnKeyType="done"
                 editable={!loading}
               />
-            </View>
+        </View>
 
-            <View className="flex-row items-center justify-between py-2">
+        <View className="flex-row items-center justify-between py-2">
               <LabelText>Active</LabelText>
               <Switch
                 value={isActive}
@@ -218,22 +190,8 @@ export function AddAccommodationModal({ visible, onClose, studentId, onSaved, ac
                 thumbColor={isActive ? theme.warmWhite : theme.foregroundMuted}
                 ios_backgroundColor={theme.moon}
               />
-            </View>
-          </SectionCard>
-
-          {error ? <MicroText className="text-destructive mb-3">{error}</MicroText> : null}
-
-          <AccentButton
-            label={loading ? 'Saving…' : (isEditing ? 'Save Changes' : 'Save Accommodation')}
-            onPress={handleSave}
-            disabled={loading}
-            loading={loading}
-            className="mb-1 w-full"
-          />
-          <GhostButton label="Cancel" onPress={handleClose} className="self-center px-4" style={{ minHeight: 44 }} disabled={loading} />
-        </ScrollView>
-      </SafeAreaView>
+        </View>
       </View>
-    </Modal>
+    </ProfessionalFormSheet>
   );
 }

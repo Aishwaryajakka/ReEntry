@@ -4,7 +4,7 @@
  * Preserves one-tap category selection, big manageability chips, and optional details.
  */
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
   Modal,
@@ -12,8 +12,10 @@ import {
   ScrollView,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { X } from 'lucide-react-native';
 import { AccentButton, DestructiveButton, GhostButton } from './Buttons';
 import { DataBadge } from './DataBadge';
@@ -70,6 +72,8 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
   const { reduced } = useReducedExperience();
   const theme = useThemeColors();
   const { isDark } = useTheme();
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
   const isEditing = !!log;
 
   const [category, setCategory] = useState<ActivityCategory | null>(null);
@@ -82,6 +86,8 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
   const [note, setNote] = useState('');
   const [customLabel, setCustomLabel] = useState('');
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const submittingRef = useRef(false);
 
   const toggleTag = useCallback((id: string) => {
     setSelectedTagIds((prev) => {
@@ -116,6 +122,8 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
       setNote(log?.notes ?? prefill?.notes ?? '');
       setSelectedTagIds(new Set(log?.challengeTagIds ?? prefill?.challengeTagIds ?? []));
       setError(null);
+      setSubmitting(false);
+      submittingRef.current = false;
     } else {
       reset();
     }
@@ -124,12 +132,15 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
   const isValid = !!category && customLabel.trim().length > 0;
 
   const handleSubmit = useCallback(async () => {
+    if (submittingRef.current) return;
     if (!isValid || !category) {
       setError('Please select a category and enter an activity name.');
       return;
     }
 
     setError(null);
+    submittingRef.current = true;
+    setSubmitting(true);
 
     const input = {
       date: today,
@@ -141,14 +152,21 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
       challengeTagIds: Array.from(selectedTagIds),
     };
 
-    if (isEditing && log) {
-      await updateActivityLog(log.id, input);
-    } else {
-      await addActivityLog(input);
-    }
+    try {
+      if (isEditing && log) {
+        await updateActivityLog(log.id, input);
+      } else {
+        await addActivityLog(input);
+      }
 
-    reset();
-    onClose();
+      reset();
+      onClose();
+    } catch (submitError) {
+      setError(submitError instanceof Error ? submitError.message : 'Your activity could not be saved. Please try again.');
+    } finally {
+      submittingRef.current = false;
+      setSubmitting(false);
+    }
   }, [
     addActivityLog,
     category,
@@ -215,10 +233,12 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
               This MUST remain a View, not a Pressable, because the sheet
               contains interactive buttons. */}
           <View
-            className="bg-card w-full max-w-[680px] self-center rounded-t-3xl max-h-[92%]"
+            className="bg-card w-full max-w-[680px] self-center rounded-t-3xl"
             style={
               {
                 borderCurve: 'continuous',
+                maxHeight: Math.max(320, windowHeight - insets.top - 12),
+                paddingBottom: insets.bottom,
               } as object
             }
           >
@@ -293,11 +313,6 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                     returnKeyType="done"
                   />
 
-                  {error && (
-                    <MicroText className="text-destructive mb-5">
-                      {error}
-                    </MicroText>
-                  )}
                 </>
               )}
 
@@ -430,11 +445,20 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                 )}
               </View>
 
-              {/* Actions */}
+            </ScrollView>
+
+            <View className="border-t border-border px-6 pt-3">
+              {error && (
+                <Text className="mb-2 text-xs text-destructive" accessibilityLiveRegion="polite">
+                  {error}
+                </Text>
+              )}
+
               <AccentButton
                 label={isEditing ? 'Save changes' : submitLabel ?? 'Save entry'}
                 onPress={handleSubmit}
-                disabled={!isValid}
+                disabled={!isValid || submitting}
+                loading={submitting}
                 className="mb-1 w-full"
               />
 
@@ -452,7 +476,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                 className="self-center px-4"
                 style={{ minHeight: 44 }}
               />
-            </ScrollView>
+            </View>
           </View>
         </KeyboardAvoidingView>
       </View>

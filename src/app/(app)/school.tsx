@@ -154,19 +154,19 @@ export default function SchoolWorkspaceScreen() {
             onRefresh={loadStudents}
             ListHeaderComponent={(
               <View className="pb-4">
-                <ReEntryWordmark className="mb-5" />
+                <ReEntryWordmark className="mb-6" />
                 <View className="mb-3 flex-row items-center gap-2">
-                  <View className="h-9 w-9 items-center justify-center rounded-full" style={{ backgroundColor: `${themeColors.turmeric}22` }}>
+                  <View className="h-9 w-9 items-center justify-center rounded-full" style={{ backgroundColor: `${themeColors.accent}22` }}>
                     <GraduationCap size={20} color={themeColors.foreground} />
                   </View>
                   <EditorialLabel>SCHOOL WORKSPACE</EditorialLabel>
                 </View>
-                <HeadingText className="mb-1">Students shared with you</HeadingText>
-                <MicroText className="text-muted-foreground mb-5">
+                <HeadingText className="mb-2">Students shared with you</HeadingText>
+                <MicroText className="text-muted-foreground mb-6">
                   School staff see recorded supports needed for school, not the student's private recovery records.
                 </MicroText>
 
-              {students.length === 0 || showConnect ? <SectionCard className="mb-5">
+              {students.length === 0 || showConnect ? <SectionCard className="mb-6">
                 <View className="flex-row items-center gap-2 mb-2">
                   <Users size={18} color={themeColors.foreground} />
                   <Text className="text-base font-semibold text-foreground">Connect Student</Text>
@@ -207,7 +207,7 @@ export default function SchoolWorkspaceScreen() {
                 <SecondaryButton
                   label="Connect another student"
                   onPress={() => setShowConnect(true)}
-                  className="mb-5 self-start"
+                  className="mb-6 self-start"
                 />
               )}
 
@@ -226,8 +226,8 @@ export default function SchoolWorkspaceScreen() {
                       onPress={() => setStudentChooserOpen((open) => !open)}
                       accessibilityRole="button"
                       accessibilityState={{ expanded: studentChooserOpen }}
-                      className="min-h-14 flex-row items-center gap-3 rounded-xl border px-3 py-2 active:opacity-90"
-                      style={{ borderColor: themeColors.turmeric, backgroundColor: `${themeColors.turmeric}12` }}
+                      className="min-h-[60px] flex-row items-center gap-3 rounded-xl border p-4 active:opacity-90"
+                      style={{ borderColor: themeColors.accent, backgroundColor: `${themeColors.accent}12` }}
                     >
                       <View className="h-9 w-9 items-center justify-center rounded-full bg-accent">
                         <Text className="font-bold text-accent-foreground">{(selectedStudent.displayName ?? 'Student').charAt(0).toUpperCase()}</Text>
@@ -251,8 +251,8 @@ export default function SchoolWorkspaceScreen() {
                           }}
                           accessibilityRole="button"
                           accessibilityState={{ selected }}
-                          className="min-h-14 flex-row items-center gap-3 rounded-xl border px-3 py-2 active:opacity-90"
-                          style={{ borderColor: selected ? themeColors.turmeric : themeColors.border, backgroundColor: selected ? `${themeColors.turmeric}12` : themeColors.card }}
+                          className="min-h-[60px] flex-row items-center gap-3 rounded-xl border p-4 active:opacity-90"
+                          style={{ borderColor: selected ? themeColors.accent : themeColors.border, backgroundColor: selected ? `${themeColors.accent}12` : themeColors.card }}
                         >
                           <View className="h-9 w-9 items-center justify-center rounded-full bg-accent">
                             <Text className="font-bold text-accent-foreground">{(student.displayName ?? 'Student').charAt(0).toUpperCase()}</Text>
@@ -269,7 +269,7 @@ export default function SchoolWorkspaceScreen() {
                 ) : null}
 
                 {selectedStudent ? (
-                  <View className="mb-1 flex-row rounded-xl border border-border bg-card p-1">
+                  <View className="flex-row rounded-xl border border-border bg-card p-1">
                     {([
                       ['overview', 'Overview', LayoutDashboard],
                       ['observations', 'Observations', ClipboardList],
@@ -299,7 +299,10 @@ export default function SchoolWorkspaceScreen() {
             const studentAccs = accommodationsByStudent.get(student.studentId) ?? [];
             const studentObservations = observationsByStudent.get(student.studentId) ?? [];
             return (
-              <SectionCard className="mb-4">
+              <SectionCard
+                className={activeTab === 'profile' ? 'mb-4 border-0 bg-transparent p-0' : 'mb-4'}
+                style={activeTab === 'profile' ? { shadowColor: 'transparent', elevation: 0 } : undefined}
+              >
                 {activeTab !== 'profile' ? <View className="flex-row items-center gap-3 mb-3">
                   <View className="w-10 h-10 rounded-full bg-accent items-center justify-center">
                     <Text className="text-base font-bold text-accent-foreground">
@@ -310,7 +313,7 @@ export default function SchoolWorkspaceScreen() {
                     <Text className="text-base font-semibold text-foreground" numberOfLines={1}>
                       {student.displayName ?? 'Student'}
                     </Text>
-                    <MicroText className="text-muted-foreground">Student</MicroText>
+                    <MicroText className="mt-1.5 text-muted-foreground">Student</MicroText>
                   </View>
                 </View> : null}
 
@@ -356,26 +359,35 @@ export default function SchoolWorkspaceScreen() {
                 ) : null}
 
                 {activeTab === 'profile' ? (
-                  <View className="gap-4">
-                    <View className="rounded-xl bg-muted p-3">
+                  <View className="gap-6">
+                    <View>
+                      <SubheadingText className="mb-3 text-sm">Identity</SubheadingText>
+                      <SectionCard>
                       <Text className="font-semibold text-foreground">{staffName}</Text>
-                      <MicroText className="text-muted-foreground">School staff</MicroText>
+                      <MicroText className="mt-1.5 text-muted-foreground">School staff</MicroText>
+                      </SectionCard>
                     </View>
-                    <View className="flex-row items-center justify-between gap-4 rounded-xl border border-border p-3">
-                      <View className="flex-1">
-                        <Text className="font-semibold text-foreground">Dark Mode</Text>
-                        <MicroText className="text-muted-foreground">Use the dark appearance across ReEntry.</MicroText>
-                      </View>
-                      <Switch
-                        value={isDark}
-                        onValueChange={handleToggleTheme}
-                        trackColor={{ false: themeColors.mossLight, true: themeColors.moss }}
-                        thumbColor={COLORS.warmWhite}
-                        accessibilityLabel="Dark Mode toggle"
-                      />
+                    <View>
+                      <SubheadingText className="mb-3 text-sm">Display</SubheadingText>
+                      <SectionCard className="flex-row items-center justify-between gap-4">
+                        <View className="flex-1">
+                          <Text className="font-semibold text-foreground">Dark Mode</Text>
+                          <MicroText className="mt-1.5 text-muted-foreground">Use the dark appearance across ReEntry.</MicroText>
+                        </View>
+                        <Switch
+                          value={isDark}
+                          onValueChange={handleToggleTheme}
+                          trackColor={{ false: themeColors.mossLight, true: themeColors.moss }}
+                          thumbColor={COLORS.warmWhite}
+                          accessibilityLabel="Dark Mode toggle"
+                        />
+                      </SectionCard>
+                      {themeError ? <Text className="mt-3 text-sm text-destructive">{themeError}</Text> : null}
                     </View>
-                    {themeError ? <Text className="text-sm text-destructive">{themeError}</Text> : null}
-                    <SecondaryButton label="Sign Out" onPress={handleSignOut} className="w-full" />
+                    <View>
+                      <SubheadingText className="mb-3 text-sm">Account</SubheadingText>
+                      <SecondaryButton label="Sign Out" onPress={handleSignOut} className="self-center px-5" style={{ minHeight: 44 }} />
+                    </View>
                   </View>
                 ) : null}
               </SectionCard>

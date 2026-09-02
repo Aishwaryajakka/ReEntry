@@ -80,6 +80,11 @@ export default function SchoolScheduleScreen() {
     setShowForm(true);
   }, []);
 
+  const closeForm = useCallback(() => {
+    setShowForm(false);
+    setEditingId(null);
+  }, []);
+
   const save = useCallback(async () => {
     if (!isValid || saving) return;
     setSaving(true);
@@ -94,13 +99,13 @@ export default function SchoolScheduleScreen() {
       const result = await syncScheduleNotifications(next, form.remindersEnabled);
       if (result === 'denied') setMessage('Notification access is off. Your schedule was saved without local reminders.');
       if (result === 'unavailable') setMessage('Your schedule was saved. Local reminders are available in the iOS and Android app.');
-      setShowForm(false);
+      closeForm();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'The schedule item could not be saved.');
     } finally {
       setSaving(false);
     }
-  }, [addScheduleItem, editingId, form, isValid, saving, scheduleItems, updateScheduleItem]);
+  }, [addScheduleItem, closeForm, editingId, form, isValid, saving, scheduleItems, updateScheduleItem]);
 
   const remove = useCallback(async (itemId: string) => {
     setMessage(null);
@@ -111,6 +116,35 @@ export default function SchoolScheduleScreen() {
       setMessage(error instanceof Error ? error.message : 'The schedule item could not be deleted.');
     }
   }, [deleteScheduleItem, scheduleItems]);
+
+  const scheduleForm = (
+    <SectionCard className="mb-5">
+      <SubheadingText className="mb-4">{editingId ? 'Edit schedule item' : 'Add schedule item'}</SubheadingText>
+      <FieldLabel>Class or activity name</FieldLabel>
+      <TextInput value={form.activityName} onChangeText={(activityName) => setForm((current) => ({ ...current, activityName }))} placeholder="Chemistry" placeholderTextColor={theme.foregroundMuted} className="mb-4 rounded-xl border border-border bg-background px-4 py-3 text-base text-foreground" />
+
+      <FieldLabel>Category</FieldLabel>
+      <View className="mb-4 flex-row flex-wrap gap-2">
+        {ACTIVITY_CATEGORIES.map((category) => <Choice key={category} label={category} selected={form.activityCategory === category} onPress={() => setForm((current) => ({ ...current, activityCategory: category as ActivityCategory }))} />)}
+      </View>
+
+      <FieldLabel>Recurring days</FieldLabel>
+      <View className="mb-4 flex-row flex-wrap gap-2">
+        {WEEKDAYS.map((day) => <Choice key={day.value} label={day.label} selected={form.daysOfWeek.includes(day.value)} onPress={() => setForm((current) => ({ ...current, daysOfWeek: current.daysOfWeek.includes(day.value) ? current.daysOfWeek.filter((value) => value !== day.value) : [...current.daysOfWeek, day.value].sort() }))} />)}
+      </View>
+
+      <View className="mb-4 flex-row flex-wrap gap-3">
+        <View className="min-w-[130px] flex-1"><FieldLabel>Start (HH:MM)</FieldLabel><TextInput value={form.startTime} onChangeText={(startTime) => setForm((current) => ({ ...current, startTime }))} placeholder="09:00" placeholderTextColor={theme.foregroundMuted} className="rounded-xl border border-border bg-background px-4 py-3 text-foreground" /></View>
+        <View className="min-w-[130px] flex-1"><FieldLabel>End (HH:MM)</FieldLabel><TextInput value={form.endTime} onChangeText={(endTime) => setForm((current) => ({ ...current, endTime }))} placeholder="09:50" placeholderTextColor={theme.foregroundMuted} className="rounded-xl border border-border bg-background px-4 py-3 text-foreground" /></View>
+      </View>
+
+      <Choice label={form.remindersEnabled ? 'Reminders enabled' : 'Enable reminders'} selected={form.remindersEnabled} onPress={() => setForm((current) => ({ ...current, remindersEnabled: !current.remindersEnabled }))} icon={<Bell size={17} color={form.remindersEnabled ? theme.background : theme.foreground} />} />
+      <View className="mt-2"><Choice label={form.active ? 'Schedule item active' : 'Schedule item disabled'} selected={form.active} onPress={() => setForm((current) => ({ ...current, active: !current.active }))} /></View>
+      {!isValid && <MicroText className="mt-3 text-muted-foreground">Enter a name, at least one day, and an end time after the start time.</MicroText>}
+      <PrimaryButton label={editingId ? 'Save changes' : 'Add to schedule'} onPress={save} disabled={!isValid} loading={saving} className="mt-5 w-full" />
+      <SecondaryButton label="Cancel" onPress={closeForm} className="mt-3 w-full" />
+    </SectionCard>
+  );
 
   return (
     <ScreenShell>
@@ -127,28 +161,31 @@ export default function SchoolScheduleScreen() {
       {message && <SectionCard className="mb-4"><LabelText className="leading-5">{message}</LabelText></SectionCard>}
 
       {scheduleItems.map((item) => (
-        <SectionCard key={item.id} className="mb-3">
-          <View className="flex-row items-start justify-between gap-3">
-            <View className="flex-1">
-              <SubheadingText className="text-lg">{item.activityName}</SubheadingText>
-              <LabelText className="mt-1">{formatTime(item.startTime)}–{formatTime(item.endTime)}</LabelText>
-              <MicroText className="mt-1 text-muted-foreground">
-                {WEEKDAYS.filter((day) => item.daysOfWeek.includes(day.value)).map((day) => day.label).join(', ')} · {item.activityCategory}
-              </MicroText>
-              <MicroText className="mt-2 text-muted-foreground">
-                {item.remindersEnabled ? 'Reminder 5 minutes after class' : 'Reminders off'}{item.active ? '' : ' · Disabled'}
-              </MicroText>
+        <View key={item.id}>
+          <SectionCard className="mb-3">
+            <View className="flex-row items-start justify-between gap-3">
+              <View className="flex-1">
+                <SubheadingText className="text-lg">{item.activityName}</SubheadingText>
+                <LabelText className="mt-1">{formatTime(item.startTime)}–{formatTime(item.endTime)}</LabelText>
+                <MicroText className="mt-1 text-muted-foreground">
+                  {WEEKDAYS.filter((day) => item.daysOfWeek.includes(day.value)).map((day) => day.label).join(', ')} · {item.activityCategory}
+                </MicroText>
+                <MicroText className="mt-2 text-muted-foreground">
+                  {item.remindersEnabled ? 'Reminder 5 minutes after class' : 'Reminders off'}{item.active ? '' : ' · Disabled'}
+                </MicroText>
+              </View>
+              <View className="flex-row gap-1">
+                <Pressable onPress={() => openEdit(item)} className="min-h-11 min-w-11 items-center justify-center" accessibilityRole="button" accessibilityLabel={`Edit ${item.activityName}`}>
+                  <Pencil size={19} color={theme.foreground} />
+                </Pressable>
+                <Pressable onPress={() => remove(item.id)} className="p-3" accessibilityRole="button" accessibilityLabel={`Delete ${item.activityName}`}>
+                  <Trash2 size={19} color={theme.rust} />
+                </Pressable>
+              </View>
             </View>
-            <View className="flex-row gap-1">
-              <Pressable onPress={() => openEdit(item)} className="p-3" accessibilityRole="button" accessibilityLabel={`Edit ${item.activityName}`}>
-                <Pencil size={19} color={theme.foreground} />
-              </Pressable>
-              <Pressable onPress={() => remove(item.id)} className="p-3" accessibilityRole="button" accessibilityLabel={`Delete ${item.activityName}`}>
-                <Trash2 size={19} color={theme.rust} />
-              </Pressable>
-            </View>
-          </View>
-        </SectionCard>
+          </SectionCard>
+          {showForm && editingId === item.id ? scheduleForm : null}
+        </View>
       ))}
 
       {scheduleItems.length === 0 && !showForm && (
@@ -157,34 +194,7 @@ export default function SchoolScheduleScreen() {
 
       {!showForm && <PrimaryButton label="Add class or activity" onPress={openNew} iconLeft={<Plus size={20} color={theme.warmWhite} />} className="mb-5 w-full" />}
 
-      {showForm && (
-        <SectionCard className="mb-5">
-          <SubheadingText className="mb-4">{editingId ? 'Edit schedule item' : 'Add schedule item'}</SubheadingText>
-          <FieldLabel>Class or activity name</FieldLabel>
-          <TextInput value={form.activityName} onChangeText={(activityName) => setForm((current) => ({ ...current, activityName }))} placeholder="Chemistry" placeholderTextColor={theme.foregroundMuted} className="mb-4 rounded-xl border border-border bg-background px-4 py-3 text-base text-foreground" />
-
-          <FieldLabel>Category</FieldLabel>
-          <View className="mb-4 flex-row flex-wrap gap-2">
-            {ACTIVITY_CATEGORIES.map((category) => <Choice key={category} label={category} selected={form.activityCategory === category} onPress={() => setForm((current) => ({ ...current, activityCategory: category as ActivityCategory }))} />)}
-          </View>
-
-          <FieldLabel>Recurring days</FieldLabel>
-          <View className="mb-4 flex-row flex-wrap gap-2">
-            {WEEKDAYS.map((day) => <Choice key={day.value} label={day.label} selected={form.daysOfWeek.includes(day.value)} onPress={() => setForm((current) => ({ ...current, daysOfWeek: current.daysOfWeek.includes(day.value) ? current.daysOfWeek.filter((value) => value !== day.value) : [...current.daysOfWeek, day.value].sort() }))} />)}
-          </View>
-
-          <View className="mb-4 flex-row flex-wrap gap-3">
-            <View className="min-w-[130px] flex-1"><FieldLabel>Start (HH:MM)</FieldLabel><TextInput value={form.startTime} onChangeText={(startTime) => setForm((current) => ({ ...current, startTime }))} placeholder="09:00" placeholderTextColor={theme.foregroundMuted} className="rounded-xl border border-border bg-background px-4 py-3 text-foreground" /></View>
-            <View className="min-w-[130px] flex-1"><FieldLabel>End (HH:MM)</FieldLabel><TextInput value={form.endTime} onChangeText={(endTime) => setForm((current) => ({ ...current, endTime }))} placeholder="09:50" placeholderTextColor={theme.foregroundMuted} className="rounded-xl border border-border bg-background px-4 py-3 text-foreground" /></View>
-          </View>
-
-          <Choice label={form.remindersEnabled ? 'Reminders enabled' : 'Enable reminders'} selected={form.remindersEnabled} onPress={() => setForm((current) => ({ ...current, remindersEnabled: !current.remindersEnabled }))} icon={<Bell size={17} color={form.remindersEnabled ? theme.background : theme.foreground} />} />
-          <View className="mt-2"><Choice label={form.active ? 'Schedule item active' : 'Schedule item disabled'} selected={form.active} onPress={() => setForm((current) => ({ ...current, active: !current.active }))} /></View>
-          {!isValid && <MicroText className="mt-3 text-muted-foreground">Enter a name, at least one day, and an end time after the start time.</MicroText>}
-          <PrimaryButton label={editingId ? 'Save changes' : 'Add to schedule'} onPress={save} disabled={!isValid} loading={saving} className="mt-5 w-full" />
-          <SecondaryButton label="Cancel" onPress={() => setShowForm(false)} className="mt-3 w-full" />
-        </SectionCard>
-      )}
+      {showForm && !editingId ? scheduleForm : null}
 
       <MicroText className="text-center leading-5 text-muted-foreground">
         ReEntry schedules collection opportunities only. It does not monitor or medically interpret your school day.

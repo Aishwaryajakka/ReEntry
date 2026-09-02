@@ -3,10 +3,13 @@ import {
   KeyboardAvoidingView,
   Modal,
   Pressable,
+  ScrollView,
   Text,
   TextInput,
+  useWindowDimensions,
   View,
 } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Mic, Square, X } from 'lucide-react-native';
 import { GhostButton, PrimaryButton, SecondaryButton } from './Buttons';
 import { LabelText, MicroText, SubheadingText } from './Typography';
@@ -65,6 +68,8 @@ export function VoiceActivityCapture({
   const theme = useThemeColors();
   const { isDark } = useTheme();
   const { reduced } = useReducedExperience();
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
   const [state, setState] = useState<CaptureState>('idle');
   const [transcript, setTranscript] = useState('');
   const [typedText, setTypedText] = useState('');
@@ -170,7 +175,15 @@ export function VoiceActivityCapture({
           className="flex-1 justify-end"
           pointerEvents="box-none"
         >
-          <View className="bg-card w-full max-w-[680px] self-center rounded-t-3xl p-6">
+          <View
+            className="bg-card w-full max-w-[680px] self-center rounded-t-3xl"
+            style={{ maxHeight: Math.max(320, windowHeight - insets.top - 12), paddingBottom: insets.bottom }}
+          >
+            <ScrollView
+              contentContainerClassName="p-6"
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+            >
             <View className="mb-2 flex-row items-center justify-between">
               <SubheadingText>Log with voice</SubheadingText>
               <Pressable
@@ -254,6 +267,7 @@ export function VoiceActivityCapture({
             <MicroText className="mt-4 text-center leading-5 text-muted-foreground">
               Voice is used only to prepare this draft. ReEntry does not store or upload raw audio.
             </MicroText>
+            </ScrollView>
           </View>
         </KeyboardAvoidingView>
       </View>

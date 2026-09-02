@@ -468,7 +468,7 @@ export default function ProfileScreen() {
       </SectionCard>
 
       {/* Account */}
-      <SecondaryButton label="Sign Out" onPress={handleSignOut} className="mb-4 self-start px-5" />
+      <SecondaryButton label="Sign Out" onPress={handleSignOut} className="mb-4 w-full" />
 
       {/* Version */}
       <View className="items-center mt-3 mb-2">

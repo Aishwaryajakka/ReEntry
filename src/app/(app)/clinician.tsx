@@ -6,9 +6,8 @@ import { Activity, ChevronDown, ChevronUp, ClipboardCheck, FileSearch, LayoutDas
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
 import { AddAccommodationModal } from '@/components/AddAccommodationModal';
-import { ReEntryWordmark } from '@/components/ReEntryWordmark';
 import { SchoolObservationsSection } from '@/components/SchoolObservationsSection';
-import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
+import { AccentButton, PrimaryButton, SecondaryButton } from '@/components/Buttons';
 import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
 import { useSession } from '@/ctx';
 import { supabase } from '@/client/supabase';
@@ -319,19 +318,18 @@ export default function ClinicianWorkspaceScreen() {
             onRefresh={loadData}
             ListHeaderComponent={(
               <View className="pb-4">
-                <ReEntryWordmark className="mb-5" />
                 <View className="mb-3 flex-row items-center gap-2">
-                  <View className="h-9 w-9 items-center justify-center rounded-full" style={{ backgroundColor: `${themeColors.turmeric}22` }}>
+                  <View className="h-9 w-9 items-center justify-center rounded-full" style={{ backgroundColor: `${themeColors.accent}22` }}>
                     <Stethoscope size={19} color={themeColors.foreground} />
                   </View>
                   <EditorialLabel>CLINICIAN WORKSPACE</EditorialLabel>
                 </View>
-                <HeadingText className="mb-1">Students shared with you</HeadingText>
-                <MicroText className="text-muted-foreground mb-5">
+                <HeadingText className="mb-2">Students shared with you</HeadingText>
+                <MicroText className="text-muted-foreground mb-6">
                   Review self-reported recovery records shared with you by students.
                 </MicroText>
 
-                {students.length === 0 || showConnect ? <SectionCard className="mb-5">
+                {students.length === 0 || showConnect ? <SectionCard className="mb-6">
                   <View className="flex-row items-center gap-2 mb-2">
                     <Users size={18} color={themeColors.foreground} />
                     <Text className="text-base font-semibold text-foreground">Connect Student</Text>
@@ -372,7 +370,7 @@ export default function ClinicianWorkspaceScreen() {
                   <SecondaryButton
                     label="Connect another student"
                     onPress={() => setShowConnect(true)}
-                    className="mb-5 self-start"
+                    className="mb-6 self-start"
                   />
                 )}
 
@@ -391,8 +389,8 @@ export default function ClinicianWorkspaceScreen() {
                       onPress={() => setStudentChooserOpen((open) => !open)}
                       accessibilityRole="button"
                       accessibilityState={{ expanded: studentChooserOpen }}
-                      className="min-h-14 flex-row items-center gap-3 rounded-xl border px-3 py-2 active:opacity-90"
-                      style={{ borderColor: themeColors.turmeric, backgroundColor: `${themeColors.turmeric}12` }}
+                      className="min-h-[60px] flex-row items-center gap-3 rounded-xl border p-4 active:opacity-90"
+                      style={{ borderColor: themeColors.accent, backgroundColor: `${themeColors.accent}12` }}
                     >
                       <View className="h-9 w-9 items-center justify-center rounded-full bg-accent">
                         <Text className="font-bold text-accent-foreground">{(selectedStudent.displayName ?? 'Student').charAt(0).toUpperCase()}</Text>
@@ -416,8 +414,8 @@ export default function ClinicianWorkspaceScreen() {
                           }}
                           accessibilityRole="button"
                           accessibilityState={{ selected }}
-                          className="min-h-14 flex-row items-center gap-3 rounded-xl border px-3 py-2 active:opacity-90"
-                          style={{ borderColor: selected ? themeColors.turmeric : themeColors.border, backgroundColor: selected ? `${themeColors.turmeric}12` : themeColors.card }}
+                          className="min-h-[60px] flex-row items-center gap-3 rounded-xl border p-4 active:opacity-90"
+                          style={{ borderColor: selected ? themeColors.accent : themeColors.border, backgroundColor: selected ? `${themeColors.accent}12` : themeColors.card }}
                         >
                           <View className="h-9 w-9 items-center justify-center rounded-full bg-accent">
                             <Text className="font-bold text-accent-foreground">{(student.displayName ?? 'Student').charAt(0).toUpperCase()}</Text>
@@ -434,7 +432,7 @@ export default function ClinicianWorkspaceScreen() {
                 ) : null}
 
                 {selectedStudent ? (
-                  <View className="mb-1 flex-row rounded-xl border border-border bg-card p-1">
+                  <View className="flex-row rounded-xl border border-border bg-card p-1">
                     {([
                       ['overview', 'Overview', LayoutDashboard],
                       ['evidence', 'Evidence', FileSearch],
@@ -453,7 +451,7 @@ export default function ClinicianWorkspaceScreen() {
                           style={{ backgroundColor: selected ? COLORS.deepForest : 'transparent' }}
                         >
                           <Icon size={18} color={color} />
-                          <Text className="mt-1 text-[11px] font-semibold" numberOfLines={1} style={{ color }}>{label}</Text>
+                          <Text className="mt-1 text-center text-[10px] font-semibold leading-3" numberOfLines={2} style={{ color }}>{label}</Text>
                         </Pressable>
                       );
                     })}
@@ -481,7 +479,10 @@ export default function ClinicianWorkspaceScreen() {
               const studentSchoolObservations = schoolObservationsByStudent.get(student.studentId) ?? [];
 
               return (
-                <SectionCard className="mb-4">
+                <SectionCard
+                  className={activeTab === 'profile' ? 'mb-4 border-0 bg-transparent p-0' : 'mb-4'}
+                  style={activeTab === 'profile' ? { shadowColor: 'transparent', elevation: 0 } : undefined}
+                >
                   {activeTab !== 'profile' ? <View className="flex-row items-center gap-3 mb-3">
                     <View className="w-10 h-10 rounded-full bg-accent items-center justify-center">
                       <Text className="text-base font-bold text-accent-foreground">
@@ -492,7 +493,7 @@ export default function ClinicianWorkspaceScreen() {
                       <Text className="text-base font-semibold text-foreground" numberOfLines={1}>
                         {student.displayName ?? 'Student'}
                       </Text>
-                      <MicroText className="text-muted-foreground">Student</MicroText>
+                      <MicroText className="mt-1.5 text-muted-foreground">Student</MicroText>
                     </View>
                   </View> : null}
 
@@ -535,31 +536,31 @@ export default function ClinicianWorkspaceScreen() {
                   {recentLogs.length === 0 ? (
                     <MicroText className="text-muted-foreground mb-3">No activity records yet.</MicroText>
                   ) : (
-                    <View className="gap-2 mb-3">
+                    <View className="mb-4 gap-3">
                       {recentLogs.map((log) => (
-                        <View key={log.id} className="bg-muted rounded-xl p-3">
-                          <View className="flex-row items-center justify-between mb-1">
+                        <View key={log.id} className="rounded-xl border border-border bg-card p-4">
+                          <View className="flex-row items-start justify-between gap-3">
                             <Text className="text-sm font-medium text-foreground" numberOfLines={1}>
                               {log.activityName}
                             </Text>
-                            <MicroText className="text-muted-foreground">{formatDate(log.date)}</MicroText>
+                            <MicroText className="text-foreground opacity-70">{formatDate(log.date)}</MicroText>
                           </View>
-                          <View className="flex-row items-center gap-4 flex-wrap">
+                          <View className="mt-2 flex-row flex-wrap items-center gap-3">
                             <View className="flex-row items-center gap-1">
                               <Activity size={12} color={themeColors.foregroundMuted} />
-                              <MicroText className="text-muted-foreground">{log.activityCategory}</MicroText>
+                              <MicroText className="text-foreground opacity-75">{log.activityCategory}</MicroText>
                             </View>
                             {log.durationMinutes > 0 && (
                               <View className="flex-row items-center gap-1">
-                                <MicroText className="text-muted-foreground">{log.durationMinutes} min</MicroText>
+                                <MicroText className="text-foreground opacity-75">{log.durationMinutes} min</MicroText>
                               </View>
                             )}
-                            <MicroText className="text-muted-foreground">
+                            <MicroText className="text-foreground opacity-75">
                               {MANAGEABILITY[log.manageability] ?? `Manageability ${log.manageability}`}
                             </MicroText>
                           </View>
                           {challengeTags.some((tag) => tag.activityLogId === log.id) ? (
-                            <View className="mt-2 flex-row flex-wrap gap-1.5">
+                            <View className="mt-3 flex-row flex-wrap gap-2">
                               {challengeTags
                                 .filter((tag) => tag.activityLogId === log.id)
                                 .map((tag) => (
@@ -621,18 +622,18 @@ export default function ClinicianWorkspaceScreen() {
                   ) : null}
 
                   {activeTab === 'accommodations' ? (
-                    <View>
+                    <View className="mt-4 border-t border-border pt-4">
                   <View className="flex-row items-center justify-between mb-2">
                     <SubheadingText className="text-sm">Clinician-recorded accommodations</SubheadingText>
                   </View>
                   {activeStudentAccs.length === 0 ? (
                     <MicroText className="text-muted-foreground">No recorded accommodations.</MicroText>
                   ) : (
-                    <View className="gap-2">
+                    <View className="gap-4">
                       {activeStudentAccs.map((acc) => (
-                        <View key={acc.id} className="bg-muted rounded-xl p-3">
-                          <View className="flex-row items-center justify-between mb-1">
-                            <Text className="text-sm font-medium text-foreground" numberOfLines={2}>
+                        <View key={acc.id} className="rounded-xl border border-border bg-card p-4">
+                          <View className="flex-row items-start justify-between gap-3">
+                            <Text className="text-sm font-semibold text-foreground" numberOfLines={2}>
                               {acc.title}
                             </Text>
                             <View
@@ -644,64 +645,77 @@ export default function ClinicianWorkspaceScreen() {
                               </MicroText>
                             </View>
                           </View>
-                          <MicroText className="text-muted-foreground">Source: {acc.source}</MicroText>
-                          {acc.issuedDate ? (
-                            <MicroText className="text-muted-foreground">Issued {formatDate(acc.issuedDate)}</MicroText>
-                          ) : null}
-                          <MicroText className="text-muted-foreground">Updated {formatDate(acc.updatedAt.slice(0, 10))}</MicroText>
-                          {acc.validUntil ? (
-                            <MicroText className="text-muted-foreground">Valid until {formatDate(acc.validUntil)}</MicroText>
-                          ) : null}
+                          <View className="mt-3 gap-1.5">
+                            <MicroText className="text-foreground opacity-70">Source: {acc.source}</MicroText>
+                            {acc.issuedDate ? (
+                              <MicroText className="text-foreground opacity-70">Issued {formatDate(acc.issuedDate)}</MicroText>
+                            ) : null}
+                            <MicroText className="text-foreground opacity-70">Updated {formatDate(acc.updatedAt.slice(0, 10))}</MicroText>
+                            {acc.validUntil ? (
+                              <MicroText className="text-foreground opacity-70">Valid until {formatDate(acc.validUntil)}</MicroText>
+                            ) : null}
+                          </View>
+                          <View className="mt-3 border-t border-border pt-3">
                           <SecondaryButton
                             label="Edit"
                             onPress={() => {
                               setEditAcc(acc);
                               setAddStudentId(student.studentId);
                             }}
-                            className="self-start rounded-full px-3 py-1 mt-2"
-                            style={{ minHeight: 44 }}
+                            className="w-full max-w-[160px] self-center"
+                            style={{ minHeight: 44, backgroundColor: themeColors.background, borderColor: themeColors.border, borderWidth: 1 }}
                             accessibilityLabel="Edit accommodation"
                           />
+                          </View>
                         </View>
                       ))}
                     </View>
                   )}
 
-                  <View className="mt-4 border-t border-border pt-4">
+                  <View className="mt-6 border-t border-border pt-6">
                     <SubheadingText className="mb-2 text-sm">Clinician decision</SubheadingText>
                     <MicroText className="mb-3 leading-5 text-muted-foreground">
                       Review the student's recorded experiences and document supports you decide are appropriate.
                     </MicroText>
-                    <PrimaryButton
+                    <AccentButton
                       label="Record accommodation"
                       onPress={() => setAddStudentId(student.studentId)}
-                      className="w-full"
+                      className="mb-4 w-full"
                     />
                   </View>
                     </View>
                   ) : null}
 
                   {activeTab === 'profile' ? (
-                    <View className="gap-4">
-                      <View className="rounded-xl bg-muted p-3">
+                    <View className="gap-6">
+                      <View>
+                        <SubheadingText className="mb-3 text-sm">Identity</SubheadingText>
+                        <SectionCard>
                         <Text className="font-semibold text-foreground">{clinicianName}</Text>
-                        <MicroText className="text-muted-foreground">Clinician</MicroText>
+                        <MicroText className="mt-1.5 text-muted-foreground">Clinician</MicroText>
+                        </SectionCard>
                       </View>
-                      <View className="flex-row items-center justify-between gap-4 rounded-xl border border-border p-3">
-                        <View className="flex-1">
-                          <Text className="font-semibold text-foreground">Dark Mode</Text>
-                          <MicroText className="text-muted-foreground">Use the dark appearance across ReEntry.</MicroText>
-                        </View>
-                        <Switch
-                          value={isDark}
-                          onValueChange={handleToggleTheme}
-                          trackColor={{ false: themeColors.mossLight, true: themeColors.moss }}
-                          thumbColor={COLORS.warmWhite}
-                          accessibilityLabel="Dark Mode toggle"
-                        />
+                      <View>
+                        <SubheadingText className="mb-3 text-sm">Display</SubheadingText>
+                        <SectionCard className="flex-row items-center justify-between gap-4">
+                          <View className="flex-1">
+                            <Text className="font-semibold text-foreground">Dark Mode</Text>
+                            <MicroText className="mt-1.5 text-muted-foreground">Use the dark appearance across ReEntry.</MicroText>
+                          </View>
+                          <Switch
+                            value={isDark}
+                            onValueChange={handleToggleTheme}
+                            trackColor={{ false: themeColors.mossLight, true: themeColors.moss }}
+                            thumbColor={COLORS.warmWhite}
+                            accessibilityLabel="Dark Mode toggle"
+                          />
+                        </SectionCard>
+                        {themeError ? <Text className="mt-3 text-sm text-destructive">{themeError}</Text> : null}
                       </View>
-                      {themeError ? <Text className="text-sm text-destructive">{themeError}</Text> : null}
-                      <SecondaryButton label="Sign Out" onPress={handleSignOut} className="w-full" />
+                      <View>
+                        <SubheadingText className="mb-3 text-sm">Account</SubheadingText>
+                        <SecondaryButton label="Sign Out" onPress={handleSignOut} className="self-center px-5" style={{ minHeight: 44 }} />
+                      </View>
                     </View>
                   ) : null}
                 </SectionCard>
