@@ -6,6 +6,12 @@
 
 ### Return to school. Return to friends. Return to life.
 
+📱 **ReEntry is designed as a mobile app for iOS and Android.**
+
+🌐 **[Open the ReEntry Web Preview](https://re-entry-alpha.vercel.app)**
+
+> The web deployment provides an easy way to explore ReEntry's interface and core workflows without installing a native build. Native capabilities such as speech recognition, local notifications, and pedometer/device activity require a compatible mobile build and are not fully represented in the browser.
+
 A concussion can interrupt much more than sports.
 
 For a teenager, recovery can mean trying to make it through chemistry under bright lights, reading long enough to finish an assignment, concentrating in a noisy classroom, using a laptop for schoolwork, or simply spending time with friends without needing to step away.
@@ -494,9 +500,11 @@ No WCAG or formal accessibility certification is claimed.
 
 - personalized local ridge-regression pattern engine
 
-The project supports web and native mobile development.
+The primary product experience is designed for **iOS and Android**.
 
-Native speech recognition, local notifications, and pedometer behavior require an appropriate native/development build and compatible platform permissions/hardware. Expo Go and web cannot fully represent those native capabilities.
+React Native Web provides a browser-accessible preview of the interface and core workflows.
+
+Native speech recognition, local notifications, and pedometer behavior require an appropriate native/development build and compatible platform permissions/hardware. Expo Go and the web preview cannot fully represent those native capabilities.
 
 ---
 
@@ -655,6 +663,27 @@ It does not depend on:
 - giving School Staff the student's complete private recovery record.
 
 This practical architecture does not imply production or clinical deployment readiness.
+
+---
+
+## Web Preview
+
+ReEntry is primarily designed as a **mobile application for iOS and Android**.
+
+For judges, reviewers, and anyone who wants to explore the prototype without installing a native build, a browser-accessible version is deployed through Vercel:
+
+### 🌐 [Launch the ReEntry Web Preview](https://re-entry-alpha.vercel.app)
+
+The web preview demonstrates the interface and core role-based workflows, including the Student, School Staff, and Clinician experiences.
+
+Some functionality depends on native mobile APIs and therefore cannot be fully represented in a browser, including:
+
+- native speech recognition;
+- local class reminders and notifications;
+- pedometer/device activity context; and
+- other platform-specific mobile behavior.
+
+The project demo video demonstrates the mobile experience and native workflows where applicable.
 
 ---
 
