@@ -9,7 +9,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, View, Text } from 'react-native';
 import { Mic, Plus } from 'lucide-react-native';
-import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import type { RelativePathString } from 'expo-router';
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
@@ -22,7 +22,6 @@ import { StudentPageHeader } from '@/components/StudentPageHeader';
 import { DeviceActivityCard } from '@/components/DeviceActivityCard';
 import { HeroBotanical } from '@/components/Icons';
 import { useAppContext } from '@/context/AppContext';
-import { useSession } from '@/ctx';
 import { TOLERANCE_LABELS } from '@/data/activityCatalog';
 import { COLORS, useThemeColors } from '@/lib/theme';
 import type { ActivityCategory, ActivityLog, StudentScheduleItem } from '@/data/types';
@@ -79,9 +78,7 @@ function isScheduleItemLogged(item: StudentScheduleItem, logs: ActivityLog[]): b
 }
 
 export default function TodayScreen() {
-  const { today, activityLogs, lowStimulationMode, scheduleItems, studentDataLoaded, refreshStudentData } = useAppContext();
-  const { session } = useSession();
-  const studentId = session?.user.id;
+  const { today, activityLogs, lowStimulationMode, scheduleItems, studentDataLoaded } = useAppContext();
   const router = useRouter();
   const { scheduleItemId } = useLocalSearchParams<{ scheduleItemId?: string }>();
   const theme = useThemeColors();
@@ -91,12 +88,6 @@ export default function TodayScreen() {
   const [voiceOpen, setVoiceOpen] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState<string | undefined>();
   const [voiceContext, setVoiceContext] = useState<VoiceActivityContext | undefined>();
-
-  useFocusEffect(
-    useCallback(() => {
-      if (studentId) void refreshStudentData();
-    }, [refreshStudentData, studentId]),
-  );
 
   const todaysLogs = useMemo(
     () => activityLogs.filter((l) => l.date === today).sort((a, b) => a.id.localeCompare(b.id)),
@@ -238,8 +229,8 @@ export default function TodayScreen() {
       >
         <View>
           <View className="mb-3 flex-row items-center justify-between gap-3">
-            <Text className="text-xs font-bold uppercase tracking-[0.18em] text-forest/70">Today at School</Text>
-            <Text className="text-sm font-semibold text-forest/80">
+            <Text className="text-xs font-bold uppercase tracking-[0.18em]" style={{ color: 'rgba(52, 68, 49, 0.7)' }}>Today at School</Text>
+            <Text className="text-sm font-semibold" style={{ color: 'rgba(52, 68, 49, 0.8)' }}>
               {todaysLogs.length} logged
             </Text>
           </View>
@@ -247,7 +238,7 @@ export default function TodayScreen() {
           {smartCaptureActivity ? (
             <View>
               <Text className="text-2xl font-bold text-forest">{smartCaptureActivity.label} just ended</Text>
-              <Text className="mb-3 mt-1 text-sm font-medium text-forest/80">How manageable was it?</Text>
+              <Text className="mb-3 mt-1 text-sm font-medium" style={{ color: 'rgba(52, 68, 49, 0.8)' }}>How manageable was it?</Text>
               <View className="gap-2">
                 {([3, 2, 1] as const).map((rating) => (
                   <SecondaryButton
@@ -261,13 +252,13 @@ export default function TodayScreen() {
                 ))}
               </View>
               <View className="mt-3 flex-row flex-wrap gap-2">
-                <SecondaryButton
+                <PrimaryButton
                   label="Log something else"
                   onPress={openNewModal}
                   appearance="light"
                   className="min-w-[150px] flex-1 rounded-full"
                   style={{ minHeight: 48 }}
-                  iconLeft={<Plus size={18} color={COLORS.forest} />}
+                  iconLeft={<Plus size={18} color={COLORS.warmWhite} />}
                 />
                 <SecondaryButton
                   label="Use voice"
@@ -283,10 +274,10 @@ export default function TodayScreen() {
           ) : (
             <View>
               <Text className="text-3xl font-bold text-forest">{todaysLogs.length}</Text>
-              <Text className="mb-2 text-sm font-medium text-forest/80">
+              <Text className="mb-2 text-sm font-medium" style={{ color: 'rgba(52, 68, 49, 0.8)' }}>
                 {todaysLogs.length === 1 ? 'activity logged today' : 'activities logged today'}
               </Text>
-              <Text className="mb-4 max-w-[82%] text-sm leading-5 text-forest/80">{heroObservation}</Text>
+              <Text className="mb-4 max-w-[82%] text-sm leading-5" style={{ color: 'rgba(52, 68, 49, 0.8)' }}>{heroObservation}</Text>
               <View className="flex-row flex-wrap gap-2">
                 <PrimaryButton
                   label="Log activity"
@@ -306,14 +297,14 @@ export default function TodayScreen() {
                   accessibilityLabel="Use voice to log an activity"
                 />
               </View>
-              <Text className="mt-3 text-xs leading-5 text-forest/80">
+              <Text className="mt-3 text-xs leading-5" style={{ color: 'rgba(52, 68, 49, 0.8)' }}>
                 Record a school activity. You&apos;ll review everything before saving.
               </Text>
             </View>
           )}
 
           {!lowStimulationMode && (
-            <View pointerEvents="none" className="absolute -right-4 -bottom-4 opacity-20">
+            <View pointerEvents="none" className="absolute -right-4 -bottom-4" style={{ opacity: 0.2 }}>
               <HeroBotanical width={140} height={140} color={theme.accentForeground} />
             </View>
           )}

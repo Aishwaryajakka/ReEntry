@@ -165,7 +165,8 @@ export function VoiceActivityCapture({
     >
       <View className={cn('flex-1 justify-end', isDark && 'dark')}>
         <Pressable
-          className="absolute inset-0 bg-black/40"
+          className="absolute inset-0"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
           onPress={close}
           accessibilityRole="button"
           accessibilityLabel="Close voice capture"

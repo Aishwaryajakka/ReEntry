@@ -30,8 +30,8 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ log, onPress }) => {
   return (
     <Pressable
       onPress={onPress}
-      className="bg-card rounded-2xl p-4 border border-border mb-3 active:opacity-95"
-      style={[{ borderCurve: 'continuous' } as object]}
+      className="bg-card rounded-2xl p-4 border border-border mb-3"
+      style={({ pressed }) => [{ borderCurve: 'continuous' } as object, { opacity: pressed ? 0.95 : 1 }]}
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityLabel={`${title} activity, ${log.durationMinutes} minutes, ${TOLERANCE_LABELS[log.toleranceRating]}`}
     >

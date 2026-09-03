@@ -1,10 +1,8 @@
 import type { ReactNode } from 'react';
 import { createContext, useContext, useEffect, useRef, useState } from 'react';
-import { View } from 'react-native';
-import { StatusBar } from 'expo-status-bar';
+import { useColorScheme } from 'nativewind';
 import { useSession } from '@/ctx';
 import { fetchUserPreferences, updateAppearance, type Appearance } from '@/db/api';
-import { cn } from '@/lib/utils';
 
 export type { Appearance };
 
@@ -20,6 +18,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const { session } = useSession();
+  const { setColorScheme } = useColorScheme();
   const userId = session?.user?.id;
 
   // This is the authenticated user's preference. Auth screens never have a session,
@@ -30,6 +29,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const activeTheme = userId ? userTheme : 'light';
   const isDark = activeTheme === 'dark';
+
+  useEffect(() => {
+    setColorScheme(activeTheme);
+  }, [activeTheme]);
 
   // Load the current user's saved preference exactly once when they sign in.
   // If the user changes the preference before the fetch completes, the fetch
@@ -86,13 +89,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     <ThemeContext.Provider
       value={{ theme: activeTheme, isDark, initialized, toggleTheme, setTheme }}
     >
-      <View className={cn('flex-1', isDark && 'dark')}>
-        <StatusBar
-          style={isDark ? 'light' : 'dark'}
-          backgroundColor={isDark ? '#263528' : '#E8E3D9'}
-        />
-        {children}
-      </View>
+      {children}
     </ThemeContext.Provider>
   );
 }

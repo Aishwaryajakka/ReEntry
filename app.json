@@ -13,7 +13,8 @@
       "bundleIdentifier": "com.miaoda.appe1ekxea1zf29",
       "infoPlist": {
         "NSSpeechRecognitionUsageDescription": "Allow ReEntry to transcribe your activity description so you can review it before logging.",
-        "NSMicrophoneUsageDescription": "Allow ReEntry to use the microphone for voice-assisted activity logging."
+        "NSMicrophoneUsageDescription": "Allow ReEntry to use the microphone for voice-assisted activity logging.",
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {

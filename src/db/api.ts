@@ -179,11 +179,27 @@ export async function deleteStudentScheduleItem(userId: string, itemId: string):
 export async function fetchUserPreferences(
   userId: string,
 ): Promise<UserPreferencesRow | null> {
-  const { data, error } = await supabase
-    .from('user_preferences')
-    .select('id, user_id, appearance, low_stimulation_enabled, updated_at')
-    .eq('user_id', userId)
-    .maybeSingle();
+  const request = () =>
+    supabase
+      .from('user_preferences')
+      .select('id, user_id, appearance, low_stimulation_enabled, updated_at')
+      .eq('user_id', userId)
+      .maybeSingle();
+
+  let { data, error } = await request();
+
+  if (error?.code === 'PGRST303' && error.message.includes('JWT issued at future')) {
+    const originalError = error;
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const retryResult = await request();
+
+    if (!retryResult.error) {
+      return retryResult.data;
+    }
+
+    data = null;
+    error = originalError;
+  }
 
   if (error) {
     console.error('fetchUserPreferences failed', error);

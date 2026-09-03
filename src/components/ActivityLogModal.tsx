@@ -216,7 +216,8 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
             IMPORTANT: this is a sibling of the modal sheet so buttons
             inside the sheet are never nested inside another Pressable. */}
         <Pressable
-          className="absolute inset-0 bg-black/40"
+          className="absolute inset-0"
+          style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)' }}
           onPress={onClose}
           accessibilityLabel="Close logging flow"
           accessibilityRole="button"

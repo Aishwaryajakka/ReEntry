@@ -29,19 +29,23 @@ interface ButtonProps {
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-function usePressScale() {
+function usePressScale(pressedOpacity: number) {
   const { reduced } = useReducedExperience();
   const scale = useSharedValue(1);
+  const opacity = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: reduced ? [] : [{ scale: scale.value }],
+    opacity: opacity.value,
   }));
 
   const onPressIn = () => {
     if (!reduced) scale.value = withTiming(0.98, { duration: 100 });
+    opacity.value = withTiming(pressedOpacity, { duration: 100 });
   };
   const onPressOut = () => {
     if (!reduced) scale.value = withTiming(1, { duration: 120 });
+    opacity.value = withTiming(1, { duration: 120 });
   };
 
   return { animatedStyle, onPressIn, onPressOut };
@@ -61,7 +65,6 @@ function BaseButton({
 }: ButtonProps) {
   const { isDark } = useTheme();
   const isDarkMode = appearance === 'dark' ? true : appearance === 'light' ? false : isDark;
-  const { animatedStyle, onPressIn, onPressOut } = usePressScale();
 
   const isPrimary = variant === 'primary';
   const isAccent = variant === 'accent';
@@ -69,6 +72,8 @@ function BaseButton({
   const isGhost = variant === 'ghost';
   const isDestructive = variant === 'destructive';
   const isDisabled = disabled || loading;
+  const pressedOpacity = isSecondary ? 0.9 : isPrimary ? 0.95 : 1;
+  const { animatedStyle, onPressIn, onPressOut } = usePressScale(pressedOpacity);
 
   const primaryBg = isDarkMode ? COLORS.brightYellow : COLORS.forest;
   const primaryText = isDarkMode ? COLORS.deepForest : COLORS.warmWhite;
@@ -126,9 +131,7 @@ function BaseButton({
       accessibilityLabel={accessibilityLabel ?? label}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       className={cn(
-        'flex-row items-center justify-center rounded-xl px-6 py-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-100',
-        isPrimary && !isDisabled && 'active:opacity-95 hover:opacity-95',
-        isSecondary && !isDisabled && 'active:opacity-90 hover:opacity-90',
+        'flex-row items-center justify-center rounded-xl px-6 py-4 cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed',
         className,
       )}
       android_ripple={{ color: 'rgba(0,0,0,0.1)' }}
@@ -150,7 +153,7 @@ function BaseButton({
           iconLeft ?? null
         )}
         <Text
-          className={cn('font-semibold text-base', disabled && 'opacity-100')}
+          className="font-semibold text-base"
           style={{ color: getTextColor() }}
         >
           {label}

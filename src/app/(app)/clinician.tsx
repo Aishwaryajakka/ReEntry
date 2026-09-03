@@ -5,6 +5,7 @@ import { Activity, ChevronDown, ChevronUp, ClipboardCheck, FileSearch, LayoutDas
 
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
+import { ReEntryWordmark } from '@/components/ReEntryWordmark';
 import { AddAccommodationModal } from '@/components/AddAccommodationModal';
 import { SchoolObservationsSection } from '@/components/SchoolObservationsSection';
 import { AccentButton, PrimaryButton, SecondaryButton } from '@/components/Buttons';
@@ -318,6 +319,7 @@ export default function ClinicianWorkspaceScreen() {
             onRefresh={loadData}
             ListHeaderComponent={(
               <View className="pb-4">
+                <ReEntryWordmark className="mb-6" />
                 <View className="mb-3 flex-row items-center gap-2">
                   <View className="h-9 w-9 items-center justify-center rounded-full" style={{ backgroundColor: `${themeColors.accent}22` }}>
                     <Stethoscope size={19} color={themeColors.foreground} />
@@ -436,7 +438,7 @@ export default function ClinicianWorkspaceScreen() {
                     {([
                       ['overview', 'Overview', LayoutDashboard],
                       ['evidence', 'Evidence', FileSearch],
-                      ['accommodations', 'Accommodations', ClipboardCheck],
+                      ['accommodations', 'Supports', ClipboardCheck],
                       ['profile', 'Profile', UserRound],
                     ] as const).map(([tab, label, Icon]) => {
                       const selected = activeTab === tab;

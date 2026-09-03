@@ -1,6 +1,5 @@
-import { useCallback, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Text, View } from 'react-native';
-import { useFocusEffect } from 'expo-router';
 import { Footprints } from 'lucide-react-native';
 import { Pedometer } from 'expo-sensors';
 
@@ -17,44 +16,42 @@ export function DeviceActivityCard({ scheduledClassCount }: { scheduledClassCoun
   const [steps, setSteps] = useState(0);
   const [requesting, setRequesting] = useState(false);
 
-  useFocusEffect(
-    useCallback(() => {
-      let mounted = true;
-      let subscription: ReturnType<typeof Pedometer.watchStepCount> | null = null;
+  useEffect(() => {
+    let mounted = true;
+    let subscription: ReturnType<typeof Pedometer.watchStepCount> | null = null;
 
-      const start = async () => {
-        if (state === 'declined') return;
-        try {
-          const available = await Pedometer.isAvailableAsync();
-          if (!mounted) return;
-          if (!available) {
-            setState('unavailable');
-            return;
-          }
-
-          const permission = await Pedometer.getPermissionsAsync();
-          if (!mounted) return;
-          if (!permission.granted) {
-            setState(permission.canAskAgain ? 'needs-permission' : 'denied');
-            return;
-          }
-
-          setState('active');
-          subscription = Pedometer.watchStepCount((result) => {
-            if (mounted) setSteps(result.steps);
-          });
-        } catch {
-          if (mounted) setState('unavailable');
+    const start = async () => {
+      if (state === 'declined') return;
+      try {
+        const available = await Pedometer.isAvailableAsync();
+        if (!mounted) return;
+        if (!available) {
+          setState('unavailable');
+          return;
         }
-      };
 
-      void start();
-      return () => {
-        mounted = false;
-        subscription?.remove();
-      };
-    }, [state]),
-  );
+        const permission = await Pedometer.getPermissionsAsync();
+        if (!mounted) return;
+        if (!permission.granted) {
+          setState(permission.canAskAgain ? 'needs-permission' : 'denied');
+          return;
+        }
+
+        setState('active');
+        subscription = Pedometer.watchStepCount((result) => {
+          if (mounted) setSteps(result.steps);
+        });
+      } catch {
+        if (mounted) setState('unavailable');
+      }
+    };
+
+    void start();
+    return () => {
+      mounted = false;
+      subscription?.remove();
+    };
+  }, [state]);
 
   const requestPermission = async () => {
     setRequesting(true);

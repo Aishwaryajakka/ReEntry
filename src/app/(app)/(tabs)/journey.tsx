@@ -8,7 +8,7 @@
  */
 
 import { useMemo, useState, useCallback } from 'react';
-import { View, Text, Pressable, SectionList } from 'react-native';
+import { View, Text, Pressable } from 'react-native';
 import { ChevronRight, ChevronDown } from 'lucide-react-native';
 import { useRouter, type RelativePathString } from 'expo-router';
 import Animated, {
@@ -315,45 +315,40 @@ export default function JourneyScreen() {
             {totalCount} activit{totalCount === 1 ? 'y' : 'ies'}, newest first. Tap an activity to see details.
           </MicroText>
 
-          <SectionList
-            sections={sections}
-            style={{ width: '100%' }}
-            contentContainerStyle={{ width: '100%' }}
-            keyExtractor={(item) => item.id}
-            contentInsetAdjustmentBehavior="automatic"
-            renderSectionHeader={({
-              section: { date },
-            }) => (
-              <View className="py-2 border-b border-border">
-                <Text className="text-sm font-bold" style={{ color: date === today ? theme.turmeric : theme.foreground }}>
-                  {date === today
-                    ? 'Today'
-                    : formatWeekday(date)}{' '}
-                  · {formatShort(date)}
-                </Text>
+          <View style={{ width: '100%' }}>
+            {sections.map((section) => (
+              <View key={section.date} style={{ width: '100%' }}>
+                <View className="py-2 border-b border-border">
+                  <Text
+                    className="text-sm font-bold"
+                    style={{ color: section.date === today ? theme.turmeric : theme.foreground }}
+                  >
+                    {section.date === today
+                      ? 'Today'
+                      : formatWeekday(section.date)}{' '}
+                    · {formatShort(section.date)}
+                  </Text>
+                </View>
+                {section.data.map((item) => (
+                  <ActivityRow
+                    key={item.id}
+                    log={item}
+                    allTags={challengeTags}
+                    lowStimulationMode={lowStimulationMode}
+                    onPress={() => openEdit(item)}
+                  />
+                ))}
+                <View className="h-4" />
               </View>
-            )}
-            renderItem={({ item }) => (
-              <ActivityRow
-                log={item}
-                allTags={challengeTags}
-                lowStimulationMode={lowStimulationMode}
-                onPress={() => openEdit(item)}
-              />
-            )}
-            renderSectionFooter={() => (
-              <View className="h-4" />
-            )}
-            ListFooterComponent={
-              <View className="mt-4 px-1">
-                <MicroText className="text-center leading-5 text-muted-foreground">
-                  These records reflect what you reported. ReEntry does not
-                  estimate recovery time, predict outcomes, or provide
-                  medical advice.
-                </MicroText>
-              </View>
-            }
-          />
+            ))}
+            <View className="mt-4 px-1">
+              <MicroText className="text-center leading-5 text-muted-foreground">
+                These records reflect what you reported. ReEntry does not
+                estimate recovery time, predict outcomes, or provide
+                medical advice.
+              </MicroText>
+            </View>
+          </View>
         </>
       )}
 
