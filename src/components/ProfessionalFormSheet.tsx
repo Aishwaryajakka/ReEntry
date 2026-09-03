@@ -1,14 +1,12 @@
 import type { ReactNode } from 'react';
 import { KeyboardAvoidingView, Modal, Pressable, ScrollView, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { X } from 'lucide-react-native';
-
-import { AccentButton, GhostButton } from './Buttons';
-import { MicroText, SubheadingText } from './Typography';
-import { useReducedExperience } from '@/lib/accessibility';
 import { useTheme } from '@/context/ThemeContext';
-import { useThemeColors } from '@/lib/theme';
+import { useReducedExperience } from '@/lib/accessibility';
 import { cn } from '@/lib/utils';
+import { AccentButton } from './Buttons';
+import { CloseButton } from './CloseButton';
+import { MicroText, SubheadingText } from './Typography';
 
 export function ProfessionalFormSheet({
   visible,
@@ -34,7 +32,6 @@ export function ProfessionalFormSheet({
   const insets = useSafeAreaInsets();
   const { reduced } = useReducedExperience();
   const { isDark } = useTheme();
-  const theme = useThemeColors();
 
   return (
     <Modal visible={visible} transparent animationType={reduced ? 'fade' : 'slide'} onRequestClose={loading ? undefined : onClose} statusBarTranslucent>
@@ -47,17 +44,14 @@ export function ProfessionalFormSheet({
           >
             <View className="flex-row items-center justify-between px-5 pt-5">
               <SubheadingText className="flex-1 pr-3">{title}</SubheadingText>
-              <Pressable onPress={loading ? undefined : onClose} disabled={loading} className="min-h-11 min-w-11 items-center justify-center rounded-full active:bg-muted" accessibilityRole="button" accessibilityLabel="Close">
-                <X size={20} color={theme.foreground} />
-              </Pressable>
+              <CloseButton onPress={onClose} disabled={loading} />
             </View>
-            <ScrollView className="flex-shrink" contentContainerClassName="px-5 pt-5" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
+            <ScrollView className="flex-shrink" contentContainerClassName="px-5 pb-6 pt-5" keyboardShouldPersistTaps="handled" showsVerticalScrollIndicator={false}>
               {children}
             </ScrollView>
-            <View className="px-5 pb-5 pt-6">
+            <View className="border-t border-border px-5 py-3">
               {error ? <MicroText className="mb-3 text-destructive">{error}</MicroText> : null}
               <AccentButton label={primaryLabel} onPress={onPrimaryPress} loading={loading} disabled={loading || primaryDisabled} className="w-full" />
-              <GhostButton label="Cancel" onPress={onClose} disabled={loading} className="mt-3 w-full" />
             </View>
           </View>
         </KeyboardAvoidingView>

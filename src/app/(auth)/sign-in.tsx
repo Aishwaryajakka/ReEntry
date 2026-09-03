@@ -1,17 +1,18 @@
-import { useRef, useState } from 'react';
-import { useRouter } from 'expo-router';
 import type { RelativePathString } from 'expo-router';
+import { useRouter } from 'expo-router';
+import { useRef, useState } from 'react';
 import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-
-import { PrimaryButton, GhostButton } from '@/components/Buttons';
+import { supabase } from '@/client/supabase';
+import { GhostButton, PrimaryButton } from '@/components/Buttons';
 import { ReEntryFullLogo } from '@/components/ReEntryFullLogo';
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
 import { BodyText, LabelText, MicroText } from '@/components/Typography';
-import { supabase } from '@/client/supabase';
+import { useThemeColors } from '@/lib/theme';
 
 export default function SignInScreen() {
   const router = useRouter();
+  const theme = useThemeColors();
   const passwordRef = useRef<TextInput>(null);
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -67,7 +68,7 @@ export default function SignInScreen() {
         >
           <View className="gap-6">
             <View className="items-center gap-4">
-              <ReEntryFullLogo />
+              <ReEntryFullLogo maxWidth={240} />
               <BodyText className="text-center">Sign in to continue your ReEntry journey.</BodyText>
             </View>
 
@@ -86,7 +87,7 @@ export default function SignInScreen() {
                   autoCapitalize="none"
                   autoCorrect={false}
                   placeholder="Enter username"
-                  placeholderTextColor="#71856A"
+                  placeholderTextColor={theme.foregroundMuted}
                   className="bg-background text-foreground rounded-xl px-4 py-3.5 text-base border border-border"
                   style={{ minHeight: 52 } as object}
                   returnKeyType="next"
@@ -112,7 +113,7 @@ export default function SignInScreen() {
                     onBlur={() => setTouched((t) => ({ ...t, password: true }))}
                     secureTextEntry={!showPassword}
                     placeholder="Enter password"
-                    placeholderTextColor="#71856A"
+                    placeholderTextColor={theme.foregroundMuted}
                     className="bg-background text-foreground rounded-xl px-4 py-3.5 pr-20 text-base border border-border"
                     style={{ minHeight: 52 } as object}
                     returnKeyType="done"
@@ -122,6 +123,7 @@ export default function SignInScreen() {
                     onPress={() => setShowPassword((s) => !s)}
                     className="absolute right-0 top-0 bottom-0 px-4 justify-center active:opacity-70"
                     accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                    accessibilityRole="button"
                   >
                     <Text className="text-sm font-semibold text-primary">
                       {showPassword ? 'Hide' : 'Show'}

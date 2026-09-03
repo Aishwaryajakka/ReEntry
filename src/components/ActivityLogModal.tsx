@@ -15,22 +15,22 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { X } from 'lucide-react-native';
-import { AccentButton, DestructiveButton, GhostButton } from './Buttons';
-import { DataBadge } from './DataBadge';
-import { DividerLine } from './DividerLine';
-import { LabelText, MicroText, SubheadingText } from './Typography';
-import { useReducedExperience } from '@/lib/accessibility';
 import { useAppContext } from '@/context/AppContext';
+import { useTheme } from '@/context/ThemeContext';
 import { CHALLENGE_TAGS, TOLERANCE_LABELS } from '@/data/activityCatalog';
 import {
   ACTIVITY_CATEGORIES,
   type ActivityCategory,
   type ActivityLog,
 } from '@/data/types';
+import { useReducedExperience } from '@/lib/accessibility';
 import { useThemeColors } from '@/lib/theme';
-import { useTheme } from '@/context/ThemeContext';
 import { cn } from '@/lib/utils';
+import { AccentButton, DestructiveTextButton } from './Buttons';
+import { CloseButton } from './CloseButton';
+import { DataBadge } from './DataBadge';
+import { DividerLine } from './DividerLine';
+import { LabelText, MicroText, SubheadingText } from './Typography';
 
 const DURATION_OPTIONS = [15, 30, 45, 60, 90, 120];
 const SELECTABLE_TAGS = CHALLENGE_TAGS;
@@ -245,14 +245,7 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
               <View className="flex-row items-center justify-between mb-2">
                 <SubheadingText>{title ?? 'Log activity'}</SubheadingText>
 
-                <Pressable
-                  onPress={onClose}
-                  className="min-h-11 min-w-11 items-center justify-center rounded-full active:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  accessibilityRole="button"
-                  accessibilityLabel="Close"
-                >
-                  <X size={20} color={theme.foreground} />
-                </Pressable>
+                <CloseButton onPress={onClose} />
               </View>
 
               <LabelText className="leading-5 mb-6">
@@ -444,9 +437,18 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
                 )}
               </View>
 
+              {isEditing && (
+                <DestructiveTextButton
+                  label="Delete entry"
+                  onPress={handleDelete}
+                  className="self-start"
+                  style={{ minHeight: 44, paddingHorizontal: 16, paddingVertical: 10 }}
+                />
+              )}
+
             </ScrollView>
 
-            <View className="border-t border-border px-6 pt-3">
+            <View className="border-t border-border px-6 py-3">
               {error && (
                 <Text className="mb-2 text-xs text-destructive" accessibilityLiveRegion="polite">
                   {error}
@@ -454,26 +456,11 @@ export const ActivityLogModal: React.FC<ActivityLogModalProps> = ({
               )}
 
               <AccentButton
-                label={isEditing ? 'Save changes' : submitLabel ?? 'Save entry'}
+                label={isEditing ? 'Save changes' : submitLabel ?? 'Confirm & Log'}
                 onPress={handleSubmit}
                 disabled={!isValid || submitting}
                 loading={submitting}
-                className="mb-1 w-full"
-              />
-
-              {isEditing && (
-                <DestructiveButton
-                  label="Delete entry"
-                  onPress={handleDelete}
-                  className="w-full mb-3"
-                />
-              )}
-
-              <GhostButton
-                label="Cancel"
-                onPress={onClose}
                 className="w-full"
-                style={{ minHeight: 44 }}
               />
             </View>
           </View>

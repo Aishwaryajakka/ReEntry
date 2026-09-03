@@ -1,41 +1,40 @@
-import { useCallback, useMemo, useState } from 'react';
-import { View, Text, TextInput, FlatList, KeyboardAvoidingView, Pressable, Switch } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { Activity, ChevronDown, ChevronUp, ClipboardCheck, FileSearch, LayoutDashboard, Stethoscope, UserRound, Users } from 'lucide-react-native';
-
+import { useCallback, useMemo, useState } from 'react';
+import { FlatList, KeyboardAvoidingView, Pressable, Switch, Text, TextInput, View } from 'react-native';
+import { supabase } from '@/client/supabase';
+import { AddAccommodationModal } from '@/components/AddAccommodationModal';
+import { AccentButton, PrimaryButton, SecondaryButton } from '@/components/Buttons';
+import { ReEntryWordmark } from '@/components/ReEntryWordmark';
+import { SchoolObservationsSection } from '@/components/SchoolObservationsSection';
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
-import { ReEntryWordmark } from '@/components/ReEntryWordmark';
-import { AddAccommodationModal } from '@/components/AddAccommodationModal';
-import { SchoolObservationsSection } from '@/components/SchoolObservationsSection';
-import { AccentButton, PrimaryButton, SecondaryButton } from '@/components/Buttons';
-import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
-import { useSession } from '@/ctx';
-import { supabase } from '@/client/supabase';
-import { COLORS, useThemeColors } from '@/lib/theme';
+import { EditorialLabel, HeadingText, LabelText, MicroText, SubheadingText } from '@/components/Typography';
 import { useTheme } from '@/context/ThemeContext';
-import { ACTIVITY_CATEGORIES, type ActivityCategory, type ActivityLog } from '@/data/types';
-import type { SchoolObservation } from '@/data/types';
+import { useSession } from '@/ctx';
 import { CHALLENGE_TAGS, TOLERANCE_LABELS } from '@/data/activityCatalog';
+import type { SchoolObservation } from '@/data/types';
+import { ACTIVITY_CATEGORIES, type ActivityCategory, type ActivityLog } from '@/data/types';
+import {
+  type ClinicianActivityLog,
+  type ClinicianChallengeTag,
+  type ClinicianDailyCheckIn,
+  connectStudentByCode,
+  fetchClinicianAccommodations,
+  fetchClinicianActivityLogs,
+  fetchClinicianChallengeTags,
+  fetchClinicianDailyCheckIns,
+  fetchClinicianLinkedStudents,
+  getSchoolObservationsForStudent,
+  type SchoolAccommodation,
+  type SchoolStudent,
+} from '@/db/api';
 import {
   analyzePersonalizedPatterns,
   type PatternModelResult,
   type PersonalizedPattern,
 } from '@/lib/patternModel';
-import {
-  connectStudentByCode,
-  fetchClinicianLinkedStudents,
-  fetchClinicianActivityLogs,
-  fetchClinicianChallengeTags,
-  fetchClinicianDailyCheckIns,
-  fetchClinicianAccommodations,
-  getSchoolObservationsForStudent,
-  type SchoolStudent,
-  type SchoolAccommodation,
-  type ClinicianActivityLog,
-  type ClinicianDailyCheckIn,
-  type ClinicianChallengeTag,
-} from '@/db/api';
+import { COLORS, useThemeColors } from '@/lib/theme';
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
@@ -442,7 +441,7 @@ export default function ClinicianWorkspaceScreen() {
                       ['profile', 'Profile', UserRound],
                     ] as const).map(([tab, label, Icon]) => {
                       const selected = activeTab === tab;
-                      const color = selected ? COLORS.brightYellow : themeColors.foreground;
+                      const color = selected ? (isDark ? COLORS.brightYellow : COLORS.forest) : themeColors.foreground;
                       return (
                         <Pressable
                           key={tab}
@@ -450,7 +449,7 @@ export default function ClinicianWorkspaceScreen() {
                           accessibilityRole="tab"
                           accessibilityState={{ selected }}
                           className="min-h-[60px] flex-1 items-center justify-center rounded-lg px-0.5 py-2 active:opacity-90"
-                          style={{ backgroundColor: selected ? COLORS.deepForest : 'transparent' }}
+                          style={{ backgroundColor: selected ? (isDark ? COLORS.forest : `${COLORS.brightYellow}40`) : 'transparent' }}
                         >
                           <Icon size={18} color={color} />
                           <Text className="mt-1 text-center text-[10px] font-semibold leading-3" numberOfLines={2} style={{ color }}>{label}</Text>

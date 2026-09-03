@@ -1,9 +1,5 @@
 import { useState } from 'react';
 import { Alert, Pressable, Text, TextInput, View } from 'react-native';
-
-import { AccentButton, DestructiveButton, SecondaryButton } from './Buttons';
-import { ProfessionalFormSheet } from './ProfessionalFormSheet';
-import { LabelText, MicroText, SubheadingText } from './Typography';
 import {
   SCHOOL_OBSERVATION_LABELS,
   SCHOOL_OBSERVATION_TYPES,
@@ -19,6 +15,9 @@ import {
   updateSchoolObservation,
 } from '@/db/api';
 import { useThemeColors } from '@/lib/theme';
+import { AccentButton, DestructiveTextButton, SecondaryButton } from './Buttons';
+import { ProfessionalFormSheet } from './ProfessionalFormSheet';
+import { LabelText, MicroText, SubheadingText } from './Typography';
 
 function formatOccurredAt(value: string): string {
   return new Date(value).toLocaleString('en-US', {
@@ -182,7 +181,7 @@ export function SchoolObservationsSection({
                       className="flex-1 px-3 py-2"
                       style={{ minHeight: 44, backgroundColor: theme.background, borderColor: theme.border, borderWidth: 1 }}
                     />
-                    <DestructiveButton label="Delete" onPress={() => remove(observation)} className="flex-1 px-3 py-2" style={{ minHeight: 44 }} />
+                    <DestructiveTextButton label="Delete" onPress={() => remove(observation)} className="flex-1 px-3 py-2" style={{ minHeight: 44 }} />
                   </View>
                 ) : null}
               </View>

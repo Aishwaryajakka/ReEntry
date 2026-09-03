@@ -1,3 +1,4 @@
+import { Mic, Square } from 'lucide-react-native';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   KeyboardAvoidingView,
@@ -10,28 +11,28 @@ import {
   View,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Mic, Square, X } from 'lucide-react-native';
-import { GhostButton, PrimaryButton, SecondaryButton } from './Buttons';
-import { LabelText, MicroText, SubheadingText } from './Typography';
+import { useTheme } from '@/context/ThemeContext';
 import { useReducedExperience } from '@/lib/accessibility';
 import {
   cancelSpeechRecognition,
+  type ExpoSpeechRecognitionErrorEvent,
+  type ExpoSpeechRecognitionResultEvent,
   isSpeechRecognitionAvailable,
   requestSpeechRecognitionPermission,
   startSpeechRecognition,
   stopSpeechRecognition,
   useSpeechRecognitionEvent,
-  type ExpoSpeechRecognitionErrorEvent,
-  type ExpoSpeechRecognitionResultEvent,
 } from '@/lib/speechRecognition';
+import { useThemeColors } from '@/lib/theme';
+import { cn } from '@/lib/utils';
 import {
   parseVoiceActivity,
   type VoiceActivityContext,
   type VoiceActivityDraft,
 } from '@/lib/voiceActivityParser';
-import { useThemeColors } from '@/lib/theme';
-import { useTheme } from '@/context/ThemeContext';
-import { cn } from '@/lib/utils';
+import { PrimaryButton, SecondaryButton } from './Buttons';
+import { CloseButton } from './CloseButton';
+import { LabelText, MicroText, SubheadingText } from './Typography';
 
 type CaptureState =
   | 'idle'
@@ -178,7 +179,7 @@ export function VoiceActivityCapture({
         >
           <View
             className="bg-card w-full max-w-[680px] self-center rounded-t-3xl"
-            style={{ maxHeight: Math.max(320, windowHeight - insets.top - 12), paddingBottom: insets.bottom }}
+            style={{ height: Math.min(windowHeight * 0.72, windowHeight - insets.top - 12), minHeight: 320, paddingBottom: insets.bottom }}
           >
             <ScrollView
               contentContainerClassName="p-6"
@@ -187,14 +188,7 @@ export function VoiceActivityCapture({
             >
             <View className="mb-2 flex-row items-center justify-between">
               <SubheadingText>Log with voice</SubheadingText>
-              <Pressable
-                onPress={close}
-                className="min-h-11 min-w-11 items-center justify-center rounded-full active:bg-muted focus:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                accessibilityRole="button"
-                accessibilityLabel="Close"
-              >
-                <X size={20} color={theme.foreground} />
-              </Pressable>
+              <CloseButton onPress={close} />
             </View>
             <LabelText className="mb-5 leading-5 text-muted-foreground">
               Describe what you did, how long it lasted, and how manageable it felt. You will review everything before it is logged.
@@ -221,7 +215,6 @@ export function VoiceActivityCapture({
                   {transcript || 'Speak naturally. ReEntry will not save until you confirm.'}
                 </LabelText>
                 <PrimaryButton label="Stop listening" onPress={stop} iconLeft={<Square size={18} color={isDark ? theme.deepForest : theme.warmWhite} />} className="w-full" />
-                <GhostButton label="Cancel" onPress={close} className="mt-1 self-center px-4" style={{ minHeight: 44 }} />
               </View>
             )}
 
@@ -244,7 +237,14 @@ export function VoiceActivityCapture({
               <StatusMessage title="Voice capture stopped" body={errorMessage || 'Please try again or type your activity instead.'} />
             )}
 
-            {showTypedFallback || state === 'no-speech' || state === 'error' ? (
+            {(state === 'no-speech' || state === 'error') && (
+              <View className="mt-4 gap-3">
+                <PrimaryButton label="Try voice again" onPress={startListening} className="w-full" />
+                <SecondaryButton label="Type activity instead" onPress={() => setState('typed-fallback')} className="w-full" />
+              </View>
+            )}
+
+            {showTypedFallback ? (
               <View className="mt-4">
                 <LabelText className="mb-2 font-semibold text-foreground">Type your activity</LabelText>
                 <TextInput
@@ -261,7 +261,7 @@ export function VoiceActivityCapture({
               </View>
             ) : null}
 
-            {state !== 'listening' && state !== 'processing' && state !== 'requesting-permission' && state !== 'idle' && (
+            {state !== 'listening' && state !== 'processing' && state !== 'requesting-permission' && state !== 'idle' && state !== 'no-speech' && state !== 'error' && state !== 'typed-fallback' && (
               <SecondaryButton label="Try voice again" onPress={startListening} className="mt-3 w-full" />
             )}
 

@@ -1,28 +1,26 @@
-import { useCallback, useMemo, useState } from 'react';
-import { View, Text, TextInput, FlatList, KeyboardAvoidingView, Pressable, Switch } from 'react-native';
 import { useFocusEffect } from 'expo-router';
 import { ChevronDown, ChevronUp, ClipboardList, GraduationCap, LayoutDashboard, UserRound, Users } from 'lucide-react-native';
-
-import { ScreenShell } from '@/components/ScreenShell';
-import { SectionCard } from '@/components/SectionCard';
+import { useCallback, useMemo, useState } from 'react';
+import { FlatList, KeyboardAvoidingView, Pressable, Switch, Text, TextInput, View } from 'react-native';
+import { supabase } from '@/client/supabase';
+import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
 import { ReEntryWordmark } from '@/components/ReEntryWordmark';
 import { SchoolObservationsSection } from '@/components/SchoolObservationsSection';
-import { PrimaryButton, SecondaryButton } from '@/components/Buttons';
-import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
-import { useSession } from '@/ctx';
-import { supabase } from '@/client/supabase';
-import { useThemeColors } from '@/lib/theme';
-import { COLORS } from '@/lib/theme';
+import { ScreenShell } from '@/components/ScreenShell';
+import { SectionCard } from '@/components/SectionCard';
+import { EditorialLabel, HeadingText, LabelText, MicroText, SubheadingText } from '@/components/Typography';
 import { useTheme } from '@/context/ThemeContext';
+import { useSession } from '@/ctx';
+import type { SchoolObservation } from '@/data/types';
 import {
   connectStudentByCode,
-  fetchSchoolLinkedStudents,
   fetchSchoolAccommodations,
+  fetchSchoolLinkedStudents,
   getSchoolObservationsForStudent,
-  type SchoolStudent,
   type SchoolAccommodation,
+  type SchoolStudent,
 } from '@/db/api';
-import type { SchoolObservation } from '@/data/types';
+import { COLORS, useThemeColors } from '@/lib/theme';
 
 function formatDate(dateStr: string): string {
   const d = new Date(dateStr + 'T00:00:00');
@@ -276,7 +274,7 @@ export default function SchoolWorkspaceScreen() {
                       ['profile', 'Profile', UserRound],
                     ] as const).map(([tab, label, Icon]) => {
                       const selected = activeTab === tab;
-                      const color = selected ? COLORS.brightYellow : themeColors.foreground;
+                      const color = selected ? (isDark ? COLORS.brightYellow : COLORS.forest) : themeColors.foreground;
                       return (
                         <Pressable
                           key={tab}
@@ -284,7 +282,7 @@ export default function SchoolWorkspaceScreen() {
                           accessibilityRole="tab"
                           accessibilityState={{ selected }}
                           className="min-h-[60px] flex-1 items-center justify-center rounded-lg px-1 py-2 active:opacity-90"
-                          style={{ backgroundColor: selected ? COLORS.deepForest : 'transparent' }}
+                          style={{ backgroundColor: selected ? (isDark ? COLORS.forest : `${COLORS.brightYellow}40`) : 'transparent' }}
                         >
                           <Icon size={18} color={color} />
                           <Text className="mt-1 text-[11px] font-semibold" style={{ color }}>{label}</Text>

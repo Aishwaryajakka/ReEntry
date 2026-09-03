@@ -1,17 +1,16 @@
-import { useRef, useState } from 'react';
-import { useRouter } from 'expo-router';
 import type { RelativePathString } from 'expo-router';
-import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { Check } from 'lucide-react-native';
-
-import { PrimaryButton, GhostButton } from '@/components/Buttons';
+import { useRef, useState } from 'react';
+import { KeyboardAvoidingView, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { supabase } from '@/client/supabase';
+import { GhostButton, PrimaryButton } from '@/components/Buttons';
 import { ReEntryFullLogo } from '@/components/ReEntryFullLogo';
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
 import { BodyText, LabelText, MicroText } from '@/components/Typography';
-import { supabase } from '@/client/supabase';
-import { cn } from '@/lib/utils';
 import { COLORS, useThemeColors } from '@/lib/theme';
+import { cn } from '@/lib/utils';
 
 const ROLES = [
   { key: 'student', label: 'Student' },
@@ -111,7 +110,7 @@ export default function SignUpScreen() {
         >
           <View className="gap-6">
             <View className="items-center gap-4">
-              <ReEntryFullLogo />
+              <ReEntryFullLogo maxWidth={240} />
               <BodyText className="text-center">Create your account to get started.</BodyText>
             </View>
 
@@ -130,7 +129,7 @@ export default function SignUpScreen() {
                   autoCapitalize="none"
                   autoCorrect={false}
                   placeholder="Choose a username"
-                  placeholderTextColor="#71856A"
+                  placeholderTextColor={theme.foregroundMuted}
                   className="bg-background text-foreground rounded-xl px-4 py-3.5 text-base border border-border"
                   style={{ minHeight: 52 } as object}
                   returnKeyType="next"
@@ -161,7 +160,7 @@ export default function SignUpScreen() {
                     onBlur={() => setTouched((t) => ({ ...t, password: true }))}
                     secureTextEntry={!showPassword}
                     placeholder="Create password"
-                    placeholderTextColor="#71856A"
+                    placeholderTextColor={theme.foregroundMuted}
                     className="bg-background text-foreground rounded-xl px-4 py-3.5 pr-20 text-base border border-border"
                     style={{ minHeight: 52 } as object}
                     returnKeyType="done"
@@ -171,6 +170,7 @@ export default function SignUpScreen() {
                     onPress={() => setShowPassword((s) => !s)}
                     className="absolute right-0 top-0 bottom-0 px-4 justify-center active:opacity-70"
                     accessibilityLabel={showPassword ? 'Hide password' : 'Show password'}
+                    accessibilityRole="button"
                   >
                     <Text className="text-sm font-semibold text-primary">
                       {showPassword ? 'Hide' : 'Show'}
@@ -195,7 +195,8 @@ export default function SignUpScreen() {
                         : 'border-border bg-background'
                     )}
                     accessibilityLabel={label}
-                    accessibilityState={{ selected: selectedRole === key }}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: selectedRole === key }}
                     style={{ minHeight: 52 } as object}
                   >
                     <Text className="text-base font-medium text-foreground">{label}</Text>

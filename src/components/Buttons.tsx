@@ -5,11 +5,11 @@
  * faint/transparent floating text.
  */
 
-import { ActivityIndicator, Pressable, Text, View } from 'react-native';
 import type { ReactNode } from 'react';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming } from 'react-native-reanimated';
-import { useReducedExperience } from '@/lib/accessibility';
+import { ActivityIndicator, Pressable, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { useTheme } from '@/context/ThemeContext';
+import { useReducedExperience } from '@/lib/accessibility';
 import { COLORS } from '@/lib/theme';
 import { cn } from '@/lib/utils';
 
@@ -20,7 +20,7 @@ interface ButtonProps {
   style?: import('react-native').ViewStyle;
   disabled?: boolean;
   loading?: boolean;
-  variant?: 'primary' | 'accent' | 'secondary' | 'ghost' | 'destructive';
+  variant?: 'primary' | 'accent' | 'secondary' | 'ghost' | 'destructive' | 'destructive-subtle';
   iconLeft?: ReactNode;
   accessibilityLabel?: string;
   /** Force a specific appearance regardless of the current theme. */
@@ -71,6 +71,7 @@ function BaseButton({
   const isSecondary = variant === 'secondary';
   const isGhost = variant === 'ghost';
   const isDestructive = variant === 'destructive';
+  const isDestructiveSubtle = variant === 'destructive-subtle';
   const isDisabled = disabled || loading;
   const pressedOpacity = isSecondary ? 0.9 : isPrimary ? 0.95 : 1;
   const { animatedStyle, onPressIn, onPressOut } = usePressScale(pressedOpacity);
@@ -93,6 +94,7 @@ function BaseButton({
     if (isPrimary) return primaryBg;
     if (isAccent) return accentBg;
     if (isDestructive) return destructiveBg;
+    if (isDestructiveSubtle) return 'transparent';
     return 'transparent';
   };
 
@@ -104,6 +106,7 @@ function BaseButton({
     if (isPrimary) return primaryText;
     if (isAccent) return accentText;
     if (isDestructive) return destructiveText;
+    if (isDestructiveSubtle) return isDarkMode ? COLORS.rustLight : COLORS.rust;
     if (isSecondary || isGhost) return isDarkMode ? COLORS.warmWhite : COLORS.forest;
     return primaryText;
   };
@@ -118,6 +121,7 @@ function BaseButton({
     if (isPrimary) return primaryBg;
     if (isAccent) return accentBg;
     if (isDestructive) return destructiveBg;
+    if (isDestructiveSubtle) return isDarkMode ? COLORS.rustLight : COLORS.rust;
     return 'transparent';
   };
 
@@ -140,7 +144,7 @@ function BaseButton({
           minHeight: 52,
           backgroundColor: getBackgroundColor(),
           borderColor: getBorderColor(),
-          borderWidth: isSecondary || isPrimary || isAccent ? 1 : 0,
+          borderWidth: isSecondary || isPrimary || isAccent || isDestructiveSubtle ? 1 : 0,
         },
         animatedStyle,
         style,
@@ -177,6 +181,9 @@ export const GhostButton: React.FC<ButtonProps> = (props) => <BaseButton {...pro
 
 /** Destructive action — high-contrast rust fill */
 export const DestructiveButton: React.FC<ButtonProps> = (props) => <BaseButton {...props} variant="destructive" />;
+
+/** Restrained destructive action for edit screens and card-level controls. */
+export const DestructiveTextButton: React.FC<ButtonProps> = (props) => <BaseButton {...props} variant="destructive-subtle" />;
 
 /** Convenience switch for components that want a single Button prop */
 export const Button: React.FC<ButtonProps> = (props) => <BaseButton {...props} />;

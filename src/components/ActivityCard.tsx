@@ -4,7 +4,7 @@
  * compact three-segment tolerance indicator, and text status.
  */
 
-import { View, Text, Pressable } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { CategoryIcon } from '@/components/Icons';
 import { ToleranceMeter } from '@/components/ToleranceMeter';
 import { LabelText, MicroText } from '@/components/Typography';
@@ -31,7 +31,7 @@ export const ActivityCard: React.FC<ActivityCardProps> = ({ log, onPress }) => {
     <Pressable
       onPress={onPress}
       className="bg-card rounded-2xl p-4 border border-border mb-3"
-      style={({ pressed }) => [{ borderCurve: 'continuous' } as object, { opacity: pressed ? 0.95 : 1 }]}
+      style={{ borderCurve: 'continuous' } as object}
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityLabel={`${title} activity, ${log.durationMinutes} minutes, ${TOLERANCE_LABELS[log.toleranceRating]}`}
     >

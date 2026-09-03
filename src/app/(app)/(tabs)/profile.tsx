@@ -6,24 +6,24 @@
  * No auth, no account management, no messaging.
  */
 
-import { useEffect, useMemo, useState } from 'react';
-import { useRouter, type RelativePathString } from 'expo-router';
-import { View, Text, Switch } from 'react-native';
-import { Eye, EyeOff, Info, Lock, Copy, Check, Users } from 'lucide-react-native';
 import * as Clipboard from 'expo-clipboard';
+import { type RelativePathString, useRouter } from 'expo-router';
+import { Check, Copy, Eye, EyeOff, Info, Lock, Users } from 'lucide-react-native';
+import { useEffect, useMemo, useState } from 'react';
+import { Switch, Text, View } from 'react-native';
+import { supabase } from '@/client/supabase';
+import { DestructiveTextButton, SecondaryButton } from '@/components/Buttons';
+import { DividerLine } from '@/components/DividerLine';
+import { NeedSupportSection } from '@/components/NeedSupportSection';
 import { ScreenShell } from '@/components/ScreenShell';
 import { SectionCard } from '@/components/SectionCard';
-import { SecondaryButton, DestructiveButton } from '@/components/Buttons';
-import { HeadingText, SubheadingText, LabelText, MicroText, EditorialLabel } from '@/components/Typography';
-import { TOLERANCE_LABELS } from '@/data/activityCatalog';
-import { DividerLine } from '@/components/DividerLine';
 import { StudentPageHeader } from '@/components/StudentPageHeader';
-import { NeedSupportSection } from '@/components/NeedSupportSection';
+import { EditorialLabel, HeadingText, LabelText, MicroText, SubheadingText } from '@/components/Typography';
 import { useAppContext } from '@/context/AppContext';
 import { useTheme } from '@/context/ThemeContext';
 import { useSession } from '@/ctx';
-import { supabase } from '@/client/supabase';
-import { getOrCreateStudentAccessCode, fetchStudentAccessLinks, revokeStudentAccess, regenerateStudentAccessCode } from '@/db/api';
+import { TOLERANCE_LABELS } from '@/data/activityCatalog';
+import { fetchStudentAccessLinks, getOrCreateStudentAccessCode, regenerateStudentAccessCode, revokeStudentAccess } from '@/db/api';
 import { COLORS, useThemeColors } from '@/lib/theme';
 import type { StudentAccessRow } from '@/types/types';
 
@@ -314,7 +314,7 @@ export default function ProfileScreen() {
                             </Text>
                           </View>
                           {link.status === 'active' && (
-                            <DestructiveButton
+                            <DestructiveTextButton
                               label="Revoke"
                               onPress={() => handleRevoke(link.id)}
                               className="rounded-full px-3 py-1"
@@ -344,7 +344,7 @@ export default function ProfileScreen() {
                             </Text>
                           </View>
                           {link.status === 'active' && (
-                            <DestructiveButton
+                            <DestructiveTextButton
                               label="Revoke"
                               onPress={() => handleRevoke(link.id)}
                               className="rounded-full px-3 py-1"

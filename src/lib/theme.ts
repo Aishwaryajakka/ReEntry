@@ -8,6 +8,7 @@ export const COLORS = {
   brightYellow: '#F6C945',
   warmGold: '#F4B93F',
   rust: '#A5572F',
+  rustLight: '#D98760',
   turmeric: '#D29443',
   linen: '#DDD1BF',
   moon: '#E8E3D9',
@@ -125,7 +126,7 @@ export function useThemeColors(): ThemeColors {
     linen: COLORS.linen,
     moon: COLORS.moon,
     warmWhite: COLORS.warmWhite,
-    rust: COLORS.rust,
+    rust: isDark ? COLORS.rustLight : COLORS.rust,
     turmeric: COLORS.turmeric,
   };
 }

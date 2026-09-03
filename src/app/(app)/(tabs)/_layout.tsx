@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Sun, Activity, Map, BookOpen, User } from 'lucide-react-native';
+import { Activity, BookOpen, Map, Sun, User } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useAppContext } from '@/context/AppContext';
 import { useTheme } from '@/context/ThemeContext';
@@ -15,8 +15,8 @@ export default function TabsLayout() {
       initialRouteName="today"
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: COLORS.brightYellow,
-        tabBarActiveBackgroundColor: COLORS.forest,
+        tabBarActiveTintColor: isDark ? COLORS.brightYellow : COLORS.forest,
+        tabBarActiveBackgroundColor: isDark ? COLORS.forest : `${COLORS.brightYellow}40`,
         tabBarInactiveTintColor: isDark ? COLORS.linen : COLORS.moss,
         tabBarStyle: {
           backgroundColor: isDark ? COLORS.deepForest : COLORS.moon,
@@ -53,7 +53,7 @@ export default function TabsLayout() {
         options={{
           title: 'Today',
           tabBarIcon: ({ color, focused }) => (
-            <Sun size={22} color={focused ? COLORS.brightYellow : color} />
+            <Sun size={22} color={color} />
           ),
         }}
       />
@@ -62,7 +62,7 @@ export default function TabsLayout() {
         options={{
           title: 'Tolerance',
           tabBarIcon: ({ color, focused }) => (
-            <Activity size={22} color={focused ? COLORS.brightYellow : color} />
+            <Activity size={22} color={color} />
           ),
         }}
       />
@@ -71,7 +71,7 @@ export default function TabsLayout() {
         options={{
           title: 'Journey',
           tabBarIcon: ({ color, focused }) => (
-            <Map size={22} color={focused ? COLORS.brightYellow : color} />
+            <Map size={22} color={color} />
           ),
         }}
       />
@@ -80,7 +80,7 @@ export default function TabsLayout() {
         options={{
           title: 'Pass',
           tabBarIcon: ({ color, focused }) => (
-            <BookOpen size={22} color={focused ? COLORS.brightYellow : (isDark ? color : COLORS.moss)} />
+            <BookOpen size={22} color={color} />
           ),
         }}
       />
@@ -89,7 +89,7 @@ export default function TabsLayout() {
         options={{
           title: 'Profile',
           tabBarIcon: ({ color, focused }) => (
-            <User size={22} color={focused ? COLORS.brightYellow : color} />
+            <User size={22} color={color} />
           ),
         }}
       />
